@@ -1,5 +1,4 @@
 #include "vm.h"
-#include "compiler.h"
 
 VM vm;
 
@@ -24,7 +23,6 @@ void initVm()
     InitStack(vm.stack);
 
     update_stack_ptr();
-
 }
 
 void freeVm()
@@ -149,20 +147,25 @@ static InterpretResult run()
 #undef HANDLE_BINARY
 }
 
-
-InterpretResult interpret(char *source)
+InterpretResult interpret(const char *source)
 {
-    compile(source);
-    return INTERPRET_OK;
+    Chunk chunk;
+    InitChunk(&chunk);
 
-    // Workaround
-    run();
+    int res = compile(source, &chunk);
+    if (!res)
+    {
+        FreeChunk(&chunk);
+        return INTERPRET_COMPILE_ERROR;
+    }
 
-    // vm.chunk = chunk;
-    // vm.ip = vm.chunk->code;
+    vm.chunk = &chunk;
+    vm.ip = vm.chunk->code;
 
-    // Value res = run();
-    // return res;
+    InterpretResult result = run();
+
+    FreeChunk(&chunk);
+    return result;
 }
 
 // STACK

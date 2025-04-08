@@ -74,7 +74,6 @@ void run_file(char *file_path)
 int main(int argc, char **args)
 {
     initVm();
-    init_scanner();
 
     if (argc == 1)
     {

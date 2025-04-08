@@ -15,6 +15,7 @@ typedef enum
     TOKEN_STAR,
     TOKEN_COLON,
     TOKEN_QUESTION_MARK,
+    TOKEN_BACKTICK,
 
     /* One or two character */
     TOKEN_BANG,
@@ -61,7 +62,7 @@ typedef enum
 
 typedef struct
 {
-    char *start;
+    const char *start;
     int line_number;
     int length;
     TokenType type;

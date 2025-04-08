@@ -279,7 +279,10 @@ Token scan_token()
 
     case '"':
         return string();
+    case '`':
+        return make_token(TOKEN_BACKTICK);
     }
+    
 
     if (is_digit(cur))
         return number();
@@ -290,10 +293,10 @@ Token scan_token()
     return error_token("Compile error : Unrecognized token");
 }
 
-void init_scanner()
+void init_scanner(const char *source)
 {
     scanner.start = NULL;
-    scanner.current = NULL;
+    scanner.current = source;
     scanner.line_number = 1;
 }
 

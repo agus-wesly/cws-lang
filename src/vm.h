@@ -1,8 +1,8 @@
 #ifndef CWS_VM_H
 #define CWS_VM_H
 
-#include "chunk.h"
 #include "memory.h"
+#include "compiler.h"
 
 #define STACK_MAX 1024
 
@@ -40,6 +40,6 @@ void InitStack(Stack *stack);
 void WriteStack(Stack *stack, Value *value);
 void FreeStack(Stack *stack);
 
-InterpretResult interpret(char* code);
+InterpretResult interpret(const char* code);
 
 #endif // !CWS_VM_H
