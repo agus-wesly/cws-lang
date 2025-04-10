@@ -120,7 +120,7 @@ static InterpretResult run()
             break;
         }
         case OP_NEGATE: {
-            *(vm.stackPointer - 1) = (*vm.stackPointer) * -1;
+            *(vm.stackPointer - 1) = (*(vm.stackPointer-1) * -1);
             break;
         }
         case OP_ADD:
@@ -152,8 +152,8 @@ InterpretResult interpret(const char *source)
     Chunk chunk;
     InitChunk(&chunk);
 
-    int res = compile(source, &chunk);
-    if (!res)
+    int is_error = compile(source, &chunk);
+    if (is_error)
     {
         FreeChunk(&chunk);
         return INTERPRET_COMPILE_ERROR;

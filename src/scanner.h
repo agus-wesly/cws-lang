@@ -16,8 +16,4 @@ void setup_scanner(char *source);
 Token scan_token();
 
 
-char advance();
-char expression();
-void consume(TokenType type, char *message);
-
 #endif // !CWS_SCANNER_H
