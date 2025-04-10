@@ -65,10 +65,6 @@ static void advance()
     }
 }
 
-static void expression()
-{
-    parsePresedence(PREC_ASSIGNMENT);
-}
 
 static void consume(TokenType token_type, char *message)
 {
@@ -196,21 +192,54 @@ static void binary()
 
 
 ParseRule rules[] = {
-    [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
-    [TOKEN_MINUS] = {unary, binary, PREC_TERM},
-    [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
+    [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_EQUAL_EQUAL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_GREATER] = {NULL, NULL, PREC_NONE},
+    [TOKEN_GREATER_EQUAL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LESS] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LESS_EQUAL] = {NULL, NULL, PREC_NONE},
+
+    [TOKEN_IF] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LET] = {NULL, NULL, PREC_NONE},
+    [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
+    [TOKEN_OR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_AND] = {NULL, NULL, PREC_NONE},
+    [TOKEN_NIL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
+
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
+
+    [TOKEN_MINUS] = {unary, binary, PREC_TERM},
+    [TOKEN_BANG] = {unary, NULL, PREC_NONE},
+
+    [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
+    [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
+    [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
     [TOKEN_NUMBER] = {number, NULL, PREC_PRIMARY},
+
+    [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
-ParseRule *get_rule(TokenType token_type) {
+static void expression()
+{
+    parsePresedence(PREC_ASSIGNMENT);
+}
+
+static ParseRule *get_rule(TokenType token_type) {
     return &rules[token_type];
 }
 
-void parsePresedence(Presedence presedence)
+static void parsePresedence(Presedence presedence)
 {
     advance();
     ParseRule *prev_table = get_rule(parser.previous.type);

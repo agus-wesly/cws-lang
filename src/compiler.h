@@ -28,7 +28,9 @@ typedef struct {
     Presedence presedence;
 } ParseRule;
 
-void parsePresedence(Presedence presedence);
-ParseRule *get_rule(TokenType token_type);
+static void expression();
+static void parsePresedence(Presedence presedence);
+static ParseRule *get_rule(TokenType token_type);
+
 
 #endif // !CWS_COMPILER_H
