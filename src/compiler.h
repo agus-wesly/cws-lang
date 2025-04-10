@@ -3,6 +3,7 @@
 
 #include "chunk.h"
 #include "scanner.h"
+#include "debug.h"
 
 int compile(const char *code, Chunk *chunk);
 
@@ -18,19 +19,16 @@ typedef enum {
     PREC_UNARY,
     PREC_CALL,
     PREC_PRIMARY,
-} Presedence;
+} Precedence;
 
 typedef void (*ParseFn)();
 
 typedef struct {
     ParseFn prefix;
     ParseFn infix;
-    Presedence presedence;
+    Precedence precedence;
 } ParseRule;
 
-static void expression();
-static void parsePresedence(Presedence presedence);
-static ParseRule *get_rule(TokenType token_type);
 
 
 #endif // !CWS_COMPILER_H

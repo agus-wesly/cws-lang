@@ -38,8 +38,6 @@ void PrintChunk(Chunk *chunk);
 void FreeChunk(Chunk *chunk);
 uint8_t AddConstant(Chunk *chunk, Value newConstant);
 
-void DisassembleChunk(Chunk *chunk, const char *title);
-int DisassembleInstruction(Chunk *chunk, int offset);
 
 void WriteConstant(Chunk *chunk, Value value, uint32_t lineNumber);
 

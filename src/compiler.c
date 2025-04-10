@@ -10,9 +10,13 @@ typedef struct
     int is_panic;
 } Parser;
 
+
+static void expression();
+static void parsePrecedence(Precedence presedence);
+static ParseRule *get_rule(TokenType token_type);
+
 Parser parser;
 Chunk *compiling_chunk;
-
 
 Chunk *current_chunk()
 {
@@ -96,11 +100,16 @@ void emit_return()
 void end_compiler()
 {
     emit_return();
+    #ifdef DEBUG_PRINT
+        if(!parser.is_error) {
+            DisassembleChunk(current_chunk(), "Inside of the chunk");
+        }
+    #endif
 }
 
 /*====== PREFIX & INFIX ====== */
 
-Presedence _get_presedence(TokenType token_type)
+Precedence _get_presedence(TokenType token_type)
 {
     switch (token_type)
     {
@@ -135,7 +144,7 @@ static void number()
 static void unary()
 {
     TokenType token_type = parser.previous.type;
-    parsePresedence(get_rule(token_type)->presedence + 1);
+    parsePrecedence(get_rule(token_type)->precedence + 1);
 
     switch (token_type)
     {
@@ -162,8 +171,8 @@ static void grouping() {
 static void binary()
 {
     TokenType token_type = parser.previous.type;
-    Presedence presedence = get_rule(token_type)->presedence;
-    parsePresedence(presedence + 1);
+    Precedence presedence = get_rule(token_type)->precedence;
+    parsePrecedence(presedence + 1);
 
     switch (token_type)
     {
@@ -232,28 +241,28 @@ ParseRule rules[] = {
 
 static void expression()
 {
-    parsePresedence(PREC_ASSIGNMENT);
+    parsePrecedence(PREC_ASSIGNMENT);
 }
 
 static ParseRule *get_rule(TokenType token_type) {
     return &rules[token_type];
 }
 
-static void parsePresedence(Presedence presedence)
+static void parsePrecedence(Precedence precedence)
 {
     advance();
-    ParseRule *prev_table = get_rule(parser.previous.type);
-    if(prev_table->prefix == NULL) {
+    ParseFn prefix_rule = get_rule(parser.previous.type)->prefix;
+    if(prefix_rule == NULL) {
         error("Syntax error");
         return;
     }
-    prev_table->prefix();
 
-    while(presedence <= get_rule(parser.current.type)->presedence)     {
+    prefix_rule();
+
+    while(precedence <= get_rule(parser.current.type)->precedence)     {
         advance();
-        ParseFn infix = get_rule(parser.previous.type)->infix;
-        if(infix)
-            infix();
+        ParseFn infix_rule = get_rule(parser.previous.type)->infix;
+        infix_rule();
     }
 }
 
@@ -273,31 +282,3 @@ int compile(const char *source, Chunk *chunk)
 
     return parser.is_error;
 }
-
-// int compile(char *source, Chunk *chunk)
-// {
-//     setup_scanner(source);
-//
-//     for (;;)
-//     {
-//         Token token = scan_token();
-//
-//         if (line_number != token.line_number)
-//         {
-//             line_number = token.line_number;
-//             printf("%02d ", token.line_number);
-//         }
-//         else
-//         {
-//             printf("|  ");
-//         }
-//
-//         printf("%d '%.*s'\n", token.type, token.length, token.start);
-//
-//         if (token.type == TOKEN_ERROR)
-//             break;
-//
-//         if (token.type == TOKEN_EOF)
-//             break;
-//     }
-// }
