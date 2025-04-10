@@ -1,11 +1,11 @@
+#ifndef CWS_CHUNK_H
+#define CWS_CHUNK_H
+
 #include "common.h"
 #include "line.h"
 #include "long_value.h"
 #include "std.h"
 #include "value.h"
-
-#ifndef CWS_CHUNK_H
-#define CWS_CHUNK_H
 
 typedef enum
 {

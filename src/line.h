@@ -1,3 +1,6 @@
+#ifndef CWS_LINE_H
+#define CWS_LINE_H
+
 #include "common.h"
 #include "std.h"
 
@@ -7,7 +10,7 @@ typedef struct
     uint32_t number;
 } Line;
 
-void InitLine(Line *line, uint8_t idx, uint32_t number); 
+void InitLine(Line *line, uint8_t idx, uint32_t number);
 
 typedef struct
 {
@@ -17,8 +20,8 @@ typedef struct
     Line **lines;
 } Lines;
 
-
 void InitLines(Lines *lines);
 void WriteLines(Lines *lines, Line *newItem);
 void FreeLines(Lines *lines);
 
+#endif // !CWS_LINE_H

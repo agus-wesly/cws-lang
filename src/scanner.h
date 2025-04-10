@@ -1,7 +1,8 @@
+#ifndef CWS_SCANNER_H
+#define CWS_SCANNER_H
+
 #include "common.h"
 #include "token.h"
-
-#ifndef CWS_SCANNER_H
 
 typedef struct
 {

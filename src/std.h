@@ -1,13 +1,13 @@
+
+#ifndef CWS_STD_H
+#define CWS_STD_H
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <string.h>
-
-#ifndef CWS_STD_H
-
-#define CWS_STD_H
 
 typedef struct block_meta *block_ptr;
 struct block_meta

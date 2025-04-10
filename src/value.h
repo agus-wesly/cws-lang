@@ -1,3 +1,6 @@
+#ifndef CWS_VALUE_H
+#define CWS_VALUE_H
+
 #include "common.h"
 
 typedef double Value;
@@ -14,3 +17,4 @@ void InitValues(Values *values);
 void AppendValues(Values *values, Value newItem);
 void FreeValues(Values *values);
 void PrintValue(Value *value);
+#endif // !CWS_VALUE_H

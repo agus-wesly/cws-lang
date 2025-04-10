@@ -1,4 +1,5 @@
 #ifndef CWS_TOKEN_H
+#define CWS_TOKEN_H
 typedef enum
 {
     /* Single Character */

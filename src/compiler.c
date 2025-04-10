@@ -1,5 +1,4 @@
 #include "compiler.h"
-#include "scanner.h"
 
 int line_number = -1;
 
@@ -68,7 +67,7 @@ static void advance()
 
 static void expression()
 {
-    parsePresedence(PRESENCE_ASSIGNMENT);
+    parsePresedence(PREC_ASSIGNMENT);
 }
 
 static void consume(TokenType token_type, char *message)
@@ -104,6 +103,31 @@ void end_compiler()
 }
 
 /*====== PREFIX & INFIX ====== */
+
+Presedence _get_presedence(TokenType token_type)
+{
+    switch (token_type)
+    {
+    case TOKEN_EOF:
+        return PREC_NONE;
+    case TOKEN_LEFT_PAREN:
+        return PREC_NONE;
+    case TOKEN_RIGHT_PAREN:
+        return PREC_NONE;
+    case TOKEN_PLUS:
+        return PREC_TERM;
+    case TOKEN_MINUS:
+        return PREC_TERM;
+    case TOKEN_STAR:
+        return PREC_FACTOR;
+    case TOKEN_SLASH:
+        return PREC_FACTOR;
+    default:
+        return PREC_NONE;
+        // another case goes here
+    }
+}
+
 static void number()
 {
     Value value = strtod(parser.previous.start, NULL);
@@ -115,7 +139,7 @@ static void number()
 static void unary()
 {
     TokenType token_type = parser.previous.type;
-    expression();
+    parsePresedence(get_rule(token_type)->presedence + 1);
 
     switch (token_type)
     {
@@ -131,29 +155,6 @@ static void unary()
     }
 }
 
-Presedence get_presedence(TokenType token_type)
-{
-    switch (token_type)
-    {
-    case TOKEN_EOF:
-        return PRESENCE_NONE;
-    case TOKEN_LEFT_PAREN:
-        return PRESENCE_NONE;
-    case TOKEN_RIGHT_PAREN:
-        return PRESENCE_NONE;
-    case TOKEN_PLUS:
-        return PRESENCE_TERM;
-    case TOKEN_MINUS:
-        return PRESENCE_TERM;
-    case TOKEN_STAR:
-        return PRESENCE_FACTOR;
-    case TOKEN_SLASH:
-        return PRESENCE_FACTOR;
-    default:
-        return PRESENCE_NONE;
-        // another case goes here
-    }
-}
 
 
 static void grouping() {
@@ -165,7 +166,7 @@ static void grouping() {
 static void binary()
 {
     TokenType token_type = parser.previous.type;
-    Presedence presedence = get_presedence(token_type);
+    Presedence presedence = get_rule(token_type)->presedence;
     parsePresedence(presedence + 1);
 
     switch (token_type)
@@ -194,34 +195,34 @@ static void binary()
 /*===================== */
 
 
-Table table[] = {
-    [TOKEN_PLUS] = {NULL, binary, PRESENCE_TERM},
-    [TOKEN_MINUS] = {unary, binary, PRESENCE_TERM},
-    [TOKEN_STAR] = {NULL, binary, PRESENCE_FACTOR},
-    [TOKEN_SLASH] = {NULL, binary, PRESENCE_FACTOR},
-    [TOKEN_LEFT_PAREN] = {grouping, NULL, PRESENCE_NONE},
-    [TOKEN_RIGHT_PAREN] = {NULL, NULL, PRESENCE_NONE},
-    [TOKEN_NUMBER] = {number, NULL, PRESENCE_PRIMARY},
-    [TOKEN_EOF] = {NULL, NULL, PRESENCE_NONE},
+ParseRule rules[] = {
+    [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
+    [TOKEN_MINUS] = {unary, binary, PREC_TERM},
+    [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
+    [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
+    [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
+    [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_NUMBER] = {number, NULL, PREC_PRIMARY},
+    [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
 };
 
-Table *get_table(TokenType token_type) {
-    return &table[token_type];
+ParseRule *get_rule(TokenType token_type) {
+    return &rules[token_type];
 }
 
 void parsePresedence(Presedence presedence)
 {
     advance();
-    Table *prev_table = get_table(parser.previous.type);
+    ParseRule *prev_table = get_rule(parser.previous.type);
     if(prev_table->prefix == NULL) {
         error("Syntax error");
         return;
     }
     prev_table->prefix();
 
-    while(presedence <= get_table(parser.current.type)->presedence)     {
+    while(presedence <= get_rule(parser.current.type)->presedence)     {
         advance();
-        Function infix = get_table(parser.previous.type)->infix;
+        ParseFn infix = get_rule(parser.previous.type)->infix;
         if(infix)
             infix();
     }
