@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "compiler.h"
+#include "stdarg.h"
 
 #define STACK_MAX 1024
 

@@ -13,10 +13,14 @@ typedef enum
     OP_CONSTANT_LONG,
     OP_RETURN,
     OP_NEGATE,
+    OP_TERNARY,
     OP_ADD,
     OP_SUBTRACT,
     OP_DIVIDE,
     OP_MULTIPLY,
+    OP_TRUE,
+    OP_FALSE,
+    OP_NIL
 } OpCode;
 
 typedef struct
@@ -36,6 +40,7 @@ void InitChunk(Chunk *chunk);
 void WriteChunk(Chunk *chunk, uint8_t newItem, uint32_t line);
 void PrintChunk(Chunk *chunk);
 void FreeChunk(Chunk *chunk);
+int FindLine(Chunk *chunk, int offset);
 uint8_t AddConstant(Chunk *chunk, Value newConstant);
 
 

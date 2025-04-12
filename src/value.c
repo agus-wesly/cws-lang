@@ -22,7 +22,10 @@ void AppendValues(Values *values, Value newItem)
 
 void PrintValue(Value *value)
 {
-    printf("'%g'", *value);
+    if(value->type == TYPE_NUMBER)
+        printf("'%f'", value->as.decimal);
+    else if(value->type == TYPE_BOOLEAN)
+        printf("'%d'", value->as.boolean);
 }
 
 void FreeValues(Values *values)

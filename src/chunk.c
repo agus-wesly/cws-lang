@@ -1,6 +1,6 @@
 #include "chunk.h"
-#include "memory.h"
 #include "debug.h"
+#include "memory.h"
 
 void InitChunk(Chunk *chunk)
 {
@@ -130,6 +130,19 @@ uint32_t getLine(Chunk *chunk, uint8_t idx)
     return -1;
 }
 
+int FindLine(Chunk *chunk, int offset)
+{
+    for (int i = chunk->lines->count - 1; i >= 0; --i)
+    {
+        Line *line = chunk->lines->lines[i];
+        if (offset >= line->idx)
+        {
+            return line->number;
+        }
+    }
+    assert(0 && "Unreachable at find line");
+}
+
 int DisassembleInstruction(Chunk *chunk, int offset)
 {
     printf("%04d ", offset);
@@ -158,6 +171,17 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     case OP_CONSTANT_LONG:
         return constantLongInstruction("OP_CONSTANT_LONG", chunk, offset);
 
+    case OP_TRUE: {
+        return simpleInstruction("OP_TRUE", offset);
+    }
+    case OP_FALSE: {
+        return simpleInstruction("OP_NIL", offset);
+    }
+
+    case OP_NIL: {
+        return simpleInstruction("OP_NIL", offset);
+    }
+
     case OP_ADD: {
         return simpleInstruction("OP_ADD", offset);
     }
@@ -172,6 +196,9 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     }
     case OP_NEGATE: {
         return simpleInstruction("OP_NEGATE", offset);
+    }
+    case OP_TERNARY: {
+        return simpleInstruction("OP_TERNARY", offset);
     }
     default:
         // printf("Unknown instruction\n");

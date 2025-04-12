@@ -235,6 +235,10 @@ Token scan_token()
         return make_token(TOKEN_RIGHT_PAREN);
     case ';':
         return make_token(TOKEN_SEMICOLON);
+    case '?':
+        return make_token(TOKEN_QUESTION_MARK);
+    case ':':
+        return make_token(TOKEN_COLON);
 
     case '+':
         if (match('='))

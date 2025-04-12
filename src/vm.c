@@ -1,4 +1,6 @@
 #include "vm.h"
+#include "chunk.h"
+#include "value.h"
 
 VM vm;
 
@@ -27,6 +29,20 @@ void initVm()
 
 void freeVm()
 {
+}
+
+void runtimeError(char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+
+    int token_idx = (int)(vm.ip - vm.chunk->code) - 1;
+    fprintf(stderr, " at [Line : %d]", FindLine(vm.chunk, token_idx));
+    fputs("\n", stderr);
+
+    resetStack();
 }
 
 void push(Value value)
@@ -63,6 +79,8 @@ Value pop()
 
 static InterpretResult run()
 {
+#define PEEK(index) (vm.stackPointer[(-1 - index)])
+#define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants->values[READ_BYTE()])
 #define READ_LONG_CONSTANT()                                                                                           \
@@ -80,9 +98,26 @@ static InterpretResult run()
 #define HANDLE_BINARY(op)                                                                                              \
     do                                                                                                                 \
     {                                                                                                                  \
-        Value b = pop();                                                                                               \
-        Value a = pop();                                                                                               \
-        push(a op b);                                                                                                  \
+        if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
+        {                                                                                                              \
+            runtimeError("Operand must be of type number");                                                            \
+            return INTERPRET_RUNTIME_ERROR;                                                                            \
+        }                                                                                                              \
+        double b = AS_NUMBER(pop());                                                                                   \
+        double a = AS_NUMBER(pop());                                                                                   \
+        push(VALUE_NUMBER(b op a));                                                                                    \
+    } while (0);
+
+#define HANDLE_TERNARY()                                                                                               \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        double false_expr = AS_NUMBER(pop());                                                                          \
+        double true_expr = AS_NUMBER(pop());                                                                           \
+        double condition = AS_NUMBER(pop());                                                                           \
+        if (!!condition)                                                                                               \
+            push(VALUE_NUMBER(true_expr));                                                                             \
+        else                                                                                                           \
+            push(VALUE_NUMBER(false_expr));                                                                            \
     } while (0);
 
     for (;;)
@@ -119,10 +154,33 @@ static InterpretResult run()
             push(constant_value);
             break;
         }
-        case OP_NEGATE: {
-            *(vm.stackPointer - 1) = (*(vm.stackPointer-1) * -1);
+
+        case OP_TRUE: {
+            push(VALUE_BOOL(1));
             break;
         }
+        case OP_FALSE: {
+            push(VALUE_BOOL(0));
+            break;
+        }
+
+        case OP_NIL: {
+            push(VALUE_NIL());
+            break;
+        }
+
+        case OP_NEGATE: {
+            if (!IS_NUMBER(PEEK(0)))
+            {
+                runtimeError("Expected number");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            // *(vm.stackPointer - 1) = (*(vm.stackPointer - 1)->as.decimal * -1);
+            (vm.stackPointer - 1)->as.decimal *= -1;
+            break;
+        }
+
         case OP_ADD:
             HANDLE_BINARY(+);
             break;
@@ -134,6 +192,9 @@ static InterpretResult run()
             break;
         case OP_DIVIDE:
             HANDLE_BINARY(/);
+            break;
+        case OP_TERNARY:
+            HANDLE_TERNARY();
             break;
 
         default:

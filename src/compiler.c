@@ -10,7 +10,6 @@ typedef struct
     int is_panic;
 } Parser;
 
-
 static void expression();
 static void parsePrecedence(Precedence presedence);
 static ParseRule *get_rule(TokenType token_type);
@@ -69,7 +68,6 @@ static void advance()
     }
 }
 
-
 static void consume(TokenType token_type, char *message)
 {
     if (parser.current.type == token_type)
@@ -100,11 +98,12 @@ void emit_return()
 void end_compiler()
 {
     emit_return();
-    #ifdef DEBUG_PRINT
-        if(!parser.is_error) {
-            DisassembleChunk(current_chunk(), "Inside of the chunk");
-        }
-    #endif
+#ifdef DEBUG_PRINT
+    if (!parser.is_error)
+    {
+        DisassembleChunk(current_chunk(), "Inside of the chunk");
+    }
+#endif
 }
 
 /*====== PREFIX & INFIX ====== */
@@ -135,10 +134,33 @@ Precedence _get_presedence(TokenType token_type)
 
 static void number()
 {
-    Value value = strtod(parser.previous.start, NULL);
+    Value value = VALUE_NUMBER(strtod(parser.previous.start, NULL));
     WriteConstant(current_chunk(), value, parser.previous.line_number);
     // uint8_t idx = AddConstant(current_chunk(), value);
     // emit_bytes(OP_CONSTANT, idx);
+}
+
+static void nil()
+{
+    emit_byte(OP_NIL);
+}
+
+static void boolean()
+{
+    switch (parser.previous.type)
+    {
+    case TOKEN_TRUE: {
+        emit_byte(OP_TRUE);
+        break;
+    }
+    case TOKEN_FALSE: {
+        emit_byte(OP_FALSE);
+        break;
+    }
+    default:
+        assert(0 && "Unreachable at boolean");
+        return;
+    }
 }
 
 static void unary()
@@ -160,13 +182,19 @@ static void unary()
     }
 }
 
-
-
-static void grouping() {
+static void grouping()
+{
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
 }
 
+static void ternary()
+{
+    expression();
+    consume(TOKEN_COLON, "Expected colon inside ternary operator");
+    expression();
+    emit_byte(OP_TERNARY);
+}
 
 static void binary()
 {
@@ -199,7 +227,6 @@ static void binary()
 }
 /*===================== */
 
-
 ParseRule rules[] = {
     [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
     [TOKEN_EQUAL_EQUAL] = {NULL, NULL, PREC_NONE},
@@ -219,8 +246,10 @@ ParseRule rules[] = {
     [TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
     [TOKEN_OR] = {NULL, NULL, PREC_NONE},
     [TOKEN_AND] = {NULL, NULL, PREC_NONE},
-    [TOKEN_NIL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_NIL] = {nil, NULL, PREC_NONE},
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
+    [TOKEN_TRUE] = {boolean, NULL, PREC_NONE},
+    [TOKEN_FALSE] = {boolean, NULL, PREC_NONE},
 
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
@@ -229,6 +258,7 @@ ParseRule rules[] = {
 
     [TOKEN_MINUS] = {unary, binary, PREC_TERM},
     [TOKEN_BANG] = {unary, NULL, PREC_NONE},
+    [TOKEN_QUESTION_MARK] = {NULL, ternary, PREC_TERNARY},
 
     [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
     [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
@@ -244,7 +274,8 @@ static void expression()
     parsePrecedence(PREC_ASSIGNMENT);
 }
 
-static ParseRule *get_rule(TokenType token_type) {
+static ParseRule *get_rule(TokenType token_type)
+{
     return &rules[token_type];
 }
 
@@ -252,14 +283,16 @@ static void parsePrecedence(Precedence precedence)
 {
     advance();
     ParseFn prefix_rule = get_rule(parser.previous.type)->prefix;
-    if(prefix_rule == NULL) {
+    if (prefix_rule == NULL)
+    {
         error("Syntax error");
         return;
     }
 
     prefix_rule();
 
-    while(precedence <= get_rule(parser.current.type)->precedence)     {
+    while (precedence <= get_rule(parser.current.type)->precedence)
+    {
         advance();
         ParseFn infix_rule = get_rule(parser.previous.type)->infix;
         infix_rule();

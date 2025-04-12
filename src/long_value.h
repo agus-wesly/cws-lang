@@ -2,8 +2,9 @@
 #define CWS_LONG_VALUE_H
 
 #include "common.h"
+#include "value.h"
 
-typedef double Value;
+// typedef double Value;
 
 typedef struct
 {
