@@ -54,3 +54,9 @@ int Compare(Value a, Value b)
         assert(0 && "Unreachable at compare");
     }
 }
+
+int IsFalsy(Value v)
+{
+    return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
+            (v.type == TYPE_NUMBER && !v.as.decimal));
+}

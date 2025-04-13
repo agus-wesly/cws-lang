@@ -13,6 +13,7 @@ typedef enum
     OP_CONSTANT_LONG,
     OP_RETURN,
     OP_NEGATE,
+    OP_BANG,
     OP_TERNARY,
     OP_GREATER,
     OP_LESS,

@@ -105,7 +105,7 @@ static InterpretResult run()
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
         double a = AS_NUMBER(pop());                                                                                   \
-        push(value(b op a));                                                                                           \
+        push(value(a op b));                                                                                           \
     } while (0);
 
 #define HANDLE_EQUAL()                                                                                                 \
@@ -184,6 +184,11 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
             (vm.stackPointer - 1)->as.decimal *= -1;
+            break;
+        }
+        case OP_BANG: {
+            Value a = pop();
+            push(VALUE_BOOL(IsFalsy(a)));
             break;
         }
 

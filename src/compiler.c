@@ -174,7 +174,10 @@ static void unary()
         emit_byte(OP_NEGATE);
         break;
     };
-    // `!` goes here
+    case TOKEN_BANG: {
+        emit_byte(OP_BANG);
+        break;
+    };
     default: {
         assert(0 && "Unreachable at unary");
         break;

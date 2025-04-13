@@ -207,6 +207,9 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     case OP_NEGATE: {
         return simpleInstruction("OP_NEGATE", offset);
     }
+    case OP_BANG: {
+        return simpleInstruction("OP_BANG", offset);
+    }
     case OP_TERNARY: {
         return simpleInstruction("OP_TERNARY", offset);
     }

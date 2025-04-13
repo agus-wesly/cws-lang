@@ -44,4 +44,5 @@ void AppendValues(Values *values, Value newItem);
 void FreeValues(Values *values);
 void PrintValue(Value *value);
 int Compare(Value value1, Value value2);
+int IsFalsy(Value v);
 #endif // !CWS_VALUE_H
