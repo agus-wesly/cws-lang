@@ -22,9 +22,9 @@ void AppendValues(Values *values, Value newItem)
 
 void PrintValue(Value *value)
 {
-    if(value->type == TYPE_NUMBER)
+    if (value->type == TYPE_NUMBER)
         printf("'%f'", value->as.decimal);
-    else if(value->type == TYPE_BOOLEAN)
+    else if (value->type == TYPE_BOOLEAN)
         printf("'%d'", value->as.boolean);
 }
 
@@ -32,4 +32,25 @@ void FreeValues(Values *values)
 {
     FREE_ARRAY(Value, values->values, values->capacity);
     InitValues(values);
+}
+
+int Compare(Value a, Value b)
+{
+    if (a.type != b.type)
+        return 0;
+
+    switch (a.type)
+    {
+    case TYPE_NIL:
+        return 1;
+
+    case TYPE_BOOLEAN:
+        return AS_BOOL(a) == AS_BOOL(b);
+
+    case TYPE_NUMBER:
+        return AS_NUMBER(a) == AS_NUMBER(b);
+
+    default:
+        assert(0 && "Unreachable at compare");
+    }
 }

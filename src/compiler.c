@@ -220,6 +220,26 @@ static void binary()
         emit_byte(OP_DIVIDE);
         break;
     };
+    case TOKEN_GREATER: {
+        emit_byte(OP_GREATER);
+        break;
+    };
+    case TOKEN_GREATER_EQUAL: {
+        emit_bytes(OP_LESS, OP_NEGATE);
+        break;
+    };
+    case TOKEN_LESS: {
+        emit_byte(OP_LESS);
+        break;
+    };
+    case TOKEN_LESS_EQUAL: {
+        emit_bytes(OP_GREATER, OP_NEGATE);
+        break;
+    };
+    case TOKEN_EQUAL_EQUAL: {
+        emit_byte(OP_EQUAL_EQUAL);
+        break;
+    };
     default: {
         break;
     };
@@ -229,11 +249,11 @@ static void binary()
 
 ParseRule rules[] = {
     [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
-    [TOKEN_EQUAL_EQUAL] = {NULL, NULL, PREC_NONE},
-    [TOKEN_GREATER] = {NULL, NULL, PREC_NONE},
-    [TOKEN_GREATER_EQUAL] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LESS] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LESS_EQUAL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
+    [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
+    [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
 
     [TOKEN_IF] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},

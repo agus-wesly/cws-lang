@@ -194,6 +194,16 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     case OP_DIVIDE: {
         return simpleInstruction("OP_DIVIDE", offset);
     }
+    case OP_GREATER: {
+        return simpleInstruction("OP_GREATER", offset);
+    }
+    case OP_LESS: {
+        return simpleInstruction("OP_LESS", offset);
+    }
+    case OP_EQUAL_EQUAL: {
+        return simpleInstruction("OP_EQUAL_EQUAL", offset);
+    }
+
     case OP_NEGATE: {
         return simpleInstruction("OP_NEGATE", offset);
     }

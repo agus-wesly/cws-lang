@@ -95,7 +95,7 @@ static InterpretResult run()
         vm.chunk->constantsLong->values[res];                                                                          \
     });
 
-#define HANDLE_BINARY(op)                                                                                              \
+#define HANDLE_BINARY(value, op)                                                                                       \
     do                                                                                                                 \
     {                                                                                                                  \
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
@@ -105,7 +105,15 @@ static InterpretResult run()
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
         double a = AS_NUMBER(pop());                                                                                   \
-        push(VALUE_NUMBER(b op a));                                                                                    \
+        push(value(b op a));                                                                                           \
+    } while (0);
+
+#define HANDLE_EQUAL()                                                                                                 \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        Value b = pop();                                                                                               \
+        Value a = pop();                                                                                               \
+        push(VALUE_BOOL(Compare(a, b)));                                                                               \
     } while (0);
 
 #define HANDLE_TERNARY()                                                                                               \
@@ -175,24 +183,32 @@ static InterpretResult run()
                 runtimeError("Expected number");
                 return INTERPRET_RUNTIME_ERROR;
             }
-
-            // *(vm.stackPointer - 1) = (*(vm.stackPointer - 1)->as.decimal * -1);
             (vm.stackPointer - 1)->as.decimal *= -1;
             break;
         }
 
         case OP_ADD:
-            HANDLE_BINARY(+);
+            HANDLE_BINARY(VALUE_NUMBER, +);
             break;
         case OP_SUBTRACT:
-            HANDLE_BINARY(-);
+            HANDLE_BINARY(VALUE_NUMBER, -);
             break;
         case OP_MULTIPLY:
-            HANDLE_BINARY(*);
+            HANDLE_BINARY(VALUE_NUMBER, *);
             break;
         case OP_DIVIDE:
-            HANDLE_BINARY(/);
+            HANDLE_BINARY(VALUE_NUMBER, /);
             break;
+        case OP_GREATER:
+            HANDLE_BINARY(VALUE_BOOL, >);
+            break;
+        case OP_LESS:
+            HANDLE_BINARY(VALUE_BOOL, <);
+            break;
+        case OP_EQUAL_EQUAL:
+            HANDLE_EQUAL();
+            break;
+
         case OP_TERNARY:
             HANDLE_TERNARY();
             break;

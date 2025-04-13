@@ -36,11 +36,12 @@ typedef struct
 #define VALUE_NIL() \
     (Value){.type = TYPE_NIL, .as = {.boolean = 0}}
 
-#define AS_BOOL(value) ((Value)value).as.boolean)
-#define AS_NUMBER(value) (value.as.decimal)
+#define AS_BOOL(value) ((value).as.boolean)
+#define AS_NUMBER(value) ((value).as.decimal)
 
 void InitValues(Values *values);
 void AppendValues(Values *values, Value newItem);
 void FreeValues(Values *values);
 void PrintValue(Value *value);
+int Compare(Value value1, Value value2);
 #endif // !CWS_VALUE_H
