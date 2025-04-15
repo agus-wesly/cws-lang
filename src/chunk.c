@@ -34,6 +34,7 @@ void FreeChunk(Chunk *chunk)
     InitChunk(chunk);
 }
 
+// 5e520
 void WriteConstant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
     AppendLongValues(chunk->constantsLong, value);

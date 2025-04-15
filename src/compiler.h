@@ -4,6 +4,7 @@
 #include "chunk.h"
 #include "scanner.h"
 #include "debug.h"
+#include "value.h"
 
 int compile(const char *code, Chunk *chunk);
 

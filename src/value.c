@@ -20,18 +20,42 @@ void AppendValues(Values *values, Value newItem)
     values->values[values->count++] = newItem;
 }
 
+void PRINT_OBJ(Obj *obj)
+{
+    switch (OBJ_TYPE(obj))
+    {
+    case OBJ_STRING: {
+        printf("%s", AS_STRING(obj)->string);
+    }
+    default:
+        return;
+    }
+}
+
 void PrintValue(Value *value)
 {
     if (value->type == TYPE_NUMBER)
         printf("'%f'", value->as.decimal);
     else if (value->type == TYPE_BOOLEAN)
         printf("'%d'", value->as.boolean);
+    else if (value->type == TYPE_OBJ)
+    {
+        PRINT_OBJ(AS_OBJ(*value));
+    }
 }
 
 void FreeValues(Values *values)
 {
     FREE_ARRAY(Value, values->values, values->capacity);
     InitValues(values);
+}
+
+int compare_string(Obj *a, Obj *b)
+{
+    ObjectString *string_a = AS_STRING(a);
+    ObjectString *string_b = AS_STRING(b);
+    return (string_a->length == string_b->length) &&
+           (memcmp(string_a->string, string_b->string, string_a->length) == 0);
 }
 
 int Compare(Value a, Value b)
@@ -49,6 +73,23 @@ int Compare(Value a, Value b)
 
     case TYPE_NUMBER:
         return AS_NUMBER(a) == AS_NUMBER(b);
+
+    case TYPE_OBJ: {
+        Obj *obj_a = AS_OBJ(a);
+        Obj *obj_b = AS_OBJ(b);
+
+        if (OBJ_TYPE(obj_a) != OBJ_TYPE(obj_b))
+            return 0;
+
+        switch (OBJ_TYPE(obj_a))
+        {
+        case OBJ_STRING: {
+            return compare_string(obj_a, obj_b);
+        }
+        default:
+            return 0;
+        }
+    }
 
     default:
         assert(0 && "Unreachable at compare");

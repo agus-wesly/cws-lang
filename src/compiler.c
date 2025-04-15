@@ -1,4 +1,5 @@
 #include "compiler.h"
+#include "object.h"
 
 int line_number = -1;
 
@@ -163,6 +164,29 @@ static void boolean()
     }
 }
 
+ObjectString *copy_string(const char *start, int length)
+{
+    char *copy = (char *)malloc(length + 1);
+    memcpy(copy, start, length);
+    copy[length] = '\0';
+
+    ObjectString *obj = (ObjectString *)malloc(sizeof(ObjectString));
+    obj->object->type = OBJ_STRING;
+    obj->string = copy;
+    obj->length = parser.previous.length - 2;
+
+    return obj;
+}
+
+static void string()
+{
+    ObjectString *obj = copy_string((parser.previous.start + 1), parser.previous.length - 2);
+
+    Value value = VALUE_OBJ(obj);
+
+    WriteConstant(current_chunk(), value, parser.previous.line_number);
+}
+
 static void unary()
 {
     TokenType token_type = parser.previous.type;
@@ -273,6 +297,7 @@ ParseRule rules[] = {
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_TRUE] = {boolean, NULL, PREC_NONE},
     [TOKEN_FALSE] = {boolean, NULL, PREC_NONE},
+    [TOKEN_STRING] = {string, NULL, PREC_NONE},
 
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},

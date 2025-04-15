@@ -149,6 +149,7 @@ static InterpretResult run()
         switch (instruction = READ_BYTE())
         {
         case OP_RETURN:
+            pop();
             return INTERPRET_OK;
 
         case OP_CONSTANT: {
