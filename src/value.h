@@ -64,7 +64,7 @@ typedef struct
 
 #define AS_BOOL(value) ((value).as.boolean)
 #define AS_NUMBER(value) ((value).as.decimal)
-#define AS_OBJ(value) ((value).as.obj)
+#define AS_OBJ(value) ((Obj*)(value).as.obj)
 #define AS_STRING(value) ((ObjectString *)AS_OBJ(value))
 #define AS_C_STRING(value) (((ObjectString *)AS_OBJ(value))->chars)
 

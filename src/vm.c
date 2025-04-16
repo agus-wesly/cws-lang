@@ -20,7 +20,7 @@ void initVm()
 {
     vm.chunk = NULL;
     vm.ip = NULL;
-    vm.obj_head = NULL;
+    vm.objects = NULL;
 
     Stack *stack_ptr = malloc(sizeof(Stack));
     vm.stack = stack_ptr;
@@ -29,14 +29,20 @@ void initVm()
     update_stack_ptr();
 }
 
+void freeObjects()
+{
+    Obj *object = vm.objects;
+    while (object != NULL)
+    {
+        Obj *next = vm.objects->next;
+        free_obj(object);
+        object = next;
+    }
+}
+
 void freeVm()
 {
-    while (vm.obj_head != NULL)
-    {
-        Obj *temp = vm.obj_head;
-        vm.obj_head = temp->object->next;
-        free_obj(temp);
-    }
+    freeObjects();
 }
 
 void runtimeError(char *format, ...)

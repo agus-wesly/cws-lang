@@ -25,7 +25,7 @@ typedef struct
     // Value stack[STACK_MAX];
     Value *stackPointer;
 
-    Obj *obj_head;
+    Obj *objects;
 
 } VM;
 
