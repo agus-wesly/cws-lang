@@ -10,6 +10,8 @@
 
 #define FREE_ARRAY(type, pointer, oldCapacity) reallocate(pointer, oldCapacity * sizeof(type), 0);
 
+#define ALLOC(type, size) ((type *)reallocate(NULL, 0, size));
+
 void *reallocate(void *array, int oldCapacity, int newCapacity);
 
 #endif // CWS_LONG_MEMORY_H

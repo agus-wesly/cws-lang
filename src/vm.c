@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "chunk.h"
+#include "object.h"
 #include "value.h"
 
 VM vm;
@@ -77,6 +78,34 @@ Value pop()
     return *vm.stackPointer;
 }
 
+#define HANDLE_CONCAT()                                                                                                \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (!IS_STRING(PEEK(0)) || !IS_STRING(PEEK(1)))                                                                \
+        {                                                                                                              \
+            runtimeError("Operand must be of type string");                                                            \
+            return INTERPRET_RUNTIME_ERROR;                                                                            \
+        }                                                                                                              \
+        ObjectString *b = AS_STRING(pop());                                                                            \
+        ObjectString *a = AS_STRING(pop());                                                                            \
+        push(VALUE_OBJ(concat(a, b)));                                                                                 \
+    } while (0);
+
+ObjectString *concatenate()
+{
+    ObjectString *b = AS_STRING(pop());
+    ObjectString *a = AS_STRING(pop());
+
+    int length = a->length + b->length + 1;
+    char *result = ALLOC(char, length);
+
+    memcpy(result, a->chars, a->length);
+    memcpy(result + a->length, b->chars, b->length);
+    result[length] = '\0';
+
+    return allocate_string(result, length);
+}
+
 static InterpretResult run()
 {
 #define PEEK(index) (vm.stackPointer[(-1 - index)])
@@ -99,6 +128,7 @@ static InterpretResult run()
     do                                                                                                                 \
     {                                                                                                                  \
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
+                                                                                                                       \
         {                                                                                                              \
             runtimeError("Operand must be of type number");                                                            \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
@@ -193,9 +223,23 @@ static InterpretResult run()
             break;
         }
 
-        case OP_ADD:
-            HANDLE_BINARY(VALUE_NUMBER, +);
-            break;
+        case OP_ADD: {
+            if (IS_STRING(PEEK(0)) && IS_STRING(PEEK(1)))
+            {
+                push(VALUE_OBJ(concatenate()));
+                break;
+            }
+            if (IS_NUMBER(PEEK(0)) && IS_NUMBER(PEEK(1)))
+            {
+                HANDLE_BINARY(VALUE_NUMBER, +);
+                break;
+            }
+            else
+            {
+                runtimeError("Operands must be number or string");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+        }
         case OP_SUBTRACT:
             HANDLE_BINARY(VALUE_NUMBER, -);
             break;

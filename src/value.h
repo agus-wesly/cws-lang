@@ -1,8 +1,7 @@
 #ifndef CWS_VALUE_H
 #define CWS_VALUE_H
 
-#include "common.h"
-#include "object.h"
+#include "memory.h"
 #include "string.h"
 
 typedef enum
@@ -13,10 +12,9 @@ typedef enum
     TYPE_OBJ,
 } ValueType;
 
-typedef struct
-{
-    Object *object;
-} Obj;
+typedef struct Obj Obj;
+
+typedef struct ObjectString ObjectString;
 
 typedef struct
 {
@@ -54,16 +52,21 @@ typedef struct
         .type = TYPE_NIL, .as = {.boolean = 0 }                                                                        \
     }
 
-#define VALUE_OBJ(value)                                                                                               \
+#define VALUE_OBJ(object)                                                                                              \
     (Value)                                                                                                            \
     {                                                                                                                  \
-        .type = TYPE_OBJ, .as = {.obj = (Obj *)obj }                                                                   \
+        .type = TYPE_OBJ, .as = {.obj = (Obj *)object }                                                                \
     }
+
+#define IS_NUMBER(value) (value.type == TYPE_NUMBER)
+#define IS_OBJ(value) (value.type == TYPE_OBJ)
+#define IS_OBJ_TYPE(obj, type) (obj->object->type == type)
 
 #define AS_BOOL(value) ((value).as.boolean)
 #define AS_NUMBER(value) ((value).as.decimal)
 #define AS_OBJ(value) ((value).as.obj)
-#define AS_STRING(object) ((ObjectString *)object)
+#define AS_STRING(value) ((ObjectString *)AS_OBJ(value))
+#define AS_C_STRING(value) (((ObjectString *)AS_OBJ(value))->chars)
 
 void InitValues(Values *values);
 void AppendValues(Values *values, Value newItem);
@@ -71,4 +74,6 @@ void FreeValues(Values *values);
 void PrintValue(Value *value);
 int Compare(Value value1, Value value2);
 int IsFalsy(Value v);
+
+
 #endif // !CWS_VALUE_H

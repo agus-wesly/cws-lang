@@ -1,5 +1,4 @@
 #include "memory.h"
-#include "std.h"
 
 void *reallocate(void *array, int oldSize, int newSize)
 {

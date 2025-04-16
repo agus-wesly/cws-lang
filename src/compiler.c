@@ -164,27 +164,11 @@ static void boolean()
     }
 }
 
-ObjectString *copy_string(const char *start, int length)
-{
-    char *copy = (char *)malloc(length + 1);
-    memcpy(copy, start, length);
-    copy[length] = '\0';
-
-    ObjectString *obj = (ObjectString *)malloc(sizeof(ObjectString));
-    obj->object->type = OBJ_STRING;
-    obj->string = copy;
-    obj->length = parser.previous.length - 2;
-
-    return obj;
-}
 
 static void string()
 {
-    ObjectString *obj = copy_string((parser.previous.start + 1), parser.previous.length - 2);
-
-    Value value = VALUE_OBJ(obj);
-
-    WriteConstant(current_chunk(), value, parser.previous.line_number);
+    WriteConstant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
+                  parser.previous.line_number);
 }
 
 static void unary()

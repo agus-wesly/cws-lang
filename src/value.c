@@ -1,5 +1,5 @@
 #include "value.h"
-#include "memory.h"
+#include "object.h"
 
 void InitValues(Values *values)
 {
@@ -20,12 +20,12 @@ void AppendValues(Values *values, Value newItem)
     values->values[values->count++] = newItem;
 }
 
-void PRINT_OBJ(Obj *obj)
+void PRINT_OBJ(Value value)
 {
-    switch (OBJ_TYPE(obj))
+    switch (OBJ_TYPE(value))
     {
     case OBJ_STRING: {
-        printf("%s", AS_STRING(obj)->string);
+        printf("%s", AS_STRING(value)->chars);
     }
     default:
         return;
@@ -40,7 +40,7 @@ void PrintValue(Value *value)
         printf("'%d'", value->as.boolean);
     else if (value->type == TYPE_OBJ)
     {
-        PRINT_OBJ(AS_OBJ(*value));
+        PRINT_OBJ(*value);
     }
 }
 
@@ -50,12 +50,11 @@ void FreeValues(Values *values)
     InitValues(values);
 }
 
-int compare_string(Obj *a, Obj *b)
+int compare_string(Value a, Value b)
 {
     ObjectString *string_a = AS_STRING(a);
     ObjectString *string_b = AS_STRING(b);
-    return (string_a->length == string_b->length) &&
-           (memcmp(string_a->string, string_b->string, string_a->length) == 0);
+    return (string_a->length == string_b->length) && (memcmp(string_a->chars, string_b->chars, string_a->length) == 0);
 }
 
 int Compare(Value a, Value b)
@@ -75,16 +74,14 @@ int Compare(Value a, Value b)
         return AS_NUMBER(a) == AS_NUMBER(b);
 
     case TYPE_OBJ: {
-        Obj *obj_a = AS_OBJ(a);
-        Obj *obj_b = AS_OBJ(b);
 
-        if (OBJ_TYPE(obj_a) != OBJ_TYPE(obj_b))
+        if (OBJ_TYPE(a) != OBJ_TYPE(b))
             return 0;
 
-        switch (OBJ_TYPE(obj_a))
+        switch (OBJ_TYPE(a))
         {
         case OBJ_STRING: {
-            return compare_string(obj_a, obj_b);
+            return compare_string(a, b);
         }
         default:
             return 0;
@@ -101,3 +98,4 @@ int IsFalsy(Value v)
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));
 }
+
