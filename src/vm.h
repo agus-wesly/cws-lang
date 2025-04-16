@@ -1,13 +1,14 @@
 #ifndef CWS_VM_H
 #define CWS_VM_H
 
-#include "memory.h"
 #include "compiler.h"
+#include "memory.h"
 #include "stdarg.h"
 
 #define STACK_MAX 1024
 
-typedef struct {
+typedef struct
+{
     uint8_t capacity;
     uint8_t size;
 
@@ -24,6 +25,8 @@ typedef struct
     // Value stack[STACK_MAX];
     Value *stackPointer;
 
+    Obj *obj_head;
+
 } VM;
 
 typedef enum
@@ -34,6 +37,8 @@ typedef enum
 
 } InterpretResult;
 
+ extern VM vm;
+
 void initVm();
 void freeVm();
 
@@ -41,6 +46,6 @@ void InitStack(Stack *stack);
 void WriteStack(Stack *stack, Value *value);
 void FreeStack(Stack *stack);
 
-InterpretResult interpret(const char* code);
+InterpretResult interpret(const char *code);
 
 #endif // !CWS_VM_H

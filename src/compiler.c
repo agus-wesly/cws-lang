@@ -164,7 +164,6 @@ static void boolean()
     }
 }
 
-
 static void string()
 {
     WriteConstant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
