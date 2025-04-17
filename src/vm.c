@@ -112,8 +112,8 @@ ObjectString *stringify(Value value)
 
     int len = snprintf(NULL, 0, "%f", value.as.decimal);
 
-    char *start = malloc(len+1);
-    snprintf(start, len+1, "%f", value.as.decimal);
+    char *start = malloc(len + 1);
+    snprintf(start, len + 1, "%f", value.as.decimal);
 
     ObjectString *result = allocate_string(start, len);
     free(start);
@@ -130,22 +130,14 @@ ObjectString *concatenate()
     ObjectString *obj_a = NULL;
 
     if (IS_NUMBER(b))
-    {
         obj_b = stringify(b);
-    }
     else
-    {
         obj_b = AS_STRING(b);
-    }
 
     if (IS_NUMBER(a))
-    {
         obj_a = stringify(a);
-    }
     else
-    {
         obj_a = AS_STRING(a);
-    }
 
     int length = obj_a->length + obj_b->length;
     char *result = ALLOC(char, length + 1);
