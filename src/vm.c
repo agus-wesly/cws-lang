@@ -147,8 +147,8 @@ ObjectString *concatenate()
         obj_a = AS_STRING(a);
     }
 
-    int length = obj_a->length + obj_b->length + 1;
-    char *result = ALLOC(char, length);
+    int length = obj_a->length + obj_b->length;
+    char *result = ALLOC(char, length + 1);
 
     memcpy(result, obj_a->chars, obj_a->length);
     memcpy(result + obj_a->length, obj_b->chars, obj_b->length);
