@@ -2,14 +2,13 @@
 
 ObjectString *allocate_string(const char *chars, int length)
 {
-    printf("%s",(3 + "abc"));
-    ObjectString *obj = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length);
+    ObjectString *obj = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length + 1);
     obj->length = length;
     for (int i = 0; i < length; ++i)
     {
         obj->chars[i] = chars[i];
     }
-    // memcpy(obj->chars, chars, length);
+    obj->chars[length] = '\0';
     return obj;
 }
 
