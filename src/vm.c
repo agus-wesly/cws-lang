@@ -108,42 +108,34 @@ Value pop()
 
 ObjectString *stringify(Value value)
 {
-    assert(value.type == TYPE_NUMBER);
+    if (IS_NUMBER(value))
+    {
+        int len = snprintf(NULL, 0, "%f", value.as.decimal);
 
-    int len = snprintf(NULL, 0, "%f", value.as.decimal);
+        char *start = malloc(len + 1);
+        snprintf(start, len + 1, "%f", value.as.decimal);
 
-    char *start = malloc(len + 1);
-    snprintf(start, len + 1, "%f", value.as.decimal);
+        ObjectString *result = allocate_string(start, len);
+        free(start);
 
-    ObjectString *result = allocate_string(start, len);
-    free(start);
+        return result;
+    }
+    if (IS_STRING(value))
+        return AS_STRING(value);
 
-    return result;
+    assert(0 && "Unreachable at stringify");
 }
 
 ObjectString *concatenate()
 {
-    Value b = pop();
-    Value a = pop();
+    ObjectString *b = stringify(pop());
+    ObjectString *a = stringify(pop());
 
-    ObjectString *obj_b = NULL;
-    ObjectString *obj_a = NULL;
-
-    if (IS_NUMBER(b))
-        obj_b = stringify(b);
-    else
-        obj_b = AS_STRING(b);
-
-    if (IS_NUMBER(a))
-        obj_a = stringify(a);
-    else
-        obj_a = AS_STRING(a);
-
-    int length = obj_a->length + obj_b->length;
+    int length = a->length + b->length;
     char *result = ALLOC(char, length + 1);
 
-    memcpy(result, obj_a->chars, obj_a->length);
-    memcpy(result + obj_a->length, obj_b->chars, obj_b->length);
+    memcpy(result, a->chars, a->length);
+    memcpy(result + a->length, b->chars, b->length);
     result[length] = '\0';
 
     return allocate_string(result, length);
