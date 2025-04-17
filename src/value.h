@@ -67,7 +67,7 @@ typedef struct
 #define AS_OBJ(value) ((Obj*)(value).as.obj)
 #define AS_STRING(value) ((ObjectString *)AS_OBJ(value))
 #define AS_C_STRING(value) (((ObjectString *)AS_OBJ(value))->chars)
-
+#define STRINGIFY(value) ((ObjectString *)stringify(AS_OBJ(value)))
 
 void InitValues(Values *values);
 void AppendValues(Values *values, Value newItem);

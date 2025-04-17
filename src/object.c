@@ -2,6 +2,7 @@
 
 ObjectString *allocate_string(const char *chars, int length)
 {
+    printf("%s",(3 + "abc"));
     ObjectString *obj = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length);
     obj->length = length;
     for (int i = 0; i < length; ++i)

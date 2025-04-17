@@ -104,16 +104,54 @@ Value pop()
         push(VALUE_OBJ(concat(a, b)));                                                                                 \
     } while (0);
 
+#define PEEK(index) (vm.stackPointer[(-1 - index)])
+
+ObjectString *stringify(Value value)
+{
+    assert(value.type == TYPE_NUMBER);
+
+    int len = snprintf(NULL, 0, "%f", value.as.decimal);
+
+    char *start = malloc(len+1);
+    snprintf(start, len+1, "%f", value.as.decimal);
+
+    ObjectString *result = allocate_string(start, len);
+    free(start);
+
+    return result;
+}
+
 ObjectString *concatenate()
 {
-    ObjectString *b = AS_STRING(pop());
-    ObjectString *a = AS_STRING(pop());
+    Value b = pop();
+    Value a = pop();
 
-    int length = a->length + b->length + 1;
+    ObjectString *obj_b = NULL;
+    ObjectString *obj_a = NULL;
+
+    if (IS_NUMBER(b))
+    {
+        obj_b = stringify(b);
+    }
+    else
+    {
+        obj_b = AS_STRING(b);
+    }
+
+    if (IS_NUMBER(a))
+    {
+        obj_a = stringify(a);
+    }
+    else
+    {
+        obj_a = AS_STRING(a);
+    }
+
+    int length = obj_a->length + obj_b->length + 1;
     char *result = ALLOC(char, length);
 
-    memcpy(result, a->chars, a->length);
-    memcpy(result + a->length, b->chars, b->length);
+    memcpy(result, obj_a->chars, obj_a->length);
+    memcpy(result + obj_a->length, obj_b->chars, obj_b->length);
     result[length] = '\0';
 
     return allocate_string(result, length);
@@ -121,7 +159,6 @@ ObjectString *concatenate()
 
 static InterpretResult run()
 {
-#define PEEK(index) (vm.stackPointer[(-1 - index)])
 #define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants->values[READ_BYTE()])
@@ -238,14 +275,14 @@ static InterpretResult run()
         }
 
         case OP_ADD: {
-            if (IS_STRING(PEEK(0)) && IS_STRING(PEEK(1)))
-            {
-                push(VALUE_OBJ(concatenate()));
-                break;
-            }
             if (IS_NUMBER(PEEK(0)) && IS_NUMBER(PEEK(1)))
             {
                 HANDLE_BINARY(VALUE_NUMBER, +);
+                break;
+            }
+            if ((IS_STRING(PEEK(0)) || (IS_NUMBER(PEEK(0)))) && ((IS_STRING(PEEK(1))) || IS_NUMBER(PEEK(1))))
+            {
+                push(VALUE_OBJ(concatenate()));
                 break;
             }
             else
