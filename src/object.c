@@ -1,20 +1,20 @@
 #include "object.h"
 
-ObjectString *allocate_string(char *chars, int length)
+ObjectString *allocate_string(const char *chars, int length)
 {
-    ObjectString *obj = ALLOC_OBJ(ObjectString, OBJ_STRING);
-    obj->chars = chars;
+    ObjectString *obj = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length);
     obj->length = length;
+    for (int i = 0; i < length; ++i)
+    {
+        obj->chars[i] = chars[i];
+    }
+    // memcpy(obj->chars, chars, length);
     return obj;
 }
 
 ObjectString *copy_string(const char *start, int length)
 {
-    char *copy = ALLOC(char, length + 1);
-    memcpy(copy, start, length);
-    copy[length] = '\0';
-
-    return allocate_string(copy, length);
+    return allocate_string(start, length);
 }
 
 Obj *allocate_obj(ObjType type, size_t size)

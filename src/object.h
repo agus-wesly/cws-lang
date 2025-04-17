@@ -23,8 +23,8 @@ struct Obj
 struct ObjectString
 {
     Obj object;
-    char *chars;
     int length;
+    char chars[];
 };
 
 struct Obj *allocate_obj(ObjType type, size_t size);
@@ -40,7 +40,7 @@ static inline int IsObjType(Value value, ObjType type)
     return ((IS_OBJ(value)) && OBJ_TYPE(value) == type);
 }
 
-ObjectString *allocate_string(char *chars, int length);
+ObjectString *allocate_string(const char *chars, int length);
 ObjectString *copy_string(const char *start, int length);
 void free_obj(Obj *obj);
 

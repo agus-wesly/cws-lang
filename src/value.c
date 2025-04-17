@@ -17,6 +17,9 @@ void AppendValues(Values *values, Value newItem)
         values->values = GROW_ARRAY(Value, values->values, oldCapacity, values->capacity);
     }
 
+    // 514
+    // 664
+
     values->values[values->count++] = newItem;
 }
 
@@ -98,4 +101,3 @@ int IsFalsy(Value v)
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));
 }
-

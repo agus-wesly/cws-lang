@@ -179,6 +179,7 @@ static InterpretResult run()
         printf("[");
         for (Value *cur = vm.stack->items; cur < vm.stackPointer; ++cur)
         {
+            // Value foo = *cur;
             PrintValue(cur);
             printf(",");
         }
