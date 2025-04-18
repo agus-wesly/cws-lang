@@ -1,3 +1,5 @@
+/* Stolen from : https://github.com/lcn2/fnv */
+
 #include "hash.h"
 
 Fnv32_t fnv_32a_str(char *str)
