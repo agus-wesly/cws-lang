@@ -9,6 +9,10 @@ ObjectString *allocate_string(const char *chars, int length)
         obj->chars[i] = chars[i];
     }
     obj->chars[length] = '\0';
+
+    uint32_t hash = fnv_32a_str(obj->chars);
+    obj->hash = hash;
+
     return obj;
 }
 

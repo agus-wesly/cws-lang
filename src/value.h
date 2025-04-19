@@ -46,7 +46,7 @@ typedef struct
         .type = TYPE_BOOLEAN, .as = {.boolean = value }                                                                \
     }
 
-#define VALUE_NIL()                                                                                                    \
+#define VALUE_NIL                                                                                                    \
     (Value)                                                                                                            \
     {                                                                                                                  \
         .type = TYPE_NIL, .as = {.boolean = 0 }                                                                        \
@@ -59,6 +59,7 @@ typedef struct
     }
 
 #define IS_NUMBER(value) (value.type == TYPE_NUMBER)
+#define IS_NIL(value) (value.type == TYPE_NIL)
 #define IS_OBJ(value) (value.type == TYPE_OBJ)
 #define IS_OBJ_TYPE(obj, type) (obj->object->type == type)
 

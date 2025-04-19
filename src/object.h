@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "value.h"
 #include "vm.h"
+#include "hash.h"
 
 typedef struct Object Object;
 
@@ -24,6 +25,7 @@ struct ObjectString
 {
     Obj object;
     int length;
+    uint32_t hash;
     char chars[];
 };
 

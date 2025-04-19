@@ -239,7 +239,7 @@ static InterpretResult run()
         }
 
         case OP_NIL: {
-            push(VALUE_NIL());
+            push(VALUE_NIL);
             break;
         }
 
