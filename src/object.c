@@ -1,7 +1,37 @@
 #include "object.h"
+#include "vm.h"
+
+ObjectString *find_string(Map *m, const char *key, int length, int capacity)
+{
+    if (capacity == 0)
+        return NULL;
+
+    uint32_t hash = fnv_32a_str(key);
+    int idx = hash % capacity;
+
+    for (;;)
+    {
+        Entry *entry = &m->entries[idx];
+        if (entry->key == NULL)
+        {
+            return NULL;
+        }
+
+        if (entry->key->length == length && entry->key->hash == hash && strcmp(entry->key->chars, key) == 0)
+        {
+            return entry->key;
+        }
+
+        idx = (idx + 1) % capacity;
+    }
+}
 
 ObjectString *allocate_string(const char *chars, int length)
 {
+    ObjectString *allocated = find_string(vm.strings, chars, length, vm.strings->capacity);
+    if (allocated != NULL)
+        return allocated;
+
     ObjectString *obj = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length + 1);
     obj->length = length;
     for (int i = 0; i < length; ++i)
@@ -12,6 +42,8 @@ ObjectString *allocate_string(const char *chars, int length)
 
     uint32_t hash = fnv_32a_str(obj->chars);
     obj->hash = hash;
+
+    map_set(vm.strings, obj, VALUE_NIL);
 
     return obj;
 }

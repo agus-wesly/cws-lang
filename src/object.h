@@ -4,7 +4,6 @@
 #include "common.h"
 #include "memory.h"
 #include "value.h"
-#include "vm.h"
 #include "hash.h"
 
 typedef struct Object Object;

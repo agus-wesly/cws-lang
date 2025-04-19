@@ -4,6 +4,7 @@
 #include "compiler.h"
 #include "memory.h"
 #include "stdarg.h"
+#include "hashmap.h"
 
 #define STACK_MAX 1024
 
@@ -27,6 +28,8 @@ typedef struct
 
     Obj *objects;
 
+    Map *strings;
+
 } VM;
 
 typedef enum
@@ -37,7 +40,7 @@ typedef enum
 
 } InterpretResult;
 
- extern VM vm;
+extern VM vm;
 
 void initVm();
 void freeVm();

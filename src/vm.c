@@ -26,6 +26,9 @@ void initVm()
     vm.stack = stack_ptr;
     InitStack(vm.stack);
 
+    vm.strings = (Map *)malloc(sizeof(Map));
+    init_map(vm.strings);
+
     update_stack_ptr();
 }
 
@@ -43,6 +46,8 @@ void freeObjects()
 void freeVm()
 {
     freeObjects();
+    free(vm.stack);
+    free(vm.strings);
 }
 
 void runtimeError(char *format, ...)

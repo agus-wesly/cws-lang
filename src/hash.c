@@ -2,7 +2,7 @@
 
 #include "hash.h"
 
-Fnv32_t fnv_32a_str(char *str)
+Fnv32_t fnv_32a_str(const char *str)
 {
     Fnv32_t hval = 0;
     unsigned char *s = (unsigned char *)str; /* unsigned string */
