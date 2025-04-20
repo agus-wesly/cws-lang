@@ -51,6 +51,8 @@ void adjust_capacity(Map *old, size_t capacity)
         entry->value = VALUE_NIL;
     }
 
+    old->size = 0;
+
     for (size_t i = 0; i < old->capacity; ++i)
     {
         Entry *old_entry = &old->entries[i];
@@ -58,8 +60,10 @@ void adjust_capacity(Map *old, size_t capacity)
             continue;
 
         Entry *entry = find_entry(entries, old_entry->key, capacity);
+
         entry->key = old_entry->key;
         entry->value = old_entry->value;
+        old->size++;
     }
 
     FREE_ARRAY(Entry, old->entries, old->capacity);
