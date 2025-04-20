@@ -26,8 +26,7 @@ void initVm()
     vm.stack = stack_ptr;
     InitStack(vm.stack);
 
-    vm.strings = (Map *)malloc(sizeof(Map));
-    init_map(vm.strings);
+    init_map(&vm.strings);
 
     update_stack_ptr();
 }
@@ -47,7 +46,7 @@ void freeVm()
 {
     freeObjects();
     free(vm.stack);
-    free(vm.strings);
+    free_map(&vm.strings);
 }
 
 void runtimeError(char *format, ...)
@@ -143,7 +142,7 @@ ObjectString *concatenate()
     memcpy(result + a->length, b->chars, b->length);
     result[length] = '\0';
 
-    return allocate_string(result, length);
+    return take_string(result, length);
 }
 
 static InterpretResult run()

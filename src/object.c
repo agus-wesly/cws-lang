@@ -1,56 +1,69 @@
 #include "object.h"
 #include "vm.h"
 
-ObjectString *find_string(Map *m, const char *key, int length, int capacity)
+ObjectString *find_string(Map *m, const char *key, int length)
 {
-    if (capacity == 0)
+    if (m->capacity == 0)
         return NULL;
 
-    uint32_t hash = fnv_32a_str(key);
-    int idx = hash % capacity;
+    uint32_t hash = fnv_32a_str(key, length);
+    int idx = hash % m->capacity;
 
     for (;;)
     {
         Entry *entry = &m->entries[idx];
         if (entry->key == NULL)
         {
-            return NULL;
+            if (IS_NIL(entry->value))
+                return NULL;
         }
-
-        if (entry->key->length == length && entry->key->hash == hash && strcmp(entry->key->chars, key) == 0)
+        else if (entry->key->length == length && entry->key->hash == hash &&
+                 memcmp(entry->key->chars, key, length) == 0)
         {
             return entry->key;
         }
 
-        idx = (idx + 1) % capacity;
+        idx = (idx + 1) % m->capacity;
     }
+}
+
+ObjectString *take_string(char *chars, int length)
+{
+    ObjectString *allocated = find_string(&vm.strings, chars, length);
+    if (allocated != NULL)
+    {
+        FREE_ARRAY(char, chars, length + 1);
+        return allocated;
+    }
+
+    return allocate_string(chars, length);
 }
 
 ObjectString *allocate_string(const char *chars, int length)
 {
-    ObjectString *allocated = find_string(vm.strings, chars, length, vm.strings->capacity);
+    ObjectString *string = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length + 1);
+    string->length = length;
+    for (int i = 0; i < length; ++i)
+    {
+        string->chars[i] = chars[i];
+    }
+    string->chars[length] = '\0';
+
+    uint32_t hash = fnv_32a_str(string->chars, length);
+    string->hash = hash;
+
+    map_set(&vm.strings, string, VALUE_NIL);
+
+    return string;
+}
+
+ObjectString *copy_string(const char *chars, int length)
+{
+    ObjectString *allocated = find_string(&vm.strings, chars, length);
     if (allocated != NULL)
         return allocated;
 
-    ObjectString *obj = (ObjectString *)allocate_obj(OBJ_STRING, sizeof(ObjectString) + length + 1);
-    obj->length = length;
-    for (int i = 0; i < length; ++i)
-    {
-        obj->chars[i] = chars[i];
-    }
-    obj->chars[length] = '\0';
-
-    uint32_t hash = fnv_32a_str(obj->chars);
-    obj->hash = hash;
-
-    map_set(vm.strings, obj, VALUE_NIL);
-
-    return obj;
-}
-
-ObjectString *copy_string(const char *start, int length)
-{
-    return allocate_string(start, length);
+    return allocate_string(chars, length);
 }
 
 Obj *allocate_obj(ObjType type, size_t size)

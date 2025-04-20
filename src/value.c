@@ -84,7 +84,8 @@ int Compare(Value a, Value b)
         switch (OBJ_TYPE(a))
         {
         case OBJ_STRING: {
-            return compare_string(a, b);
+            //return compare_string(a, b);
+            return AS_STRING(a) == AS_STRING(b);
         }
         default:
             return 0;

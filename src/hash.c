@@ -2,7 +2,7 @@
 
 #include "hash.h"
 
-Fnv32_t fnv_32a_str(const char *str)
+Fnv32_t fnv_32a_str(const char *str, int length)
 {
     Fnv32_t hval = 0;
     unsigned char *s = (unsigned char *)str; /* unsigned string */
@@ -10,7 +10,7 @@ Fnv32_t fnv_32a_str(const char *str)
     /*
      * FNV-1a hash each octet in the buffer
      */
-    while (*s)
+    for (int i = 0; i < length; ++i)
     {
 
         /* xor the bottom with the current octet */

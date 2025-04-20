@@ -28,7 +28,7 @@ typedef struct
 
     Obj *objects;
 
-    Map *strings;
+    Map strings;
 
 } VM;
 
