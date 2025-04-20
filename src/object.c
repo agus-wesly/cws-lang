@@ -36,7 +36,9 @@ ObjectString *take_string(char *chars, int length)
         return allocated;
     }
 
-    return allocate_string(chars, length);
+    ObjectString *string = allocate_string(chars, length);
+    FREE_ARRAY(char, chars, length + 1);
+    return string;
 }
 
 ObjectString *allocate_string(const char *chars, int length)

@@ -71,6 +71,11 @@ void adjust_capacity(Map *old, size_t capacity)
     old->capacity = capacity;
 }
 
+/* TODO : add support for another type of key
+ * Maybe we can make the map_set accept `Value` and try to stringify that ??
+ * We can use `stringify` function we created before
+ *
+ * */
 void map_set(Map *h, ObjectString *key, Value value)
 {
     if ((h->capacity * FACTOR_TERM) <= h->size)

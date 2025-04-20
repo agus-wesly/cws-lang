@@ -119,9 +119,7 @@ ObjectString *stringify(Value value)
         char *start = malloc(len + 1);
         snprintf(start, len + 1, "%f", value.as.decimal);
 
-        ObjectString *result = allocate_string(start, len);
-        free(start);
-
+        ObjectString *result = take_string(start, len);
         return result;
     }
     if (IS_STRING(value))
