@@ -49,6 +49,8 @@ void InitStack(Stack *stack);
 void WriteStack(Stack *stack, Value *value);
 void FreeStack(Stack *stack);
 
+ObjectString *stringify(Value value);
+
 InterpretResult interpret(const char *code);
 
 #endif // !CWS_VM_H

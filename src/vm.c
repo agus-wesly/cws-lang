@@ -112,8 +112,9 @@ Value pop()
 
 ObjectString *stringify(Value value)
 {
-    if (IS_NUMBER(value))
+    switch (value.type)
     {
+    case TYPE_NUMBER: {
         int len = snprintf(NULL, 0, "%f", value.as.decimal);
 
         char *start = malloc(len + 1);
@@ -122,10 +123,24 @@ ObjectString *stringify(Value value)
         ObjectString *result = take_string(start, len);
         return result;
     }
-    if (IS_STRING(value))
-        return AS_STRING(value);
+    case TYPE_NIL: {
+        return copy_string("VALUE_NIL", 3);
+    }
+    case TYPE_BOOLEAN: {
+        if (AS_BOOL(value))
+            return copy_string("VALUE_TRUE", 4);
 
-    assert(0 && "Unreachable at stringify");
+        return copy_string("VALUE_FALSE", 5);
+    }
+    case TYPE_OBJ: {
+        if (IS_STRING(value))
+            return AS_STRING(value);
+
+        assert(0 && "Unreachable at stringify");
+    }
+    default:
+        assert(0 && "Unreachable at stringify");
+    }
 }
 
 ObjectString *concatenate()

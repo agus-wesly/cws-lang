@@ -25,7 +25,9 @@ typedef struct
 void init_map(Map *h);
 void free_map(Map *h);
 void map_set(Map *h, ObjectString *key, Value value);
+void map_set_value(Map *h, Value key, Value value);
 int map_get(Map *h, ObjectString *key, Value *value);
+int map_get_value(Map *h, Value key, Value *value);
 int map_delete(Map *h, ObjectString *key);
 
 #endif // !HASH_MAP_H
