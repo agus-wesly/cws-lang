@@ -326,6 +326,11 @@ static void parsePrecedence(Precedence precedence)
     {
         advance();
         ParseFn infix_rule = get_rule(parser.previous.type)->infix;
+        if (infix_rule == NULL)
+        {
+            error("Syntax error");
+            return;
+        }
         infix_rule();
     }
 }
