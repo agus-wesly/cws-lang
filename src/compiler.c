@@ -335,6 +335,37 @@ static void parsePrecedence(Precedence precedence)
     }
 }
 
+static int match(TokenType type)
+{
+    if (parser.current.type == type)
+    {
+        advance();
+        return 1;
+    };
+
+    return 0;
+}
+
+static void print_statement()
+{
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected semicolon at the end of statement");
+    emit_byte(OP_PRINT);
+}
+
+static void statement()
+{
+    if (match(TOKEN_PRINT))
+    {
+        print_statement();
+    }
+}
+
+static void declaration()
+{
+    statement();
+}
+
 int compile(const char *source, Chunk *chunk)
 {
     compiling_chunk = chunk;
@@ -343,9 +374,14 @@ int compile(const char *source, Chunk *chunk)
     parser.is_panic = 0;
 
     init_scanner(source);
+    // expression();
+    // consume(TOKEN_EOF, "Expect the end of expression");
+
     advance();
-    expression();
-    consume(TOKEN_EOF, "Expect the end of expression");
+    while (!match(TOKEN_EOF))
+    {
+        declaration();
+    }
 
     end_compiler();
 

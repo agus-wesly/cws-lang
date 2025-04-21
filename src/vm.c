@@ -231,7 +231,7 @@ static InterpretResult run()
         switch (instruction = READ_BYTE())
         {
         case OP_RETURN:
-            pop();
+            // pop();
             return INTERPRET_OK;
 
         case OP_CONSTANT: {
@@ -314,6 +314,13 @@ static InterpretResult run()
         case OP_TERNARY:
             HANDLE_TERNARY();
             break;
+
+        case OP_PRINT: {
+            Value value = pop();
+            PrintValue(&value);
+            printf("\n");
+            break;
+        }
 
         default:
             return INTERPRET_OK;

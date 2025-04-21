@@ -214,6 +214,9 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     case OP_TERNARY: {
         return simpleInstruction("OP_TERNARY", offset);
     }
+    case OP_PRINT: {
+        return simpleInstruction("OP_PRINT", offset);
+    }
     default:
         // printf("Unknown instruction\n");
         return offset + 1;

@@ -24,7 +24,8 @@ typedef enum
     OP_MULTIPLY,
     OP_TRUE,
     OP_FALSE,
-    OP_NIL
+    OP_NIL,
+    OP_PRINT
 } OpCode;
 
 typedef struct
