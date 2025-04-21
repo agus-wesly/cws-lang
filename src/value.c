@@ -35,18 +35,18 @@ void PRINT_OBJ(Value value)
     }
 }
 
-void PrintValue(Value *value)
+void PrintValue(Value value)
 {
-    if (value->type == TYPE_NUMBER)
-        printf("%f", value->as.decimal);
-    else if (value->type == TYPE_BOOLEAN)
-        if (!!value->as.boolean)
+    if (value.type == TYPE_NUMBER)
+        printf("%f", value.as.decimal);
+    else if (value.type == TYPE_BOOLEAN)
+        if (!!value.as.boolean)
             printf("true");
         else
             printf("false");
-    else if (value->type == TYPE_OBJ)
+    else if (value.type == TYPE_OBJ)
     {
-        PRINT_OBJ(*value);
+        PRINT_OBJ(value);
     }
 }
 

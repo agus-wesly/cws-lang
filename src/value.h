@@ -74,7 +74,7 @@ typedef struct
 void InitValues(Values *values);
 void AppendValues(Values *values, Value newItem);
 void FreeValues(Values *values);
-void PrintValue(Value *value);
+void PrintValue(Value value);
 int Compare(Value value1, Value value2);
 int IsFalsy(Value v);
 

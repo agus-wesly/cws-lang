@@ -95,7 +95,7 @@ int constantInstruction(const char *name, Chunk *chunk, int offset)
     printf("%-20s %d ", name, offset);
 
     uint8_t constant = chunk->code[offset + 1];
-    PrintValue(&chunk->constants->values[constant]);
+    PrintValue(chunk->constants->values[constant]);
     printf("\n");
 
     return offset + 2;
@@ -112,7 +112,7 @@ int constantLongInstruction(const char *name, Chunk *chunk, int offset)
         uint32_t byt = chunk->code[offset + 1 + i];
         operand = operand | (byt << (8 * (3 - i)));
     }
-    PrintValue(&chunk->constantsLong->values[operand]);
+    PrintValue(chunk->constantsLong->values[operand]);
     printf("\n");
 
     return offset + 1 + 4;

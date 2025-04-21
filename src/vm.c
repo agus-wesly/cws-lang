@@ -317,7 +317,7 @@ static InterpretResult run()
 
         case OP_PRINT: {
             Value value = pop();
-            PrintValue(&value);
+            PrintValue(value);
             printf("\n");
             break;
         }
