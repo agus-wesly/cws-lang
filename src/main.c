@@ -40,7 +40,8 @@ char *read_file(char *file_path)
     rewind(fd);
 
     char *buff = malloc(file_size + 1);
-    if(buff == NULL) {
+    if (buff == NULL)
+    {
         fprintf(stderr, "Not enough memory to read\n");
         exit(74);
     }
