@@ -38,9 +38,12 @@ void PRINT_OBJ(Value value)
 void PrintValue(Value *value)
 {
     if (value->type == TYPE_NUMBER)
-        printf("'%f'", value->as.decimal);
+        printf("%f", value->as.decimal);
     else if (value->type == TYPE_BOOLEAN)
-        printf("'%d'", value->as.boolean);
+        if (!!value->as.boolean)
+            printf("true");
+        else
+            printf("false");
     else if (value->type == TYPE_OBJ)
     {
         PRINT_OBJ(*value);
@@ -84,7 +87,7 @@ int Compare(Value a, Value b)
         switch (OBJ_TYPE(a))
         {
         case OBJ_STRING: {
-            //return compare_string(a, b);
+            // return compare_string(a, b);
             return AS_STRING(a) == AS_STRING(b);
         }
         default:
