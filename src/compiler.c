@@ -32,7 +32,7 @@ static void error_at(Token token, char *message)
 
     parser.is_panic = 1;
 
-    fprintf(stderr, "[line %d] Error : %s", parser.current.line_number, message);
+    fprintf(stderr, "[line %d] Error : %s", token.line_number, message);
     if (token.type == TOKEN_EOF)
     {
         fprintf(stderr, " at the end\n");
@@ -42,7 +42,7 @@ static void error_at(Token token, char *message)
     }
     else
     {
-        fprintf(stderr, " at %.*s\n", token.line_number, token.start);
+        fprintf(stderr, " at '%.*s'\n", token.length, token.start);
     }
 
     parser.is_error = 1;
@@ -79,7 +79,7 @@ static void consume(TokenType token_type, char *message)
         return;
     }
 
-    error_current(message);
+    error(message);
 }
 
 static int peek(TokenType token_type)
@@ -397,20 +397,26 @@ static void synchronize()
     }
 }
 
-static uint8_t identifier_constant(const Token *token)
+static uint32_t identifier_constant(const Token *token)
 {
     ObjectString *string = copy_string(token->start, token->length);
-    return AddConstant(current_chunk(), VALUE_OBJ(string));
+    return AddLongConstant(current_chunk(), VALUE_OBJ(string));
 }
 
-static void define_variable(uint8_t identifier_idx) {
-    emit_bytes(OP_GLOBAL_VAR, identifier_idx);
+static void define_variable(uint32_t identifier_idx)
+{
+    emit_byte(OP_GLOBAL_VAR);
+    for (size_t i = 0; i < 4; ++i)
+    {
+        uint8_t chunkIdx = (identifier_idx >> (8 * (3 - i)));
+        emit_byte(chunkIdx);
+    }
 }
 
 static void var_declaration()
 {
     consume(TOKEN_IDENTIFIER, "Expected variable name.");
-    uint8_t identifier_idx = identifier_constant(&parser.previous);
+    uint32_t identifier_idx = identifier_constant(&parser.previous);
 
     if (peek(TOKEN_EQUAL))
     {
