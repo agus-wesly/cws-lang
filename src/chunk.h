@@ -25,7 +25,10 @@ typedef enum
     OP_TRUE,
     OP_FALSE,
     OP_NIL,
-    OP_PRINT
+
+    OP_PRINT,
+    OP_POP,
+    OP_GLOBAL_VAR
 } OpCode;
 
 typedef struct

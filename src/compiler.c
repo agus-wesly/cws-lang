@@ -14,6 +14,8 @@ typedef struct
 static void expression();
 static void parsePrecedence(Precedence presedence);
 static ParseRule *get_rule(TokenType token_type);
+static void declaration();
+static void statement();
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -78,6 +80,11 @@ static void consume(TokenType token_type, char *message)
     }
 
     error_current(message);
+}
+
+static int peek(TokenType token_type)
+{
+    return parser.current.type == token_type;
 }
 
 void emit_byte(uint8_t byte)
@@ -349,8 +356,15 @@ static int match(TokenType type)
 static void print_statement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected semicolon at the end of statement");
+    consume(TOKEN_SEMICOLON, "Expected ';' after value.");
     emit_byte(OP_PRINT);
+}
+
+static void expression_statement()
+{
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected ';' after value.");
+    emit_byte(OP_POP);
 }
 
 static void statement()
@@ -359,11 +373,73 @@ static void statement()
     {
         print_statement();
     }
+    else
+    {
+        expression_statement();
+    }
+}
+
+static void synchronize()
+{
+    parser.is_panic = 0;
+    while (parser.current.type != TOKEN_EOF)
+    {
+        if (match(TOKEN_SEMICOLON))
+            return;
+        switch (parser.current.type)
+        {
+        case TOKEN_PRINT:
+            return;
+        default:;
+        }
+
+        advance();
+    }
+}
+
+static uint8_t identifier_constant(const Token *token)
+{
+    ObjectString *string = copy_string(token->start, token->length);
+    return AddConstant(current_chunk(), VALUE_OBJ(string));
+}
+
+static void define_variable(uint8_t identifier_idx) {
+    emit_bytes(OP_GLOBAL_VAR, identifier_idx);
+}
+
+static void var_declaration()
+{
+    consume(TOKEN_IDENTIFIER, "Expected variable name.");
+    uint8_t identifier_idx = identifier_constant(&parser.previous);
+
+    if (peek(TOKEN_EQUAL))
+    {
+        advance();
+        expression();
+    }
+    else
+    {
+        emit_byte(OP_NIL);
+    }
+
+    consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration");
+    define_variable(identifier_idx);
 }
 
 static void declaration()
 {
-    statement();
+    if (match(TOKEN_LET))
+    {
+        var_declaration();
+    }
+    else
+    {
+        statement();
+    }
+    if (parser.is_panic)
+    {
+        synchronize();
+    }
 }
 
 int compile(const char *source, Chunk *chunk)

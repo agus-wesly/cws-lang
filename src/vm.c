@@ -27,6 +27,7 @@ void initVm()
     InitStack(vm.stack);
 
     init_map(&vm.strings);
+    init_map(&vm.variables);
 
     update_stack_ptr();
 }
@@ -47,6 +48,7 @@ void freeVm()
     freeObjects();
     free(vm.stack);
     free_map(&vm.strings);
+    free_map(&vm.variables);
 }
 
 void runtimeError(char *format, ...)
@@ -163,6 +165,7 @@ static InterpretResult run()
 #define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants->values[READ_BYTE()])
+#define STRING() (AS_STRING(READ_CONSTANT()))
 #define READ_LONG_CONSTANT()                                                                                           \
     ({                                                                                                                 \
         uint32_t res = 0;                                                                                              \
@@ -218,7 +221,7 @@ static InterpretResult run()
         for (Value *cur = vm.stack->items; cur < vm.stackPointer; ++cur)
         {
             // Value foo = *cur;
-            PrintValue(cur);
+            PrintValue(*cur);
             printf(",");
         }
         printf("]");
@@ -319,6 +322,16 @@ static InterpretResult run()
             Value value = pop();
             PrintValue(value);
             printf("\n");
+            break;
+        }
+        case OP_POP:
+            pop();
+            break;
+
+        case OP_GLOBAL_VAR: {
+            ObjectString *name = STRING();
+            map_set(&vm.variables, name, pop());
+
             break;
         }
 

@@ -217,6 +217,12 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     case OP_PRINT: {
         return simpleInstruction("OP_PRINT", offset);
     }
+    case OP_POP: {
+        return simpleInstruction("OP_POP", offset);
+    }
+    case OP_GLOBAL_VAR: {
+        return simpleInstruction("OP_GLOBAL_VAR", offset);
+    }
     default:
         // printf("Unknown instruction\n");
         return offset + 1;
