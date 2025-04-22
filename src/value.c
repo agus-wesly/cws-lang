@@ -28,8 +28,12 @@ void PRINT_OBJ(Value value)
     switch (OBJ_TYPE(value))
     {
     case OBJ_STRING: {
-        printf("%s", AS_STRING(value)->chars);
+        if (AS_STRING(value)->length == 0)
+            printf("<empty string>");
+        else
+            printf("%s", AS_STRING(value)->chars);
     }
+
     default:
         return;
     }

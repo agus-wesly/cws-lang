@@ -16,6 +16,7 @@ static void parsePrecedence(Precedence presedence);
 static ParseRule *get_rule(TokenType token_type);
 static void declaration();
 static void statement();
+static uint32_t identifier_constant(const Token *token);
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -98,6 +99,16 @@ void emit_bytes(uint8_t byte1, uint8_t byte2)
     emit_byte(byte2);
 }
 
+
+void emit_constant_byte(uint32_t idx)
+{
+    for (size_t i = 0; i < 4; ++i)
+    {
+        uint8_t chunkIdx = (idx >> (8 * (3 - i)));
+        emit_byte(chunkIdx);
+    }
+}
+
 void emit_return()
 {
     emit_byte(OP_RETURN);
@@ -169,6 +180,15 @@ static void boolean()
         assert(0 && "Unreachable at boolean");
         return;
     }
+}
+
+
+static void variable()
+{
+    emit_byte(OP_GET_GLOBAL);
+
+    uint32_t identifier_idx = identifier_constant(&parser.previous);
+    emit_constant_byte(identifier_idx);
 }
 
 static void string()
@@ -288,6 +308,7 @@ ParseRule rules[] = {
     [TOKEN_TRUE] = {boolean, NULL, PREC_NONE},
     [TOKEN_FALSE] = {boolean, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
+    [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
 
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
@@ -406,11 +427,8 @@ static uint32_t identifier_constant(const Token *token)
 static void define_variable(uint32_t identifier_idx)
 {
     emit_byte(OP_GLOBAL_VAR);
-    for (size_t i = 0; i < 4; ++i)
-    {
-        uint8_t chunkIdx = (identifier_idx >> (8 * (3 - i)));
-        emit_byte(chunkIdx);
-    }
+    // TODO : Maybe we can check in compile time ??
+    emit_constant_byte(identifier_idx);
 }
 
 static void var_declaration()

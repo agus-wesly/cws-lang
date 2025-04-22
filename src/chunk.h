@@ -28,7 +28,8 @@ typedef enum
 
     OP_PRINT,
     OP_POP,
-    OP_GLOBAL_VAR
+    OP_GLOBAL_VAR,
+    OP_GET_GLOBAL
 } OpCode;
 
 typedef struct

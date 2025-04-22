@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "chunk.h"
+#include "hashmap.h"
 #include "object.h"
 #include "value.h"
 
@@ -332,6 +333,18 @@ static InterpretResult run()
             ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
             map_set(&vm.globals, name, pop());
 
+            break;
+        }
+
+        case OP_GET_GLOBAL: {
+            ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
+            Value val;
+            if (!map_get(&vm.globals, name, &val))
+            {
+                runtimeError("Cannot access undeclared variable : %s\n", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            push(val);
             break;
         }
 
