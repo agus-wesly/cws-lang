@@ -176,7 +176,7 @@ static InterpretResult run()
             ++i;                                                                                                       \
         } while (i < 4);                                                                                               \
         vm.chunk->constantsLong->values[res];                                                                          \
-    });
+    })
 
 #define HANDLE_BINARY(value, op)                                                                                       \
     do                                                                                                                 \
@@ -329,7 +329,7 @@ static InterpretResult run()
             break;
 
         case OP_GLOBAL_VAR: {
-            ObjectString *name = STRING();
+            ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
             map_set(&vm.variables, name, pop());
 
             break;

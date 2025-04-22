@@ -34,6 +34,12 @@ void FreeChunk(Chunk *chunk)
     InitChunk(chunk);
 }
 
+uint32_t AddLongConstant(Chunk *chunk, Value constant)
+{
+    AppendLongValues(chunk->constantsLong, constant);
+    return chunk->constantsLong->count - 1;
+}
+
 // 5e520
 void WriteConstant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
@@ -221,7 +227,7 @@ int DisassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_POP", offset);
     }
     case OP_GLOBAL_VAR: {
-        return simpleInstruction("OP_GLOBAL_VAR", offset);
+        return constantLongInstruction("OP_GLOBAL_VAR", chunk, offset);
     }
     default:
         // printf("Unknown instruction\n");

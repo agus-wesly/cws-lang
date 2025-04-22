@@ -50,7 +50,7 @@ void PrintChunk(Chunk *chunk);
 void FreeChunk(Chunk *chunk);
 int FindLine(Chunk *chunk, int offset);
 uint8_t AddConstant(Chunk *chunk, Value newConstant);
-
+uint32_t AddLongConstant(Chunk *chunk, Value constant);
 
 void WriteConstant(Chunk *chunk, Value value, uint32_t lineNumber);
 
