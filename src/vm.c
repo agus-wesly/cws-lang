@@ -27,7 +27,7 @@ void initVm()
     InitStack(vm.stack);
 
     init_map(&vm.strings);
-    init_map(&vm.variables);
+    init_map(&vm.globals);
 
     update_stack_ptr();
 }
@@ -48,7 +48,7 @@ void freeVm()
     freeObjects();
     free(vm.stack);
     free_map(&vm.strings);
-    free_map(&vm.variables);
+    free_map(&vm.globals);
 }
 
 void runtimeError(char *format, ...)
@@ -330,7 +330,7 @@ static InterpretResult run()
 
         case OP_GLOBAL_VAR: {
             ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
-            map_set(&vm.variables, name, pop());
+            map_set(&vm.globals, name, pop());
 
             break;
         }

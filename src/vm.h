@@ -29,7 +29,7 @@ typedef struct
     Obj *objects;
 
     Map strings;
-    Map variables;
+    Map globals;
 
 } VM;
 
