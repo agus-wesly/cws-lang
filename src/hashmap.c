@@ -72,13 +72,13 @@ void adjust_capacity(Map *old, size_t capacity)
     old->capacity = capacity;
 }
 
-void map_set_value(Map *h, Value key, Value value)
+int map_set_value(Map *h, Value key, Value value)
 {
     ObjectString *str_key = stringify(key);
     return map_set(h, str_key, value);
 }
 
-void map_set(Map *h, ObjectString *key, Value value)
+int map_set(Map *h, ObjectString *key, Value value)
 {
     if ((h->capacity * FACTOR_TERM) <= h->size)
     {
@@ -87,11 +87,14 @@ void map_set(Map *h, ObjectString *key, Value value)
     }
 
     Entry *entry = find_entry(h->entries, key, h->capacity);
-    if (entry->key == NULL && IS_NIL(entry->value))
+    int is_new = entry->key == NULL;
+    if (is_new && IS_NIL(entry->value))
         h->size++;
 
     entry->key = key;
     entry->value = value;
+
+    return is_new;
 }
 
 int map_get_value(Map *h, Value key, Value *value)
