@@ -41,16 +41,31 @@ void PRINT_OBJ(Value value)
 
 void PrintValue(Value value)
 {
-    if (value.type == TYPE_NUMBER)
+    switch (value.type)
+    {
+    case TYPE_NUMBER:
         printf("%f", value.as.decimal);
-    else if (value.type == TYPE_BOOLEAN)
+        break;
+
+    case TYPE_BOOLEAN:
         if (!!value.as.boolean)
             printf("true");
         else
             printf("false");
-    else if (value.type == TYPE_OBJ)
-    {
+        break;
+
+    case TYPE_NIL:
+
+        printf("<nil>");
+        break;
+
+    case TYPE_OBJ:
         PRINT_OBJ(value);
+        break;
+
+    default:
+        assert(0 && "Unreachable at print value");
+        break;
     }
 }
 
