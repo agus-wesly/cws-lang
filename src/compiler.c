@@ -18,7 +18,6 @@ static void declaration();
 static void statement();
 static uint32_t identifier_constant(const Token *token);
 static int match(TokenType type);
-static int check(TokenType type);
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -160,12 +159,12 @@ static void number()
     // emit_bytes(OP_CONSTANT, idx);
 }
 
-static void nil()
+static void nil(int canAssign)
 {
     emit_byte(OP_NIL);
 }
 
-static void boolean()
+static void boolean(int canAssign)
 {
     switch (parser.previous.type)
     {
@@ -185,11 +184,10 @@ static void boolean()
 
 static void variable(int can_parse_set)
 {
-    if (check(TOKEN_EQUAL) && can_parse_set)
-    {
-        uint32_t identifier_idx = identifier_constant(&parser.previous);
+    uint32_t identifier_idx = identifier_constant(&parser.previous);
 
-        advance();
+    if (can_parse_set && match(TOKEN_EQUAL))
+    {
         expression();
         emit_byte(OP_SET_GLOBAL);
         emit_constant_byte(identifier_idx);
@@ -197,18 +195,17 @@ static void variable(int can_parse_set)
     else
     {
         emit_byte(OP_GET_GLOBAL);
-        uint32_t identifier_idx = identifier_constant(&parser.previous);
         emit_constant_byte(identifier_idx);
     }
 }
 
-static void string()
+static void string(int canAssign)
 {
     WriteConstant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
                   parser.previous.line_number);
 }
 
-static void unary()
+static void unary(int canAssign)
 {
     TokenType token_type = parser.previous.type;
     parsePrecedence(get_rule(token_type)->precedence + 1);
@@ -230,7 +227,7 @@ static void unary()
     }
 }
 
-static void grouping()
+static void grouping(int canAssign)
 {
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
@@ -244,7 +241,7 @@ static void ternary()
     emit_byte(OP_TERNARY);
 }
 
-static void binary()
+static void binary(int canAssign)
 {
     TokenType token_type = parser.previous.type;
     Precedence presedence = get_rule(token_type)->precedence;
@@ -372,8 +369,12 @@ static void parsePrecedence(Precedence precedence)
             error("Syntax error");
             return;
         }
-        // TODO : check this also
-        infix_rule(0);
+        infix_rule(can_parse_set);
+    }
+
+    if (can_parse_set && match(TOKEN_EQUAL))
+    {
+        error("Invalid assignment target");
     }
 }
 
@@ -386,11 +387,6 @@ static int match(TokenType type)
     };
 
     return 0;
-}
-
-static int check(TokenType type)
-{
-    return parser.current.type == type;
 }
 
 static void print_statement()
