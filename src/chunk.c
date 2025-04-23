@@ -232,6 +232,9 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     case OP_GET_GLOBAL: {
         return constantLongInstruction("OP_GET_GLOBAL", chunk, offset);
     }
+    case OP_SET_GLOBAL: {
+        return constantLongInstruction("OP_SET_GLOBAL", chunk, offset);
+    }
     default:
         // printf("Unknown instruction\n");
         return offset + 1;

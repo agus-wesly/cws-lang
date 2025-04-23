@@ -17,6 +17,8 @@ static ParseRule *get_rule(TokenType token_type);
 static void declaration();
 static void statement();
 static uint32_t identifier_constant(const Token *token);
+static int match(TokenType type);
+static int check(TokenType type);
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -98,7 +100,6 @@ void emit_bytes(uint8_t byte1, uint8_t byte2)
     emit_byte(byte1);
     emit_byte(byte2);
 }
-
 
 void emit_constant_byte(uint32_t idx)
 {
@@ -182,13 +183,23 @@ static void boolean()
     }
 }
 
-
 static void variable()
 {
-    emit_byte(OP_GET_GLOBAL);
+    if (check(TOKEN_EQUAL))
+    {
+        uint32_t identifier_idx = identifier_constant(&parser.previous);
 
-    uint32_t identifier_idx = identifier_constant(&parser.previous);
-    emit_constant_byte(identifier_idx);
+        advance();
+        expression();
+        emit_byte(OP_SET_GLOBAL);
+        emit_constant_byte(identifier_idx);
+    }
+    else
+    {
+        emit_byte(OP_GET_GLOBAL);
+        uint32_t identifier_idx = identifier_constant(&parser.previous);
+        emit_constant_byte(identifier_idx);
+    }
 }
 
 static void string()
@@ -372,6 +383,11 @@ static int match(TokenType type)
     };
 
     return 0;
+}
+
+static int check(TokenType type)
+{
+    return parser.current.type == type;
 }
 
 static void print_statement()

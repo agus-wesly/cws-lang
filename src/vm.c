@@ -54,13 +54,14 @@ void freeVm()
 
 void runtimeError(char *format, ...)
 {
+    int token_idx = (int)(vm.ip - vm.chunk->code) - 1;
+    fprintf(stderr, "[Line : %d] ", FindLine(vm.chunk, token_idx));
+
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
 
-    int token_idx = (int)(vm.ip - vm.chunk->code) - 1;
-    fprintf(stderr, " at [Line : %d]", FindLine(vm.chunk, token_idx));
     fputs("\n", stderr);
 
     resetStack();
@@ -345,6 +346,19 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(val);
+            break;
+        }
+
+        case OP_SET_GLOBAL: {
+            ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
+            Value val = PEEK(0);
+
+            if (map_set(&vm.globals, name, val))
+            {
+                map_delete(&vm.globals, name);
+                runtimeError("Cannot set to undefined variable : '%s'", name->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            };
             break;
         }
 
