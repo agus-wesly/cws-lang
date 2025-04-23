@@ -38,16 +38,16 @@ static void error_at(Token token, char *message)
     fprintf(stderr, "[line %d] Error : %s", token.line_number, message);
     if (token.type == TOKEN_EOF)
     {
-        fprintf(stderr, " at the end\n");
+        fprintf(stderr, " at the end");
     }
     else if (token.type == TOKEN_ERROR)
     {
     }
     else
     {
-        fprintf(stderr, " at '%.*s'\n", token.length, token.start);
+        fprintf(stderr, " at '%.*s'", token.length, token.start);
     }
-
+    fprintf(stderr, "\n");
     parser.is_error = 1;
 }
 
@@ -183,9 +183,9 @@ static void boolean()
     }
 }
 
-static void variable()
+static void variable(int can_parse_set)
 {
-    if (check(TOKEN_EQUAL))
+    if (check(TOKEN_EQUAL) && can_parse_set)
     {
         uint32_t identifier_idx = identifier_constant(&parser.previous);
 
@@ -248,6 +248,7 @@ static void binary()
 {
     TokenType token_type = parser.previous.type;
     Precedence presedence = get_rule(token_type)->precedence;
+
     parsePrecedence(presedence + 1);
 
     switch (token_type)
@@ -359,7 +360,8 @@ static void parsePrecedence(Precedence precedence)
         return;
     }
 
-    prefix_rule();
+    int can_parse_set = precedence <= PREC_ASSIGNMENT;
+    prefix_rule(can_parse_set);
 
     while (precedence <= get_rule(parser.current.type)->precedence)
     {
@@ -370,7 +372,8 @@ static void parsePrecedence(Precedence precedence)
             error("Syntax error");
             return;
         }
-        infix_rule();
+        // TODO : check this also
+        infix_rule(0);
     }
 }
 
