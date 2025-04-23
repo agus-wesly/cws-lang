@@ -377,14 +377,14 @@ static int match(TokenType type)
 static void print_statement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value.");
+    consume(TOKEN_SEMICOLON, "Expected ';' after value");
     emit_byte(OP_PRINT);
 }
 
 static void expression_statement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value.");
+    consume(TOKEN_SEMICOLON, "Expected ';' after value");
     emit_byte(OP_POP);
 }
 
