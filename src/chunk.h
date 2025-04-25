@@ -46,14 +46,14 @@ typedef struct
 
 } Chunk;
 
-void InitChunk(Chunk *chunk);
-void WriteChunk(Chunk *chunk, uint8_t newItem, uint32_t line);
-void PrintChunk(Chunk *chunk);
-void FreeChunk(Chunk *chunk);
-int FindLine(Chunk *chunk, int offset);
-uint8_t AddConstant(Chunk *chunk, Value newConstant);
-uint32_t AddLongConstant(Chunk *chunk, Value constant);
+void init_chunk(Chunk *chunk);
+void write_chunk(Chunk *chunk, uint8_t newItem, uint32_t line);
+void print_chunk(Chunk *chunk);
+void free_chunk(Chunk *chunk);
+int find_line(Chunk *chunk, int offset);
+uint8_t add_constant(Chunk *chunk, Value newConstant);
+uint32_t add_long_constant(Chunk *chunk, Value constant);
 
-void WriteConstant(Chunk *chunk, Value value, uint32_t lineNumber);
+void write_constant(Chunk *chunk, Value value, uint32_t lineNumber);
 
 #endif // !CWS_CHUNK_H

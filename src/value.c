@@ -1,14 +1,14 @@
 #include "value.h"
 #include "object.h"
 
-void InitValues(Values *values)
+void init_values(Values *values)
 {
     values->capacity = 0;
     values->values = NULL;
     values->count = 0;
 }
 
-void AppendValues(Values *values, Value newItem)
+void append_values(Values *values, Value newItem)
 {
     if (values->capacity < values->count + 1)
     {
@@ -39,7 +39,7 @@ void PRINT_OBJ(Value value)
     }
 }
 
-void PrintValue(Value value)
+void print_value(Value value)
 {
     switch (value.type)
     {
@@ -69,10 +69,10 @@ void PrintValue(Value value)
     }
 }
 
-void FreeValues(Values *values)
+void free_values(Values *values)
 {
     FREE_ARRAY(Value, values->values, values->capacity);
-    InitValues(values);
+    init_values(values);
 }
 
 int compare_string(Value a, Value b)
@@ -82,7 +82,7 @@ int compare_string(Value a, Value b)
     return (string_a->length == string_b->length) && (memcmp(string_a->chars, string_b->chars, string_a->length) == 0);
 }
 
-int Compare(Value a, Value b)
+int compare(Value a, Value b)
 {
     if (a.type != b.type)
         return 0;
@@ -119,7 +119,7 @@ int Compare(Value a, Value b)
     }
 }
 
-int IsFalsy(Value v)
+int is_falsy(Value v)
 {
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));

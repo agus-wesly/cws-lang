@@ -75,7 +75,7 @@ void run_file(char *file_path)
 
 int main(int argc, char **args)
 {
-    initVm();
+    init_vm();
 
     if (argc == 1)
     {
@@ -91,7 +91,7 @@ int main(int argc, char **args)
         return 64;
     }
 
-    freeVm();
+    free_vm();
 
     return 0;
 }

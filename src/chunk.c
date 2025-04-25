@@ -2,7 +2,7 @@
 #include "debug.h"
 #include "memory.h"
 
-void InitChunk(Chunk *chunk)
+void init_chunk(Chunk *chunk)
 {
     chunk->capacity = 0;
     chunk->count = 0;
@@ -11,11 +11,11 @@ void InitChunk(Chunk *chunk)
 
     // TODO
     Values *values = malloc(sizeof(Values));
-    InitValues(values);
+    init_values(values);
     chunk->constants = values;
 
     LongValues *longValues = malloc(sizeof(LongValues));
-    InitLongValues(longValues);
+    init_long_values(longValues);
     chunk->constantsLong = longValues;
 
     Lines *lines = malloc(sizeof(Lines));
@@ -23,35 +23,35 @@ void InitChunk(Chunk *chunk)
     chunk->lines = lines;
 }
 
-void FreeChunk(Chunk *chunk)
+void free_chunk(Chunk *chunk)
 {
-    FreeValues(chunk->constants);
-    FreeLongValues(chunk->constantsLong);
+    free_values(chunk->constants);
+    free_long_values(chunk->constantsLong);
 
     FreeLines(chunk->lines);
 
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
-    InitChunk(chunk);
+    init_chunk(chunk);
 }
 
-uint32_t AddLongConstant(Chunk *chunk, Value constant)
+uint32_t add_long_constant(Chunk *chunk, Value constant)
 {
-    AppendLongValues(chunk->constantsLong, constant);
+    append_long_values(chunk->constantsLong, constant);
     return chunk->constantsLong->count - 1;
 }
 
 // 5e520
-void WriteConstant(Chunk *chunk, Value value, uint32_t lineNumber)
+void write_constant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
-    AppendLongValues(chunk->constantsLong, value);
+    append_long_values(chunk->constantsLong, value);
 
-    WriteChunk(chunk, OP_CONSTANT_LONG, lineNumber);
+    write_chunk(chunk, OP_CONSTANT_LONG, lineNumber);
 
     uint32_t constantIndex = chunk->constantsLong->count - 1;
     for (size_t i = 0; i < 4; ++i)
     {
         uint8_t chunkIdx = (constantIndex >> (8 * (3 - i)));
-        WriteChunk(chunk, chunkIdx, lineNumber);
+        write_chunk(chunk, chunkIdx, lineNumber);
     }
 }
 
@@ -75,7 +75,7 @@ void writeLine(Chunk *chunk, uint32_t lineNumber)
     }
 }
 
-void WriteChunk(Chunk *chunk, uint8_t newItem, uint32_t lineNumber)
+void write_chunk(Chunk *chunk, uint8_t newItem, uint32_t lineNumber)
 {
     if (chunk->capacity < chunk->count + 1)
     {
@@ -90,18 +90,18 @@ void WriteChunk(Chunk *chunk, uint8_t newItem, uint32_t lineNumber)
     chunk->count++;
 }
 
-int simpleInstruction(const char *name, int offset)
+int simple_instruction(const char *name, int offset)
 {
     printf("%s\n", name);
     return offset + 1;
 }
 
-int constantInstruction(const char *name, Chunk *chunk, int offset)
+int constant_instruction(const char *name, Chunk *chunk, int offset)
 {
     printf("%-20s %d ", name, offset);
 
     uint8_t constant = chunk->code[offset + 1];
-    PrintValue(chunk->constants->values[constant]);
+    print_value(chunk->constants->values[constant]);
     printf("\n");
 
     return offset + 2;
@@ -118,7 +118,7 @@ int constantLongInstruction(const char *name, Chunk *chunk, int offset)
         uint32_t byt = chunk->code[offset + 1 + i];
         operand = operand | (byt << (8 * (3 - i)));
     }
-    PrintValue(chunk->constantsLong->values[operand]);
+    print_value(chunk->constantsLong->values[operand]);
     printf("\n");
 
     return offset + 1 + 4;
@@ -137,7 +137,7 @@ uint32_t getLine(Chunk *chunk, uint8_t idx)
     return -1;
 }
 
-int FindLine(Chunk *chunk, int offset)
+int find_line(Chunk *chunk, int offset)
 {
     for (int i = chunk->lines->count - 1; i >= 0; --i)
     {
@@ -150,7 +150,7 @@ int FindLine(Chunk *chunk, int offset)
     assert(0 && "Unreachable at find line");
 }
 
-int DisassembleInstruction(Chunk *chunk, int offset)
+int disassemble_instruction(Chunk *chunk, int offset)
 {
     printf("%04d ", offset);
     for (int i = chunk->lines->count - 1; i >= 0; --i)
@@ -172,59 +172,59 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     switch (current)
     {
     case OP_RETURN:
-        return simpleInstruction("OP_RETURN", offset);
+        return simple_instruction("OP_RETURN", offset);
     case OP_CONSTANT:
-        return constantInstruction("OP_CONSTANT", chunk, offset);
+        return constant_instruction("OP_CONSTANT", chunk, offset);
     case OP_CONSTANT_LONG:
         return constantLongInstruction("OP_CONSTANT_LONG", chunk, offset);
 
     case OP_TRUE: {
-        return simpleInstruction("OP_TRUE", offset);
+        return simple_instruction("OP_TRUE", offset);
     }
     case OP_FALSE: {
-        return simpleInstruction("OP_NIL", offset);
+        return simple_instruction("OP_NIL", offset);
     }
 
     case OP_NIL: {
-        return simpleInstruction("OP_NIL", offset);
+        return simple_instruction("OP_NIL", offset);
     }
 
     case OP_ADD: {
-        return simpleInstruction("OP_ADD", offset);
+        return simple_instruction("OP_ADD", offset);
     }
     case OP_SUBTRACT: {
-        return simpleInstruction("OP_SUBTRACT", offset);
+        return simple_instruction("OP_SUBTRACT", offset);
     }
     case OP_MULTIPLY: {
-        return simpleInstruction("OP_MULTIPLY", offset);
+        return simple_instruction("OP_MULTIPLY", offset);
     }
     case OP_DIVIDE: {
-        return simpleInstruction("OP_DIVIDE", offset);
+        return simple_instruction("OP_DIVIDE", offset);
     }
     case OP_GREATER: {
-        return simpleInstruction("OP_GREATER", offset);
+        return simple_instruction("OP_GREATER", offset);
     }
     case OP_LESS: {
-        return simpleInstruction("OP_LESS", offset);
+        return simple_instruction("OP_LESS", offset);
     }
     case OP_EQUAL_EQUAL: {
-        return simpleInstruction("OP_EQUAL_EQUAL", offset);
+        return simple_instruction("OP_EQUAL_EQUAL", offset);
     }
 
     case OP_NEGATE: {
-        return simpleInstruction("OP_NEGATE", offset);
+        return simple_instruction("OP_NEGATE", offset);
     }
     case OP_BANG: {
-        return simpleInstruction("OP_BANG", offset);
+        return simple_instruction("OP_BANG", offset);
     }
     case OP_TERNARY: {
-        return simpleInstruction("OP_TERNARY", offset);
+        return simple_instruction("OP_TERNARY", offset);
     }
     case OP_PRINT: {
-        return simpleInstruction("OP_PRINT", offset);
+        return simple_instruction("OP_PRINT", offset);
     }
     case OP_POP: {
-        return simpleInstruction("OP_POP", offset);
+        return simple_instruction("OP_POP", offset);
     }
     case OP_GLOBAL_VAR: {
         return constantLongInstruction("OP_GLOBAL_VAR", chunk, offset);
@@ -241,23 +241,23 @@ int DisassembleInstruction(Chunk *chunk, int offset)
     }
 }
 
-void DisassembleChunk(Chunk *chunk, const char *title)
+void disassemble_chunk(Chunk *chunk, const char *title)
 {
     printf("== %s ==\n", title);
 
     for (size_t i = 0; i < chunk->count;)
     {
-        i = DisassembleInstruction(chunk, i);
+        i = disassemble_instruction(chunk, i);
     }
 }
 
-uint8_t AddConstant(Chunk *chunk, Value constant)
+uint8_t add_constant(Chunk *chunk, Value constant)
 {
-    AppendValues(chunk->constants, constant);
+    append_values(chunk->constants, constant);
     return chunk->constants->count - 1;
 }
 
-void PrintChunk(Chunk *chunk)
+void print_chunk(Chunk *chunk)
 {
     printf("[");
     for (size_t i = 0; i < chunk->count; ++i)

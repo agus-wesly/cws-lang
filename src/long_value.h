@@ -14,7 +14,7 @@ typedef struct
     Value *values;
 } LongValues;
 
-void InitLongValues(LongValues *values);
-void AppendLongValues(LongValues *values, Value newItem);
-void FreeLongValues(LongValues *values);
+void init_long_values(LongValues *values);
+void append_long_values(LongValues *values, Value newItem);
+void free_long_values(LongValues *values);
 #endif // !CWS_LONG_VALUE_H

@@ -43,12 +43,12 @@ typedef enum
 
 extern VM vm;
 
-void initVm();
-void freeVm();
+void init_vm();
+void free_vm();
 
-void InitStack(Stack *stack);
-void WriteStack(Stack *stack, Value *value);
-void FreeStack(Stack *stack);
+void init_stack(Stack *stack);
+void write_stack(Stack *stack, Value *value);
+void free_stack(Stack *stack);
 
 ObjectString *stringify(Value value);
 

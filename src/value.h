@@ -71,12 +71,12 @@ typedef struct
 #define STRINGIFY(value) ((ObjectString *)stringify(AS_OBJ(value)))
 
 
-void InitValues(Values *values);
-void AppendValues(Values *values, Value newItem);
-void FreeValues(Values *values);
-void PrintValue(Value value);
-int Compare(Value value1, Value value2);
-int IsFalsy(Value v);
+void init_values(Values *values);
+void append_values(Values *values, Value newItem);
+void free_values(Values *values);
+void print_value(Value value);
+int compare(Value value1, Value value2);
+int is_falsy(Value v);
 
 
 #endif // !CWS_VALUE_H

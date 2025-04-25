@@ -17,7 +17,7 @@ void update_stack_ptr()
     vm.stackPointer = vm.stack->items;
 }
 
-void initVm()
+void init_vm()
 {
     vm.chunk = NULL;
     vm.ip = NULL;
@@ -25,7 +25,7 @@ void initVm()
 
     Stack *stack_ptr = malloc(sizeof(Stack));
     vm.stack = stack_ptr;
-    InitStack(vm.stack);
+    init_stack(vm.stack);
 
     init_map(&vm.strings);
     init_map(&vm.globals);
@@ -44,7 +44,7 @@ void freeObjects()
     }
 }
 
-void freeVm()
+void free_vm()
 {
     freeObjects();
     free(vm.stack);
@@ -52,10 +52,10 @@ void freeVm()
     free_map(&vm.globals);
 }
 
-void runtimeError(char *format, ...)
+void runtime_error(char *format, ...)
 {
     int token_idx = (int)(vm.ip - vm.chunk->code) - 1;
-    fprintf(stderr, "[Line : %d] ", FindLine(vm.chunk, token_idx));
+    fprintf(stderr, "[Line : %d] ", find_line(vm.chunk, token_idx));
 
     va_list args;
     va_start(args, format);
@@ -186,7 +186,7 @@ static InterpretResult run()
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
                                                                                                                        \
         {                                                                                                              \
-            runtimeError("Operand must be of type number");                                                            \
+            runtime_error("Operand must be of type number");                                                            \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
@@ -199,7 +199,7 @@ static InterpretResult run()
     {                                                                                                                  \
         Value b = pop();                                                                                               \
         Value a = pop();                                                                                               \
-        push(VALUE_BOOL(Compare(a, b)));                                                                               \
+        push(VALUE_BOOL(compare(a, b)));                                                                               \
     } while (0);
 
 #define HANDLE_TERNARY()                                                                                               \
@@ -268,7 +268,7 @@ static InterpretResult run()
         case OP_NEGATE: {
             if (!IS_NUMBER(PEEK(0)))
             {
-                runtimeError("Expected number");
+                runtime_error("Expected number");
                 return INTERPRET_RUNTIME_ERROR;
             }
             (vm.stackPointer - 1)->as.decimal *= -1;
@@ -276,7 +276,7 @@ static InterpretResult run()
         }
         case OP_BANG: {
             Value a = pop();
-            push(VALUE_BOOL(IsFalsy(a)));
+            push(VALUE_BOOL(is_falsy(a)));
             break;
         }
 
@@ -293,7 +293,7 @@ static InterpretResult run()
             }
             else
             {
-                runtimeError("Operands must be number or string");
+                runtime_error("Operands must be number or string");
                 return INTERPRET_RUNTIME_ERROR;
             }
         }
@@ -322,7 +322,7 @@ static InterpretResult run()
 
         case OP_PRINT: {
             Value value = pop();
-            PrintValue(value);
+            print_value(value);
             printf("\n");
             break;
         }
@@ -342,7 +342,7 @@ static InterpretResult run()
             Value val;
             if (!map_get(&vm.globals, name, &val))
             {
-                runtimeError("Cannot access undeclared variable : %s\n", name->chars);
+                runtime_error("Cannot access undeclared variable : %s\n", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(val);
@@ -356,7 +356,7 @@ static InterpretResult run()
             if (map_set(&vm.globals, name, val))
             {
                 map_delete(&vm.globals, name);
-                runtimeError("Cannot set to undefined variable : '%s'", name->chars);
+                runtime_error("Cannot set to undefined variable : '%s'", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
             break;
@@ -376,12 +376,12 @@ static InterpretResult run()
 InterpretResult interpret(const char *source)
 {
     Chunk chunk;
-    InitChunk(&chunk);
+    init_chunk(&chunk);
 
     int is_error = compile(source, &chunk);
     if (is_error)
     {
-        FreeChunk(&chunk);
+        free_chunk(&chunk);
         return INTERPRET_COMPILE_ERROR;
     }
 
@@ -390,13 +390,13 @@ InterpretResult interpret(const char *source)
 
     InterpretResult result = run();
 
-    FreeChunk(&chunk);
+    free_chunk(&chunk);
     return result;
 }
 
 // STACK
 
-void InitStack(Stack *stack)
+void init_stack(Stack *stack)
 {
     stack->items = NULL;
     stack->size = 0;

@@ -93,7 +93,7 @@ static int peek(TokenType token_type)
 
 void emit_byte(uint8_t byte)
 {
-    WriteChunk(current_chunk(), byte, parser.previous.line_number);
+    write_chunk(current_chunk(), byte, parser.previous.line_number);
 }
 
 void emit_bytes(uint8_t byte1, uint8_t byte2)
@@ -156,18 +156,24 @@ Precedence _get_presedence(TokenType token_type)
 static void number()
 {
     Value value = VALUE_NUMBER(strtod(parser.previous.start, NULL));
-    WriteConstant(current_chunk(), value, parser.previous.line_number);
+    write_constant(current_chunk(), value, parser.previous.line_number);
     // uint8_t idx = AddConstant(current_chunk(), value);
     // emit_bytes(OP_CONSTANT, idx);
 }
 
-static void nil(int canAssign)
+static void nil(int can_assign)
 {
+    if (can_assign)
+    {
+    }
     emit_byte(OP_NIL);
 }
 
-static void boolean(int canAssign)
+static void boolean(int can_assign)
 {
+    if (can_assign)
+    {
+    }
     switch (parser.previous.type)
     {
     case TOKEN_TRUE: {
@@ -184,11 +190,11 @@ static void boolean(int canAssign)
     }
 }
 
-static void variable(int can_parse_set)
+static void variable(int can_assign)
 {
     uint32_t identifier_idx = identifier_constant(&parser.previous);
 
-    if (can_parse_set && match(TOKEN_EQUAL))
+    if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
         emit_byte(OP_SET_GLOBAL);
@@ -201,14 +207,20 @@ static void variable(int can_parse_set)
     }
 }
 
-static void string(int canAssign)
+static void string(int can_assign)
 {
-    WriteConstant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
-                  parser.previous.line_number);
+    if (can_assign)
+    {
+    }
+    write_constant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
+                   parser.previous.line_number);
 }
 
-static void unary(int canAssign)
+static void unary(int can_assign)
 {
+    if (can_assign)
+    {
+    }
     TokenType token_type = parser.previous.type;
     parsePrecedence(get_rule(token_type)->precedence + 1);
 
@@ -229,8 +241,11 @@ static void unary(int canAssign)
     }
 }
 
-static void grouping(int canAssign)
+static void grouping(int can_assign)
 {
+    if (can_assign)
+    {
+    }
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
 }
@@ -243,8 +258,11 @@ static void ternary()
     emit_byte(OP_TERNARY);
 }
 
-static void binary(int canAssign)
+static void binary(int can_assign)
 {
+    if (can_assign)
+    {
+    }
     TokenType token_type = parser.previous.type;
     Precedence presedence = get_rule(token_type)->precedence;
 
@@ -445,7 +463,7 @@ static void synchronize()
 static uint32_t identifier_constant(const Token *token)
 {
     ObjectString *string = copy_string(token->start, token->length);
-    return AddLongConstant(current_chunk(), VALUE_OBJ(string));
+    return add_long_constant(current_chunk(), VALUE_OBJ(string));
 }
 
 static void define_variable(uint32_t identifier_idx)

@@ -1,14 +1,14 @@
 #include "long_value.h"
 #include "memory.h"
 
-void InitLongValues(LongValues *values)
+void init_long_values(LongValues *values)
 {
     values->capacity = 0;
     values->values = NULL;
     values->count = 0;
 }
 
-void AppendLongValues(LongValues *values, Value newItem)
+void append_long_values(LongValues *values, Value newItem)
 {
     if (values->capacity < values->count + 1)
     {
@@ -20,8 +20,8 @@ void AppendLongValues(LongValues *values, Value newItem)
     values->values[values->count++] = newItem;
 }
 
-void FreeLongValues(LongValues *values)
+void free_long_values(LongValues *values)
 {
     FREE_ARRAY(Value, values->values, values->capacity);
-    InitLongValues(values);
+    init_long_values(values);
 }
