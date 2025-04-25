@@ -1,6 +1,8 @@
 #include "compiler.h"
 #include "object.h"
 
+extern int IS_IN_REPL;
+
 int line_number = -1;
 
 typedef struct
@@ -400,7 +402,14 @@ static void expression_statement()
 {
     expression();
     consume(TOKEN_SEMICOLON, "Expected ';' after value");
-    emit_byte(OP_POP);
+    if (IS_IN_REPL)
+    {
+        emit_byte(OP_PRINT);
+    }
+    else
+    {
+        emit_byte(OP_POP);
+    }
 }
 
 static void statement()
@@ -446,10 +455,15 @@ static void define_variable(uint32_t identifier_idx)
     emit_constant_byte(identifier_idx);
 }
 
-static void var_declaration()
+static int parse_variable()
 {
     consume(TOKEN_IDENTIFIER, "Expected variable name.");
-    uint32_t identifier_idx = identifier_constant(&parser.previous);
+    return identifier_constant(&parser.previous);
+}
+
+static void var_declaration()
+{
+    uint32_t identifier_idx = parse_variable();
 
     if (peek(TOKEN_EQUAL))
     {

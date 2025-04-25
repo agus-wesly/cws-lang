@@ -1,8 +1,12 @@
 #include "vm.h"
 
+int IS_IN_REPL = 0;
+
 void rep()
 {
+    IS_IN_REPL = 1;
     char line[1024];
+    memset(line, 0, 1024);
     for (;;)
     {
         printf("> ");
@@ -13,7 +17,6 @@ void rep()
         if (line[0] == '\n')
             break;
 
-        printf("You type : %s", line);
         // Process the input
         interpret(line);
     }
