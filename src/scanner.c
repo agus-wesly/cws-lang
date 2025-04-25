@@ -307,18 +307,3 @@ void setup_scanner(char *source)
 {
     scanner.current = source;
 }
-
-/* TRIES */
-/*
- * str = "for"
- * current = root;
- * *current_str = f;
- * while(current && current != end && current_str != '\0')
- *  for each child in current:
- *   if child == current_str:
- *       current_str++;
- *       current = child;
- *       break;
- *
- * return current == end && current_str == '\0'
- * */
