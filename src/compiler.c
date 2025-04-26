@@ -236,26 +236,19 @@ static void variable(int can_assign)
     uint8_t OP_GET, OP_SET;
     uint32_t identifier_idx;
 
-    if (current->depth > 0)
-    {
-        OP_GET = OP_GET_LOCAL;
-        OP_SET = OP_SET_LOCAL;
-        int find_idx = find_local(parser.previous);
-        if (find_idx < 0)
-        {
-            error("Unknown variable");
-            identifier_idx = 0;
-        }
-        else
-        {
-            identifier_idx = find_idx;
-        }
-    }
-    else
+    int find_idx = find_local(parser.previous);
+
+    if (current->depth == 0 || find_idx == -1)
     {
         OP_GET = OP_GET_GLOBAL;
         OP_SET = OP_SET_GLOBAL;
         identifier_idx = identifier_constant(&parser.previous);
+    }
+    else
+    {
+        OP_GET = OP_GET_LOCAL;
+        OP_SET = OP_SET_LOCAL;
+        identifier_idx = find_idx;
     }
 
     if (can_assign && match(TOKEN_EQUAL))
