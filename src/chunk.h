@@ -31,6 +31,8 @@ typedef enum
     OP_GLOBAL_VAR,
     OP_GET_GLOBAL,
     OP_SET_GLOBAL,
+    OP_GET_LOCAL,
+    OP_SET_LOCAL,
 } OpCode;
 
 typedef struct

@@ -168,6 +168,18 @@ static InterpretResult run()
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants->values[READ_BYTE()])
 #define STRING() (AS_STRING(READ_CONSTANT()))
+#define READ_LONG_BYTE()                                                                                               \
+    ({                                                                                                                 \
+        uint32_t res = 0;                                                                                              \
+        int i = 0;                                                                                                     \
+        do                                                                                                             \
+        {                                                                                                              \
+            res |= ((uint32_t)READ_BYTE() << (8 * (3 - i)));                                                           \
+            ++i;                                                                                                       \
+        } while (i < 4);                                                                                               \
+        res;                                                                                                           \
+    })
+
 #define READ_LONG_CONSTANT()                                                                                           \
     ({                                                                                                                 \
         uint32_t res = 0;                                                                                              \
@@ -186,7 +198,7 @@ static InterpretResult run()
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
                                                                                                                        \
         {                                                                                                              \
-            runtime_error("Operand must be of type number");                                                            \
+            runtime_error("Operand must be of type number");                                                           \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
@@ -223,12 +235,12 @@ static InterpretResult run()
         for (Value *cur = vm.stack->items; cur < vm.stackPointer; ++cur)
         {
             // Value foo = *cur;
-            PrintValue(*cur);
+            print_value(*cur);
             printf(",");
         }
         printf("]");
         printf("\n");
-        DisassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
+        disassemble_instruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
         printf("\n");
 #endif
 
@@ -359,6 +371,18 @@ static InterpretResult run()
                 runtime_error("Cannot set to undefined variable : '%s'", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
+            break;
+        }
+
+        case OP_GET_LOCAL: {
+            uint32_t idx = READ_LONG_BYTE();
+            push(vm.stack->items[idx]);
+            break;
+        }
+
+        case OP_SET_LOCAL: {
+            uint32_t idx = READ_LONG_BYTE();
+            vm.stack->items[idx] = PEEK(0);
             break;
         }
 

@@ -13,6 +13,21 @@ typedef struct
     int is_panic;
 } Parser;
 
+#define LOCAL_MAX_LENGTH UINT8_MAX + 1
+
+typedef struct
+{
+    Token name;
+    int depth;
+} Local;
+
+typedef struct
+{
+    Local locals[LOCAL_MAX_LENGTH];
+    int count;
+    int depth;
+} Compiler;
+
 static void expression();
 static void parsePrecedence(Precedence presedence);
 static ParseRule *get_rule(TokenType token_type);
@@ -23,6 +38,7 @@ static int match(TokenType type);
 
 Parser parser;
 Chunk *compiling_chunk;
+Compiler *current = NULL;
 
 Chunk *current_chunk()
 {
@@ -68,6 +84,11 @@ static void advance()
     for (;;)
     {
         parser.current = scan_token();
+        if (parser.current.type == TOKEN_COMMENT)
+        {
+            continue;
+        }
+
         if (parser.current.type != TOKEN_ERROR)
             break;
 
@@ -190,19 +211,62 @@ static void boolean(int can_assign)
     }
 }
 
+int compare_token(Token *t1, Token *t2)
+{
+    if (t1->type != t2->type)
+        return 0;
+
+    return (memcmp(t1->start, t2->start, t1->length) == 0);
+}
+
+int find_local(Token token)
+{
+    for (int i = current->count - 1; i >= 0; --i)
+    {
+        Local *local = &current->locals[i];
+        if (compare_token(&token, &local->name))
+            return i;
+    }
+
+    return -1;
+}
+
 static void variable(int can_assign)
 {
-    uint32_t identifier_idx = identifier_constant(&parser.previous);
+    uint8_t OP_GET, OP_SET;
+    uint32_t identifier_idx;
+
+    if (current->depth > 0)
+    {
+        OP_GET = OP_GET_LOCAL;
+        OP_SET = OP_SET_LOCAL;
+        int find_idx = find_local(parser.previous);
+        if (find_idx < 0)
+        {
+            error("Unknown variable");
+            identifier_idx = 0;
+        }
+        else
+        {
+            identifier_idx = find_idx;
+        }
+    }
+    else
+    {
+        OP_GET = OP_GET_GLOBAL;
+        OP_SET = OP_SET_GLOBAL;
+        identifier_idx = identifier_constant(&parser.previous);
+    }
 
     if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
-        emit_byte(OP_SET_GLOBAL);
+        emit_byte(OP_SET);
         emit_constant_byte(identifier_idx);
     }
     else
     {
-        emit_byte(OP_GET_GLOBAL);
+        emit_byte(OP_GET);
         emit_constant_byte(identifier_idx);
     }
 }
@@ -398,6 +462,11 @@ static void parsePrecedence(Precedence precedence)
     }
 }
 
+static int check(TokenType type)
+{
+    return parser.current.type == type;
+}
+
 static int match(TokenType type)
 {
     if (parser.current.type == type)
@@ -414,6 +483,42 @@ static void print_statement()
     expression();
     consume(TOKEN_SEMICOLON, "Expected ';' after value");
     emit_byte(OP_PRINT);
+}
+
+static void begin_scope()
+{
+    current->depth++;
+}
+
+static void end_scope()
+{
+    current->depth--;
+
+    for (int i = current->count - 1; i >= 0; --i)
+    {
+        Local local = current->locals[i];
+        if (local.depth > current->depth)
+        {
+            emit_byte(OP_POP);
+            current->count--;
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+
+static void block_statement()
+{
+    begin_scope();
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
+    {
+        declaration();
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' at the end of block");
+
+    end_scope();
 }
 
 static void expression_statement()
@@ -436,6 +541,10 @@ static void statement()
     {
         print_statement();
     }
+    else if (match(TOKEN_LEFT_BRACE))
+    {
+        block_statement();
+    }
     else
     {
         expression_statement();
@@ -449,10 +558,13 @@ static void synchronize()
     {
         if (match(TOKEN_SEMICOLON))
             return;
+
         switch (parser.current.type)
         {
         case TOKEN_PRINT:
+        case TOKEN_RIGHT_BRACE:
             return;
+
         default:;
         }
 
@@ -466,6 +578,16 @@ static uint32_t identifier_constant(const Token *token)
     return add_long_constant(current_chunk(), VALUE_OBJ(string));
 }
 
+static void add_local(Token identifier)
+{
+    if (current->count == LOCAL_MAX_LENGTH)
+        return;
+
+    Local *local = &current->locals[current->count++];
+    local->name = identifier;
+    local->depth = current->depth;
+}
+
 static void define_variable(uint32_t identifier_idx)
 {
     emit_byte(OP_GLOBAL_VAR);
@@ -476,7 +598,16 @@ static void define_variable(uint32_t identifier_idx)
 static int parse_variable()
 {
     consume(TOKEN_IDENTIFIER, "Expected variable name.");
-    return identifier_constant(&parser.previous);
+
+    if (current->depth > 0)
+    {
+        add_local(parser.previous);
+        return 0;
+    }
+    else
+    {
+        return identifier_constant(&parser.previous);
+    }
 }
 
 static void var_declaration()
@@ -494,7 +625,14 @@ static void var_declaration()
     }
 
     consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration");
-    define_variable(identifier_idx);
+
+    if (current->depth > 0)
+    {
+    }
+    else
+    {
+        define_variable(identifier_idx);
+    }
 }
 
 static void declaration()
@@ -513,6 +651,13 @@ static void declaration()
     }
 }
 
+void init_compiler(Compiler *compiler)
+{
+    compiler->count = 0;
+    compiler->depth = 0;
+    current = compiler;
+}
+
 int compile(const char *source, Chunk *chunk)
 {
     compiling_chunk = chunk;
@@ -521,8 +666,9 @@ int compile(const char *source, Chunk *chunk)
     parser.is_panic = 0;
 
     init_scanner(source);
-    // expression();
-    // consume(TOKEN_EOF, "Expect the end of expression");
+
+    Compiler compiler;
+    init_compiler(&compiler);
 
     advance();
     while (!match(TOKEN_EOF))
