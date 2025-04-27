@@ -225,7 +225,13 @@ int find_local(Token token)
     {
         Local *local = &current->locals[i];
         if (compare_token(&token, &local->name))
+        {
+            if (local->depth == -1)
+            {
+                error("Can't read local variable in its own initializer.");
+            }
             return i;
+        }
     }
 
     return -1;
@@ -555,7 +561,7 @@ static void synchronize()
         switch (parser.current.type)
         {
         case TOKEN_PRINT:
-        case TOKEN_RIGHT_BRACE:
+        case TOKEN_LEFT_BRACE:
             return;
 
         default:;
@@ -571,13 +577,19 @@ static uint32_t identifier_constant(const Token *token)
     return add_long_constant(current_chunk(), VALUE_OBJ(string));
 }
 
-static void add_local(Token identifier)
+static void declare_local(Token identifier)
 {
     if (current->count == LOCAL_MAX_LENGTH)
         return;
 
     Local *local = &current->locals[current->count++];
     local->name = identifier;
+    local->depth = -1;
+}
+
+static void define_local()
+{
+    Local *local = &current->locals[current->count - 1];
     local->depth = current->depth;
 }
 
@@ -594,7 +606,22 @@ static int parse_variable()
 
     if (current->depth > 0)
     {
-        add_local(parser.previous);
+        for (int i = current->count - 1; i >= 0; --i)
+        {
+            Local *local = &current->locals[i];
+            if (local->depth == -1 || local->depth < current->depth)
+            {
+                break;
+            }
+
+            if (compare_token(&parser.previous, &local->name))
+            {
+                error("Redeclaration of variable");
+                return 0;
+            }
+        }
+
+        declare_local(parser.previous);
         return 0;
     }
     else
@@ -621,6 +648,7 @@ static void var_declaration()
 
     if (current->depth > 0)
     {
+        define_local();
     }
     else
     {
