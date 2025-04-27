@@ -578,6 +578,7 @@ static void synchronize()
         {
         case TOKEN_PRINT:
         case TOKEN_LEFT_BRACE:
+        case TOKEN_RIGHT_BRACE:
             return;
 
         default:;
@@ -716,6 +717,7 @@ int compile(const char *source, Chunk *chunk)
     while (!match(TOKEN_EOF))
     {
         declaration();
+
     }
 
     end_compiler();
