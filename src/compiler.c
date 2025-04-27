@@ -13,8 +13,7 @@ typedef struct
     int is_panic;
 } Parser;
 
-// TODO : extend to have more than this
-#define LOCAL_MAX_LENGTH UINT8_MAX + 1
+#define LOCAL_MAX_LENGTH 2056
 
 typedef struct
 {
@@ -25,6 +24,7 @@ typedef struct
 
 typedef struct
 {
+    // TODO : make this to be a hashmap
     Local locals[LOCAL_MAX_LENGTH];
     int count;
     int depth;
@@ -596,8 +596,10 @@ static uint32_t identifier_constant(const Token *token)
 
 static void declare_local(Token identifier, int is_assignable)
 {
-    if (current->count == LOCAL_MAX_LENGTH)
+    if (current->count == LOCAL_MAX_LENGTH) {
+        error("Already reach the local variable limit");
         return;
+    }
 
     Local *local = &current->locals[current->count++];
     local->name = identifier;
@@ -649,7 +651,6 @@ static int parse_variable(int is_assignable)
 
 static void var_declaration(int is_assignable)
 {
-    // TODO : add support for const
     uint32_t identifier_idx = parse_variable(is_assignable);
 
     if (peek(TOKEN_EQUAL))
