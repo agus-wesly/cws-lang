@@ -99,8 +99,6 @@ static TokenType get_token_type()
     {
     case 'a':
         return match_token(1, 2, "nd", TOKEN_AND);
-    case 'c':
-        return match_token(1, 4, "lass", TOKEN_CLASS);
     case 'e':
         return match_token(1, 3, "lse", TOKEN_ELSE);
     case 'i':
@@ -119,6 +117,18 @@ static TokenType get_token_type()
         return match_token(1, 2, "et", TOKEN_LET);
     case 'w':
         return match_token(1, 4, "hile", TOKEN_WHILE);
+    case 'c':
+        if ((scanner.current - scanner.start) > 1)
+        {
+            switch (scanner.start[1])
+            {
+            case 'l':
+                return match_token(2, 3, "ass", TOKEN_CLASS);
+            case 'o':
+                return match_token(2, 3, "nst", TOKEN_CONST);
+            }
+        }
+        break;
 
     case 'f': {
         if ((scanner.current - scanner.start) > 1)

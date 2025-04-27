@@ -13,12 +13,14 @@ typedef struct
     int is_panic;
 } Parser;
 
+// TODO : extend to have more than this
 #define LOCAL_MAX_LENGTH UINT8_MAX + 1
 
 typedef struct
 {
     Token name;
     int depth;
+    int is_assignable;
 } Local;
 
 typedef struct
@@ -35,6 +37,7 @@ static void declaration();
 static void statement();
 static uint32_t identifier_constant(const Token *token);
 static int match(TokenType type);
+static int check(TokenType type);
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -237,6 +240,12 @@ int find_local(Token token)
     return -1;
 }
 
+int is_local_assignable(uint32_t identifier_idx)
+{
+    Local *local = &current->locals[identifier_idx];
+    return local->is_assignable;
+}
+
 static void variable(int can_assign)
 {
     uint8_t OP_GET, OP_SET;
@@ -257,8 +266,15 @@ static void variable(int can_assign)
         identifier_idx = find_idx;
     }
 
-    if (can_assign && match(TOKEN_EQUAL))
+    if (can_assign && check(TOKEN_EQUAL))
     {
+        // TODO : handle case when trying to mutate global const var
+        if (OP_SET == OP_SET_LOCAL && !is_local_assignable(identifier_idx))
+        {
+            error("Cannot assign to const variable");
+        }
+        advance();
+
         expression();
         emit_byte(OP_SET);
         emit_constant_byte(identifier_idx);
@@ -577,7 +593,7 @@ static uint32_t identifier_constant(const Token *token)
     return add_long_constant(current_chunk(), VALUE_OBJ(string));
 }
 
-static void declare_local(Token identifier)
+static void declare_local(Token identifier, int is_assignable)
 {
     if (current->count == LOCAL_MAX_LENGTH)
         return;
@@ -585,6 +601,7 @@ static void declare_local(Token identifier)
     Local *local = &current->locals[current->count++];
     local->name = identifier;
     local->depth = -1;
+    local->is_assignable = is_assignable;
 }
 
 static void define_local()
@@ -596,11 +613,10 @@ static void define_local()
 static void define_variable(uint32_t identifier_idx)
 {
     emit_byte(OP_GLOBAL_VAR);
-    // TODO : Maybe we can check in compile time ??
     emit_constant_byte(identifier_idx);
 }
 
-static int parse_variable()
+static int parse_variable(int is_assignable)
 {
     consume(TOKEN_IDENTIFIER, "Expected variable name.");
 
@@ -621,7 +637,7 @@ static int parse_variable()
             }
         }
 
-        declare_local(parser.previous);
+        declare_local(parser.previous, is_assignable);
         return 0;
     }
     else
@@ -630,9 +646,10 @@ static int parse_variable()
     }
 }
 
-static void var_declaration()
+static void var_declaration(int is_assignable)
 {
-    uint32_t identifier_idx = parse_variable();
+    // TODO : add support for const
+    uint32_t identifier_idx = parse_variable(is_assignable);
 
     if (peek(TOKEN_EQUAL))
     {
@@ -660,7 +677,11 @@ static void declaration()
 {
     if (match(TOKEN_LET))
     {
-        var_declaration();
+        var_declaration(1);
+    }
+    else if (match(TOKEN_CONST))
+    {
+        var_declaration(0);
     }
     else
     {
