@@ -536,6 +536,44 @@ static void block_statement()
     end_scope();
 }
 
+int emit_jump(uint8_t op)
+{
+    emit_byte(op);
+    emit_byte(0xff);
+    emit_byte(0xff);
+
+    return current_chunk()->count - 2;
+}
+
+void patch_jump(int jump_idx)
+{
+    int jump = current_chunk()->count - jump_idx - 2;
+    current_chunk()->code[jump_idx] = (jump >> 8) & 0xff;
+    current_chunk()->code[jump_idx + 1] = jump & 0xff;
+}
+
+static void if_statement()
+{
+    consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' before expression");
+
+    int then_jump = emit_jump(OP_JUMP_IF_FALSE);
+    emit_byte(OP_POP);
+    statement();
+
+    int else_jump = emit_jump(OP_JUMP);
+    patch_jump(then_jump);
+
+    emit_byte(OP_POP);
+    if (match(TOKEN_ELSE))
+    {
+        statement();
+    }
+    patch_jump(else_jump);
+
+}
+
 static void expression_statement()
 {
     expression();
@@ -559,6 +597,10 @@ static void statement()
     else if (match(TOKEN_LEFT_BRACE))
     {
         block_statement();
+    }
+    else if (match(TOKEN_IF))
+    {
+        if_statement();
     }
     else
     {
@@ -596,7 +638,8 @@ static uint32_t identifier_constant(const Token *token)
 
 static void declare_local(Token identifier, int is_assignable)
 {
-    if (current->count == LOCAL_MAX_LENGTH) {
+    if (current->count == LOCAL_MAX_LENGTH)
+    {
         error("Already reach the local variable limit");
         return;
     }
@@ -718,7 +761,6 @@ int compile(const char *source, Chunk *chunk)
     while (!match(TOKEN_EOF))
     {
         declaration();
-
     }
 
     end_compiler();

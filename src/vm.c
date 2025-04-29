@@ -166,6 +166,7 @@ static InterpretResult run()
 {
 #define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define READ_BYTE() (*vm.ip++)
+#define READ_SHORT() ((vm.ip += 2), ((uint16_t)(vm.ip[-2] | vm.ip[-1])))
 #define READ_CONSTANT() (vm.chunk->constants->values[READ_BYTE()])
 #define STRING() (AS_STRING(READ_CONSTANT()))
 #define READ_LONG_BYTE()                                                                                               \
@@ -383,6 +384,21 @@ static InterpretResult run()
         case OP_SET_LOCAL: {
             uint32_t idx = READ_LONG_BYTE();
             vm.stack->items[idx] = PEEK(0);
+            break;
+        }
+
+        case OP_JUMP_IF_FALSE: {
+            uint16_t jump = READ_SHORT();
+            if (is_falsy(PEEK(0)))
+            {
+                vm.ip += jump;
+            }
+            break;
+        }
+
+        case OP_JUMP: {
+            uint16_t jump = READ_SHORT();
+            vm.ip += jump;
             break;
         }
 
