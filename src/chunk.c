@@ -124,13 +124,15 @@ int constantLongInstruction(const char *name, Chunk *chunk, int offset)
     return offset + 1 + 4;
 }
 
-int jump_instruction(const char *name, Chunk *chunk, int offset)
+int jump_instruction(const char *name, int sign, Chunk *chunk, int offset)
 {
 
-    printf("%-20s %d ", name, offset);
-    uint16_t jump = (uint16_t)((chunk->code[offset + 1]) | (chunk->code[offset + 2]));
-    printf("%i\n", jump);
-    return offset + 2;
+    uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+    jump |= chunk->code[offset + 2];
+    printf("%-20s %d -> %d", name, offset, offset + 3 + sign * jump);
+    printf("\n");
+
+    return offset + 3;
 }
 
 uint32_t getLine(Chunk *chunk, uint8_t idx)
@@ -245,10 +247,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return constantLongInstruction("OP_SET_GLOBAL", chunk, offset);
     }
     case OP_JUMP_IF_FALSE: {
-        return jump_instruction("OP_JUMP_IF_FALSE", chunk, offset);
+        return jump_instruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
     }
     case OP_JUMP: {
-        return jump_instruction("OP_JUMP", chunk, offset);
+        return jump_instruction("OP_JUMP", 1, chunk, offset);
     }
     default:
         // printf("Unknown instruction\n");
