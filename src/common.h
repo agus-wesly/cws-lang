@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// #define DEBUG_TRACE_EXECUTION
+#define DEBUG_TRACE_EXECUTION
 // #define DEBUG_PRINT
 
 #endif // !ws_common_h

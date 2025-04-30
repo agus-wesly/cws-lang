@@ -255,6 +255,9 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_JUMP: {
         return jump_instruction("OP_JUMP", 1, chunk, offset);
     }
+    case OP_LOOP: {
+        return jump_instruction("OP_LOOP", -1, chunk, offset);
+    }
     default:
         // printf("Unknown instruction\n");
         return offset + 1;
