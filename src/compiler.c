@@ -138,6 +138,11 @@ int emit_jump(uint8_t op)
 void patch_jump(int jump_idx)
 {
     int jump = current_chunk()->count - jump_idx - 2;
+    if (jump > UINT16_MAX)
+    {
+        error("Too many jump statement");
+    }
+
     current_chunk()->code[jump_idx] = (jump >> 8) & 0xff;
     current_chunk()->code[jump_idx + 1] = jump & 0xff;
 }
