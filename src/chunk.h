@@ -35,6 +35,7 @@ typedef enum
     OP_SET_LOCAL,
 
     OP_JUMP_IF_FALSE,
+    OP_JUMP_IF_TRUE,
     OP_JUMP,
 } OpCode;
 

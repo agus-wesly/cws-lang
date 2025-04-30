@@ -126,6 +126,22 @@ void emit_bytes(uint8_t byte1, uint8_t byte2)
     emit_byte(byte2);
 }
 
+int emit_jump(uint8_t op)
+{
+    emit_byte(op);
+    emit_byte(0xff);
+    emit_byte(0xff);
+
+    return current_chunk()->count - 2;
+}
+
+void patch_jump(int jump_idx)
+{
+    int jump = current_chunk()->count - jump_idx - 2;
+    current_chunk()->code[jump_idx] = (jump >> 8) & 0xff;
+    current_chunk()->code[jump_idx + 1] = jump & 0xff;
+}
+
 void emit_constant_byte(uint32_t idx)
 {
     for (size_t i = 0; i < 4; ++i)
@@ -390,6 +406,33 @@ static void binary(int can_assign)
     };
     }
 }
+
+static void and_(int can_assign)
+{
+    if (can_assign)
+    {
+    }
+
+    int jump = emit_jump(OP_JUMP_IF_FALSE);
+
+    emit_byte(OP_POP);
+    parse_precedence(PREC_AND);
+
+    patch_jump(jump);
+}
+
+static void or_(int can_assign)
+{
+    if (can_assign)
+    {
+    }
+
+    int jump = emit_jump(OP_JUMP_IF_TRUE);
+    emit_byte(OP_POP);
+    parse_precedence(PREC_OR);
+
+    patch_jump(jump);
+}
 /*===================== */
 
 ParseRule rules[] = {
@@ -409,8 +452,8 @@ ParseRule rules[] = {
     [TOKEN_LET] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, NULL, PREC_NONE},
-    [TOKEN_AND] = {NULL, NULL, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_, PREC_OR},
+    [TOKEN_AND] = {NULL, and_, PREC_AND},
     [TOKEN_NIL] = {nil, NULL, PREC_NONE},
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_TRUE] = {boolean, NULL, PREC_NONE},
@@ -536,22 +579,6 @@ static void block_statement()
     end_scope();
 }
 
-int emit_jump(uint8_t op)
-{
-    emit_byte(op);
-    emit_byte(0xff);
-    emit_byte(0xff);
-
-    return current_chunk()->count - 2;
-}
-
-void patch_jump(int jump_idx)
-{
-    int jump = current_chunk()->count - jump_idx - 2;
-    current_chunk()->code[jump_idx] = (jump >> 8) & 0xff;
-    current_chunk()->code[jump_idx + 1] = jump & 0xff;
-}
-
 static void if_statement()
 {
     consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
@@ -571,7 +598,6 @@ static void if_statement()
         statement();
     }
     patch_jump(else_jump);
-
 }
 
 static void expression_statement()

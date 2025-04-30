@@ -193,7 +193,7 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return simple_instruction("OP_TRUE", offset);
     }
     case OP_FALSE: {
-        return simple_instruction("OP_NIL", offset);
+        return simple_instruction("OP_FALSE", offset);
     }
 
     case OP_NIL: {
@@ -248,6 +248,9 @@ int disassemble_instruction(Chunk *chunk, int offset)
     }
     case OP_JUMP_IF_FALSE: {
         return jump_instruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+    }
+    case OP_JUMP_IF_TRUE: {
+        return jump_instruction("OP_JUMP_IF_TRUE", 1, chunk, offset);
     }
     case OP_JUMP: {
         return jump_instruction("OP_JUMP", 1, chunk, offset);

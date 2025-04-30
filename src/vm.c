@@ -396,6 +396,15 @@ static InterpretResult run()
             break;
         }
 
+        case OP_JUMP_IF_TRUE: {
+            uint16_t jump = READ_SHORT();
+            if (!is_falsy(PEEK(0)))
+            {
+                vm.ip += jump;
+            }
+            break;
+        }
+
         case OP_JUMP: {
             uint16_t jump = READ_SHORT();
             vm.ip += jump;
