@@ -31,7 +31,7 @@ typedef struct
 } Compiler;
 
 static void expression();
-static void parsePrecedence(Precedence presedence);
+static void parse_precedence(Precedence presedence);
 static ParseRule *get_rule(TokenType token_type);
 static void declaration();
 static void statement();
@@ -301,7 +301,7 @@ static void unary(int can_assign)
     {
     }
     TokenType token_type = parser.previous.type;
-    parsePrecedence(get_rule(token_type)->precedence + 1);
+    parse_precedence(get_rule(token_type)->precedence + 1);
 
     switch (token_type)
     {
@@ -345,7 +345,7 @@ static void binary(int can_assign)
     TokenType token_type = parser.previous.type;
     Precedence presedence = get_rule(token_type)->precedence;
 
-    parsePrecedence(presedence + 1);
+    parse_precedence(presedence + 1);
 
     switch (token_type)
     {
@@ -438,7 +438,7 @@ ParseRule rules[] = {
 
 static void expression()
 {
-    parsePrecedence(PREC_ASSIGNMENT);
+    parse_precedence(PREC_ASSIGNMENT);
 }
 
 static ParseRule *get_rule(TokenType token_type)
@@ -446,7 +446,7 @@ static ParseRule *get_rule(TokenType token_type)
     return &rules[token_type];
 }
 
-static void parsePrecedence(Precedence precedence)
+static void parse_precedence(Precedence precedence)
 {
     advance();
     ParseFn prefix_rule = get_rule(parser.previous.type)->prefix;
