@@ -600,6 +600,36 @@ static void if_statement()
     patch_jump(else_jump);
 }
 
+static void emit_loop(int offset)
+{
+    emit_byte(OP_LOOP);
+    int back_jump = current_chunk()->count - offset + 2;
+    if (back_jump > UINT16_MAX)
+    {
+        error("To many jump statement");
+    }
+
+    emit_byte((back_jump >> 8) & 0xff);
+    emit_byte(back_jump & 0xff);
+}
+
+static void while_statement()
+{
+    int offset = current_chunk()->count;
+    consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' before expression");
+
+    int then_jump = emit_jump(OP_JUMP_IF_FALSE);
+
+    emit_byte(OP_POP);
+    statement();
+    emit_loop(offset);
+
+    patch_jump(then_jump);
+    emit_byte(OP_POP);
+}
+
 static void expression_statement()
 {
     expression();
@@ -627,6 +657,10 @@ static void statement()
     else if (match(TOKEN_IF))
     {
         if_statement();
+    }
+    else if (match(TOKEN_WHILE))
+    {
+        while_statement();
     }
     else
     {

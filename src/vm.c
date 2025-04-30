@@ -411,6 +411,12 @@ static InterpretResult run()
             break;
         }
 
+        case OP_LOOP: {
+            uint16_t jump = READ_SHORT();
+            vm.ip -= jump;
+            break;
+        }
+
         default:
             return INTERPRET_OK;
         }
