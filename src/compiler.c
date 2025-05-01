@@ -38,6 +38,7 @@ static void statement();
 static uint32_t identifier_constant(const Token *token);
 static int match(TokenType type);
 static int check(TokenType type);
+static void var_declaration(int is_assignable);
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -649,6 +650,62 @@ static void expression_statement()
     }
 }
 
+static void for_statement()
+{
+    begin_scope();
+    consume(TOKEN_LEFT_PAREN, "Expected '(' after for");
+
+    if (match(TOKEN_SEMICOLON))
+    {
+    }
+    else if (match(TOKEN_LET))
+    {
+        var_declaration(1);
+    }
+    else
+    {
+        expression_statement();
+    }
+
+    int offset = current_chunk()->count;
+    int then_jump = -1;
+    if (!match(TOKEN_SEMICOLON))
+    {
+        expression();
+        consume(TOKEN_SEMICOLON, "Expected ';' after expression");
+
+        then_jump = emit_jump(OP_JUMP_IF_FALSE);
+        emit_byte(OP_POP);
+    }
+
+    if (!check(TOKEN_RIGHT_PAREN))
+    {
+        int condition_jump = emit_jump(OP_JUMP);
+        int inc_offset = current_chunk()->count;
+
+        expression();
+        emit_byte(OP_POP);
+
+        emit_loop(offset);
+        offset = inc_offset;
+
+        patch_jump(condition_jump);
+    }
+
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' after for");
+
+    statement();
+    emit_loop(offset);
+
+    if (then_jump != -1)
+    {
+        patch_jump(then_jump);
+        emit_byte(OP_POP);
+    }
+
+    end_scope();
+}
+
 static void statement()
 {
     if (match(TOKEN_PRINT))
@@ -666,6 +723,10 @@ static void statement()
     else if (match(TOKEN_WHILE))
     {
         while_statement();
+    }
+    else if (match(TOKEN_FOR))
+    {
+        for_statement();
     }
     else
     {
