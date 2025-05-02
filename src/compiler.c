@@ -14,6 +14,7 @@ typedef struct
 } Parser;
 
 #define LOCAL_MAX_LENGTH 2056
+#define LOOP_STACK_MAX_LENGTH 255
 
 typedef struct
 {
@@ -28,7 +29,8 @@ typedef struct
     Local locals[LOCAL_MAX_LENGTH];
     int count;
     int depth;
-    int inside_loop;
+    int loop_count;
+    int *loop_stack[LOOP_STACK_MAX_LENGTH];
 } Compiler;
 
 static void expression();
@@ -578,14 +580,25 @@ static void begin_scope()
     current->depth++;
 }
 
-static void begin_loop()
+static void begin_loop(int *offset)
 {
-    current->inside_loop++;
+    // Push to stack
+    assert(current->loop_count <= LOOP_STACK_MAX_LENGTH && "Already reach max length of loop stack");
+
+    current->loop_stack[current->loop_count++] = offset;
+}
+
+static int *peek_loop()
+{
+    assert(current->loop_count > 0 && "Cannot peek loop stack if empty");
+    return current->loop_stack[current->loop_count - 1];
 }
 
 static void end_loop()
 {
-    current->inside_loop--;
+    // Pop the stack
+    assert(current->loop_count > 0 && "Cannot pop loop stack if empty");
+    current->loop_count--;
 }
 
 static void end_scope()
@@ -655,17 +668,23 @@ static void emit_loop(int offset)
 
 static void continue_statement()
 {
-    if (!current->inside_loop)
+    if (!current->loop_count)
     {
         error("'continue' statement is not inside loop statement");
     }
+
+    // We need offset to be able to move backward
+    int *offset = peek_loop();
+    emit_loop(*offset);
+
     consume(TOKEN_SEMICOLON, "Expected ';' after continue");
 }
 
 static void while_statement()
 {
-    begin_loop();
     int offset = current_chunk()->count;
+    begin_loop(&offset);
+
     consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected ')' before expression");
@@ -698,7 +717,6 @@ static void expression_statement()
 static void for_statement()
 {
     begin_scope();
-    begin_loop();
 
     consume(TOKEN_LEFT_PAREN, "Expected '(' after for");
 
@@ -715,6 +733,8 @@ static void for_statement()
     }
 
     int offset = current_chunk()->count;
+    begin_loop(&offset);
+
     int then_jump = -1;
     if (!match(TOKEN_SEMICOLON))
     {
@@ -972,7 +992,8 @@ void init_compiler(Compiler *compiler)
 {
     compiler->count = 0;
     compiler->depth = 0;
-    compiler->inside_loop = 0;
+    compiler->loop_count = 0;
+
     current = compiler;
 }
 
