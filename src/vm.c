@@ -343,6 +343,14 @@ static InterpretResult run()
             pop();
             break;
 
+        case OP_COMPARE: {
+            Value b = PEEK(0);
+            Value a = PEEK(1);
+
+            push(VALUE_BOOL(compare(a, b)));
+            break;
+        }
+
         case OP_GLOBAL_VAR: {
             ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
             map_set(&vm.globals, name, pop());
@@ -414,6 +422,22 @@ static InterpretResult run()
         case OP_LOOP: {
             uint16_t jump = READ_SHORT();
             vm.ip -= jump;
+            break;
+        }
+
+        case OP_MARK: {
+            vm.ip += 2;
+            break;
+        }
+
+        case OP_SWITCH_JUMP: {
+            vm.ip += 2;
+            uint8_t idx = *(vm.ip - 2);
+            uint16_t jump = ((uint16_t)(vm.chunk->code[idx] | vm.chunk->code[idx + 1]));
+            uint8_t dist = *(vm.ip-1);
+            // TODO : debug here
+            vm.ip += (jump - dist);
+
             break;
         }
 

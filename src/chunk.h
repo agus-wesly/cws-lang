@@ -27,6 +27,7 @@ typedef enum
     OP_NIL,
 
     OP_PRINT,
+    OP_COMPARE,
     OP_POP,
     OP_GLOBAL_VAR,
     OP_GET_GLOBAL,
@@ -36,14 +37,16 @@ typedef enum
 
     OP_JUMP_IF_FALSE,
     OP_JUMP_IF_TRUE,
+    OP_SWITCH_JUMP,
     OP_JUMP,
     OP_LOOP,
+    OP_MARK,
 } OpCode;
 
 typedef struct
 {
-    uint8_t capacity;
-    uint8_t count;
+    uint16_t capacity;
+    uint16_t count;
 
     uint8_t *code;
 

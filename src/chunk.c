@@ -261,6 +261,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_JUMP: {
         return jump_instruction("OP_JUMP", 1, chunk, offset);
     }
+    case OP_SWITCH_JUMP: {
+        printf("OP_SWITCH_JUMP\n");
+        return offset + 2;
+    }
     case OP_LOOP: {
         return jump_instruction("OP_LOOP", -1, chunk, offset);
     }

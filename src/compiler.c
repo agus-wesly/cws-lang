@@ -706,6 +706,69 @@ static void for_statement()
     end_scope();
 }
 
+static void default_statement()
+{
+    consume(TOKEN_COLON, "Expected ':' after default");
+    while (!check(TOKEN_RIGHT_BRACE))
+    {
+        statement();
+    }
+}
+
+static void case_statement(int jump_idx)
+{
+    consume(TOKEN_CASE, "Expected 'case' inside switch");
+    expression();
+
+    emit_byte(OP_COMPARE);
+
+    int jump_false = emit_jump(OP_JUMP_IF_FALSE);
+
+    emit_byte(OP_POP);
+    emit_byte(OP_POP);
+
+    consume(TOKEN_COLON, "Expected ':' after expression");
+    while (!check(TOKEN_CASE) && !check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
+    {
+        statement();
+    }
+
+    int curr_length = current_chunk()->count - (jump_idx - 1);
+
+    emit_byte(OP_SWITCH_JUMP);
+    emit_byte(jump_idx);
+    emit_byte(curr_length);
+
+    patch_jump(jump_false);
+
+    emit_byte(OP_POP);
+    emit_byte(OP_POP);
+}
+
+void switch_statement()
+{
+    consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression in switch");
+
+    consume(TOKEN_LEFT_BRACE, "Expected '{' before switch body");
+
+    int jump_idx = emit_jump(OP_MARK);
+
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
+    {
+        case_statement(jump_idx);
+    }
+    if (match(TOKEN_DEFAULT))
+    {
+        default_statement();
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' after switch body");
+
+    patch_jump(jump_idx);
+    emit_byte(OP_POP);
+}
+
 static void statement()
 {
     if (match(TOKEN_PRINT))
@@ -727,6 +790,10 @@ static void statement()
     else if (match(TOKEN_FOR))
     {
         for_statement();
+    }
+    else if (match(TOKEN_SWITCH))
+    {
+        switch_statement();
     }
     else
     {
