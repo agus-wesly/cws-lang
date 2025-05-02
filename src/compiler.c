@@ -28,6 +28,7 @@ typedef struct
     Local locals[LOCAL_MAX_LENGTH];
     int count;
     int depth;
+    int inside_loop;
 } Compiler;
 
 static void expression();
@@ -577,6 +578,16 @@ static void begin_scope()
     current->depth++;
 }
 
+static void begin_loop()
+{
+    current->inside_loop++;
+}
+
+static void end_loop()
+{
+    current->inside_loop--;
+}
+
 static void end_scope()
 {
     current->depth--;
@@ -642,8 +653,18 @@ static void emit_loop(int offset)
     emit_byte(back_jump & 0xff);
 }
 
+static void continue_statement()
+{
+    if (!current->inside_loop)
+    {
+        error("'continue' statement is not inside loop statement");
+    }
+    consume(TOKEN_SEMICOLON, "Expected ';' after continue");
+}
+
 static void while_statement()
 {
+    begin_loop();
     int offset = current_chunk()->count;
     consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
     expression();
@@ -657,6 +678,7 @@ static void while_statement()
 
     patch_jump(then_jump);
     emit_byte(OP_POP);
+    end_loop();
 }
 
 static void expression_statement()
@@ -676,6 +698,8 @@ static void expression_statement()
 static void for_statement()
 {
     begin_scope();
+    begin_loop();
+
     consume(TOKEN_LEFT_PAREN, "Expected '(' after for");
 
     if (match(TOKEN_SEMICOLON))
@@ -727,6 +751,7 @@ static void for_statement()
     }
 
     end_scope();
+    end_loop();
 }
 
 static void default_statement()
@@ -823,6 +848,10 @@ static void statement()
     {
         switch_statement();
     }
+    else if (match(TOKEN_CONTINUE))
+    {
+        continue_statement();
+    }
     else
     {
         expression_statement();
@@ -856,7 +885,6 @@ static uint32_t identifier_constant(const Token *token)
     ObjectString *string = copy_string(token->start, token->length);
     return add_long_constant(current_chunk(), VALUE_OBJ(string));
 }
-
 
 static void define_variable(uint32_t identifier_idx)
 {
@@ -944,6 +972,7 @@ void init_compiler(Compiler *compiler)
 {
     compiler->count = 0;
     compiler->depth = 0;
+    compiler->inside_loop = 0;
     current = compiler;
 }
 

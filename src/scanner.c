@@ -137,8 +137,20 @@ static TokenType get_token_type()
             {
             case 'l':
                 return match_token(2, 3, "ass", TOKEN_CLASS);
-            case 'o':
-                return match_token(2, 3, "nst", TOKEN_CONST);
+            case 'o': {
+                switch (scanner.start[3])
+                {
+                case 's': {
+                    return match_token(4, 1, "t", TOKEN_CONST);
+                }
+                case 't': {
+                    return match_token(4, 4, "inue", TOKEN_CONTINUE);
+                }
+                break;
+                }
+                        
+                break;
+            }
             case 'a':
                 return match_token(2, 2, "se", TOKEN_CASE);
             }
