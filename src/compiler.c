@@ -39,8 +39,6 @@ static uint32_t identifier_constant(const Token *token);
 static int match(TokenType type);
 static int check(TokenType type);
 static void var_declaration(int is_assignable);
-static void declare_local(Token identifier, int is_assignable);
-static void define_local();
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -547,6 +545,26 @@ static int match(TokenType type)
     return 0;
 }
 
+static void declare_local(Token identifier, int is_assignable)
+{
+    if (current->count == LOCAL_MAX_LENGTH)
+    {
+        error("Already reach the local variable limit");
+        return;
+    }
+
+    Local *local = &current->locals[current->count++];
+    local->name = identifier;
+    local->depth = -1;
+    local->is_assignable = is_assignable;
+}
+
+static void define_local()
+{
+    Local *local = &current->locals[current->count - 1];
+    local->depth = current->depth;
+}
+
 static void print_statement()
 {
     expression();
@@ -750,7 +768,7 @@ static void case_statement(int jump_idx)
     emit_byte(OP_POP);
 }
 
-void switch_statement()
+static void switch_statement()
 {
     begin_scope();
     consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
@@ -762,11 +780,9 @@ void switch_statement()
     define_local();
 
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression in switch");
-
     consume(TOKEN_LEFT_BRACE, "Expected '{' before switch body");
 
     int jump_idx = emit_jump(OP_MARK);
-
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
     {
         case_statement(jump_idx);
@@ -775,10 +791,9 @@ void switch_statement()
     {
         default_statement();
     }
+
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after switch body");
-
     patch_jump(jump_idx);
-
     end_scope();
 }
 
@@ -842,25 +857,6 @@ static uint32_t identifier_constant(const Token *token)
     return add_long_constant(current_chunk(), VALUE_OBJ(string));
 }
 
-static void declare_local(Token identifier, int is_assignable)
-{
-    if (current->count == LOCAL_MAX_LENGTH)
-    {
-        error("Already reach the local variable limit");
-        return;
-    }
-
-    Local *local = &current->locals[current->count++];
-    local->name = identifier;
-    local->depth = -1;
-    local->is_assignable = is_assignable;
-}
-
-static void define_local()
-{
-    Local *local = &current->locals[current->count - 1];
-    local->depth = current->depth;
-}
 
 static void define_variable(uint32_t identifier_idx)
 {
