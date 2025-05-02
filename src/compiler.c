@@ -752,11 +752,11 @@ static void case_statement(int jump_idx)
 
 void switch_statement()
 {
+    begin_scope();
     consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
 
-    // Should be declaring a new variable ??
-    Token switch_identifier = {.start = "__switch", .length = 8, .type = TOKEN_IDENTIFIER};
-
+    /* Workaround because we need to match the stack */
+    Token switch_identifier = {.start = "switch", .length = 6, .type = TOKEN_IDENTIFIER};
     declare_local(switch_identifier, 0);
     expression();
     define_local();
@@ -778,7 +778,8 @@ void switch_statement()
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after switch body");
 
     patch_jump(jump_idx);
-    emit_byte(OP_POP);
+
+    end_scope();
 }
 
 static void statement()
