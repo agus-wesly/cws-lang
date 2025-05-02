@@ -39,6 +39,8 @@ static uint32_t identifier_constant(const Token *token);
 static int match(TokenType type);
 static int check(TokenType type);
 static void var_declaration(int is_assignable);
+static void declare_local(Token identifier, int is_assignable);
+static void define_local();
 
 Parser parser;
 Chunk *compiling_chunk;
@@ -239,6 +241,9 @@ static void boolean(int can_assign)
 int compare_token(Token *t1, Token *t2)
 {
     if (t1->type != t2->type)
+        return 0;
+
+    if (t1->length != t2->length)
         return 0;
 
     return (memcmp(t1->start, t2->start, t1->length) == 0);
@@ -748,7 +753,14 @@ static void case_statement(int jump_idx)
 void switch_statement()
 {
     consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
+
+    // Should be declaring a new variable ??
+    Token switch_identifier = {.start = "__switch", .length = 8, .type = TOKEN_IDENTIFIER};
+
+    declare_local(switch_identifier, 0);
     expression();
+    define_local();
+
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression in switch");
 
     consume(TOKEN_LEFT_BRACE, "Expected '{' before switch body");
