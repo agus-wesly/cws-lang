@@ -35,6 +35,7 @@ typedef enum
     OP_GET_LOCAL,
     OP_SET_LOCAL,
 
+    OP_MARK_JUMP,
     OP_JUMP_IF_FALSE,
     OP_JUMP_IF_TRUE,
     OP_SWITCH_JUMP,

@@ -425,6 +425,11 @@ static InterpretResult run()
             break;
         }
 
+        case OP_MARK_JUMP: {
+            vm.ip += 2;
+            break;
+        }
+
         case OP_SWITCH: {
             push(VALUE_BOOL(0));
             break;

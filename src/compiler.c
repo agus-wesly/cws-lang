@@ -14,7 +14,8 @@ typedef struct
 } Parser;
 
 #define LOCAL_MAX_LENGTH 2056
-#define LOOP_STACK_MAX_LENGTH 255
+#define LOOP_STACK_MAX_LENGTH 2056
+#define JUMP_STACK_MAX_LENGTH 2056
 
 typedef struct
 {
@@ -29,8 +30,15 @@ typedef struct
     Local locals[LOCAL_MAX_LENGTH];
     int count;
     int depth;
+
+    /*continue statement*/
     int loop_count;
     int *loop_stack[LOOP_STACK_MAX_LENGTH];
+
+    /*break statement*/
+    int jump_count;
+    int jump_stack[LOOP_STACK_MAX_LENGTH];
+
 } Compiler;
 
 static void expression();
@@ -601,6 +609,27 @@ static void end_loop()
     current->loop_count--;
 }
 
+static void begin_jump(int offset)
+{
+    // Push to stack
+    assert(current->jump_count <= JUMP_STACK_MAX_LENGTH && "Already reach max length of jump stack");
+
+    current->jump_stack[current->jump_count++] = offset;
+}
+
+static int peek_jump()
+{
+    assert(current->jump_count > 0 && "Cannot peek jump stack if empty");
+    return current->jump_stack[current->jump_count - 1];
+}
+
+static void end_jump()
+{
+    // Pop the stack
+    assert(current->jump_count > 0 && "Cannot pop jump stack if empty");
+    current->jump_count--;
+}
+
 static void end_scope()
 {
     current->depth--;
@@ -671,6 +700,7 @@ static void continue_statement()
     if (!current->loop_count)
     {
         error("'continue' statement is not inside loop statement");
+        return;
     }
 
     // We need offset to be able to move backward
@@ -682,8 +712,20 @@ static void continue_statement()
 
 static void break_statement()
 {
+    if (!current->loop_count && !current->jump_count)
+    {
+        error("'break' statement is not inside loop statement");
+        return;
+    }
 
     consume(TOKEN_SEMICOLON, "Expected ';' after break");
+
+    int jump_idx = peek_jump();
+    int offset = current_chunk()->count - (jump_idx - 1);
+
+    emit_byte(OP_SWITCH_JUMP);
+    emit_byte(jump_idx);
+    emit_byte(offset);
 }
 
 static void while_statement()
@@ -806,18 +848,12 @@ static void case_statement()
         statement();
     }
 
-    // int curr_length = current_chunk()->count - (jump_idx - 1);
-
-    // emit_byte(OP_SWITCH_JUMP);
-    // emit_byte(jump_idx);
-    // emit_byte(curr_length);
-
     patch_jump(jump_false);
 }
 
 static void emit_switch()
 {
-    /* We need this to match what inside the stack 
+    /* We need this to match what inside the stack
      * One for the expression in switch
      * And one for the boolean
      * */
@@ -830,9 +866,29 @@ static void emit_switch()
     emit_byte(OP_SWITCH);
 }
 
+static int begin_switch()
+{
+    current->jump_count++;
+    int switch_jump = emit_jump(OP_MARK_JUMP);
+
+    begin_scope();
+    begin_jump(switch_jump);
+
+    return switch_jump;
+}
+
+static void end_switch(int switch_jump)
+{
+    current->jump_count--;
+    patch_jump(switch_jump);
+
+    end_jump();
+    end_scope();
+}
+
 static void switch_statement()
 {
-    begin_scope();
+    int switch_jump = begin_switch();
     consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
 
     expression();
@@ -852,7 +908,7 @@ static void switch_statement()
     }
 
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after switch body");
-    end_scope();
+    end_switch(switch_jump);
 }
 
 static void statement()
@@ -1010,6 +1066,7 @@ void init_compiler(Compiler *compiler)
     compiler->count = 0;
     compiler->depth = 0;
     compiler->loop_count = 0;
+    compiler->jump_count = 0;
 
     current = compiler;
 }
