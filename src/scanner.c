@@ -99,6 +99,8 @@ static TokenType get_token_type()
     {
     case 'a':
         return match_token(1, 2, "nd", TOKEN_AND);
+    case 'b':
+        return match_token(1, 4, "reak", TOKEN_BREAK);
     case 'd':
         return match_token(1, 6, "efault", TOKEN_DEFAULT);
     case 'e':

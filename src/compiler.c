@@ -680,6 +680,12 @@ static void continue_statement()
     consume(TOKEN_SEMICOLON, "Expected ';' after continue");
 }
 
+static void break_statement()
+{
+
+    consume(TOKEN_SEMICOLON, "Expected ';' after break");
+}
+
 static void while_statement()
 {
     int offset = current_chunk()->count;
@@ -783,17 +789,16 @@ static void default_statement()
     }
 }
 
-static void case_statement(int jump_idx)
+static void case_statement()
 {
     consume(TOKEN_CASE, "Expected 'case' inside switch");
-    expression();
 
-    emit_byte(OP_COMPARE);
+    int case_jump = emit_jump(OP_JUMP_IF_TRUE);
+    expression();
+    emit_byte(OP_CASE_COMPARE);
+    patch_jump(case_jump);
 
     int jump_false = emit_jump(OP_JUMP_IF_FALSE);
-
-    emit_byte(OP_POP);
-    emit_byte(OP_POP);
 
     consume(TOKEN_COLON, "Expected ':' after expression");
     while (!check(TOKEN_CASE) && !check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
@@ -801,16 +806,28 @@ static void case_statement(int jump_idx)
         statement();
     }
 
-    int curr_length = current_chunk()->count - (jump_idx - 1);
+    // int curr_length = current_chunk()->count - (jump_idx - 1);
 
-    emit_byte(OP_SWITCH_JUMP);
-    emit_byte(jump_idx);
-    emit_byte(curr_length);
+    // emit_byte(OP_SWITCH_JUMP);
+    // emit_byte(jump_idx);
+    // emit_byte(curr_length);
 
     patch_jump(jump_false);
+}
 
-    emit_byte(OP_POP);
-    emit_byte(OP_POP);
+static void emit_switch()
+{
+    /* We need this to match what inside the stack 
+     * One for the expression in switch
+     * And one for the boolean
+     * */
+    Token switch_identifier = {.start = "switch", .length = 6, .type = TOKEN_IDENTIFIER};
+    declare_local(switch_identifier, 0);
+    define_local();
+    declare_local(switch_identifier, 0);
+    define_local();
+
+    emit_byte(OP_SWITCH);
 }
 
 static void switch_statement()
@@ -818,19 +835,16 @@ static void switch_statement()
     begin_scope();
     consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
 
-    /* Workaround because we need to match the stack */
-    Token switch_identifier = {.start = "switch", .length = 6, .type = TOKEN_IDENTIFIER};
-    declare_local(switch_identifier, 0);
     expression();
-    define_local();
 
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression in switch");
     consume(TOKEN_LEFT_BRACE, "Expected '{' before switch body");
 
-    int jump_idx = emit_jump(OP_MARK);
+    emit_switch();
+
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
     {
-        case_statement(jump_idx);
+        case_statement();
     }
     if (match(TOKEN_DEFAULT))
     {
@@ -838,7 +852,6 @@ static void switch_statement()
     }
 
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after switch body");
-    patch_jump(jump_idx);
     end_scope();
 }
 
@@ -871,6 +884,10 @@ static void statement()
     else if (match(TOKEN_CONTINUE))
     {
         continue_statement();
+    }
+    else if (match(TOKEN_BREAK))
+    {
+        break_statement();
     }
     else
     {

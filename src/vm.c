@@ -425,8 +425,17 @@ static InterpretResult run()
             break;
         }
 
-        case OP_MARK: {
-            vm.ip += 2;
+        case OP_SWITCH: {
+            push(VALUE_BOOL(0));
+            break;
+        }
+
+        case OP_CASE_COMPARE: {
+            // [e, false, e]
+            // [e, true]
+            Value b = pop();
+            Value a = PEEK(1);
+            *(vm.stackPointer - 1) = VALUE_BOOL(compare(a, b));
             break;
         }
 
@@ -434,7 +443,7 @@ static InterpretResult run()
             vm.ip += 2;
             uint8_t idx = *(vm.ip - 2);
             uint16_t jump = ((uint16_t)(vm.chunk->code[idx] | vm.chunk->code[idx + 1]));
-            uint8_t dist = *(vm.ip-1);
+            uint8_t dist = *(vm.ip - 1);
             // TODO : debug here
             vm.ip += (jump - dist);
 

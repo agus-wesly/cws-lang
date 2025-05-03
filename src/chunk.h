@@ -40,7 +40,8 @@ typedef enum
     OP_SWITCH_JUMP,
     OP_JUMP,
     OP_LOOP,
-    OP_MARK,
+    OP_SWITCH,
+    OP_CASE_COMPARE,
 } OpCode;
 
 typedef struct
