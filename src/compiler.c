@@ -735,13 +735,13 @@ static void begin_while(int *while_jump, int *offset)
 
     *offset = current_chunk()->count;
     begin_loop(*offset);
-
 }
 
 static void end_while(int while_jump)
 {
     emit_byte(OP_POP);
     patch_jump(while_jump);
+    end_jump();
     end_loop();
 }
 
@@ -777,9 +777,33 @@ static void expression_statement()
     }
 }
 
-static void for_statement()
+static void begin_for(int *for_jump)
 {
     begin_scope();
+    *for_jump = emit_jump(OP_MARK_JUMP);
+    begin_jump(*for_jump);
+}
+
+static void end_for(int for_jump, int then_jump)
+{
+    patch_jump(for_jump);
+
+    if (then_jump != -1)
+    {
+        patch_jump(then_jump);
+        emit_byte(OP_POP);
+    }
+
+    end_jump();
+    end_loop();
+    end_scope();
+}
+
+static void for_statement()
+{
+    int for_jump;
+    int then_jump = -1;
+    begin_for(&for_jump);
 
     consume(TOKEN_LEFT_PAREN, "Expected '(' after for");
 
@@ -796,8 +820,6 @@ static void for_statement()
     }
 
     int offset = current_chunk()->count;
-
-    int then_jump = -1;
     if (!match(TOKEN_SEMICOLON))
     {
         expression();
@@ -827,14 +849,7 @@ static void for_statement()
     statement();
     emit_loop(offset);
 
-    if (then_jump != -1)
-    {
-        patch_jump(then_jump);
-        emit_byte(OP_POP);
-    }
-
-    end_scope();
-    end_loop();
+    end_for(for_jump, then_jump);
 }
 
 static void default_statement()
