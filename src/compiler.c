@@ -33,7 +33,7 @@ typedef struct
 
     /*continue statement*/
     int loop_count;
-    int *loop_stack[LOOP_STACK_MAX_LENGTH];
+    int loop_stack[LOOP_STACK_MAX_LENGTH];
 
     /*break statement*/
     int jump_count;
@@ -588,7 +588,7 @@ static void begin_scope()
     current->depth++;
 }
 
-static void begin_loop(int *offset)
+static void begin_loop(int offset)
 {
     // Push to stack
     assert(current->loop_count <= LOOP_STACK_MAX_LENGTH && "Already reach max length of loop stack");
@@ -596,7 +596,7 @@ static void begin_loop(int *offset)
     current->loop_stack[current->loop_count++] = offset;
 }
 
-static int *peek_loop()
+static int peek_loop()
 {
     assert(current->loop_count > 0 && "Cannot peek loop stack if empty");
     return current->loop_stack[current->loop_count - 1];
@@ -704,8 +704,8 @@ static void continue_statement()
     }
 
     // We need offset to be able to move backward
-    int *offset = peek_loop();
-    emit_loop(*offset);
+    int offset = peek_loop();
+    emit_loop(offset);
 
     consume(TOKEN_SEMICOLON, "Expected ';' after continue");
 }
@@ -728,24 +728,39 @@ static void break_statement()
     emit_byte(offset);
 }
 
+static void begin_while(int *while_jump, int *offset)
+{
+    *while_jump = emit_jump(OP_MARK_JUMP);
+    begin_jump(*while_jump);
+
+    *offset = current_chunk()->count;
+    begin_loop(*offset);
+
+}
+
+static void end_while(int while_jump)
+{
+    emit_byte(OP_POP);
+    patch_jump(while_jump);
+    end_loop();
+}
+
 static void while_statement()
 {
-    int offset = current_chunk()->count;
-    begin_loop(&offset);
+    int while_jump, offset;
+    begin_while(&while_jump, &offset);
 
     consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
     expression();
     consume(TOKEN_RIGHT_PAREN, "Expected ')' before expression");
 
     int then_jump = emit_jump(OP_JUMP_IF_FALSE);
-
     emit_byte(OP_POP);
     statement();
     emit_loop(offset);
-
     patch_jump(then_jump);
-    emit_byte(OP_POP);
-    end_loop();
+
+    end_while(while_jump);
 }
 
 static void expression_statement()
@@ -781,7 +796,6 @@ static void for_statement()
     }
 
     int offset = current_chunk()->count;
-    begin_loop(&offset);
 
     int then_jump = -1;
     if (!match(TOKEN_SEMICOLON))
@@ -809,6 +823,7 @@ static void for_statement()
 
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after for");
 
+    begin_loop(offset);
     statement();
     emit_loop(offset);
 
@@ -868,7 +883,7 @@ static void emit_switch()
 
 static int begin_switch()
 {
-    current->jump_count++;
+    // current->jump_count++;
     int switch_jump = emit_jump(OP_MARK_JUMP);
 
     begin_scope();
@@ -879,7 +894,7 @@ static int begin_switch()
 
 static void end_switch(int switch_jump)
 {
-    current->jump_count--;
+    // current->jump_count--;
     patch_jump(switch_jump);
 
     end_jump();
