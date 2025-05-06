@@ -23,15 +23,30 @@ void append_values(Values *values, Value newItem)
     values->values[values->count++] = newItem;
 }
 
-void PRINT_OBJ(Value value)
+void print_string(ObjectString *obj)
+{
+    if (obj->length == 0)
+        printf("<empty string>");
+    else
+        printf("%s", obj->chars);
+}
+
+void print_function(ObjectFunction *obj)
+{
+    printf("fn<%s>", obj->name->chars);
+}
+
+void print_obj(Value value)
 {
     switch (OBJ_TYPE(value))
     {
     case OBJ_STRING: {
-        if (AS_STRING(value)->length == 0)
-            printf("<empty string>");
-        else
-            printf("%s", AS_STRING(value)->chars);
+        print_string(AS_STRING(value));
+        break;
+    }
+    case OBJ_FUNCTION: {
+        print_function(AS_FUNCTION(value));
+        break;
     }
 
     default:
@@ -60,7 +75,7 @@ void print_value(Value value)
         break;
 
     case TYPE_OBJ:
-        PRINT_OBJ(value);
+        print_obj(value);
         break;
 
     default:

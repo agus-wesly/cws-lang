@@ -38,7 +38,7 @@ void freeObjects()
     Obj *object = vm.objects;
     while (object != NULL)
     {
-        Obj *next = vm.objects->next;
+        Obj *next = object->next;
         free_obj(object);
         object = next;
     }

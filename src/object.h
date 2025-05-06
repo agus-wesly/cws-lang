@@ -1,10 +1,11 @@
 #ifndef CWS_OBJECT_H
 #define CWS_OBJECT_H
 
+#include "chunk.h"
 #include "common.h"
+#include "hash.h"
 #include "memory.h"
 #include "value.h"
-#include "hash.h"
 
 typedef struct Object Object;
 
@@ -28,13 +29,32 @@ struct ObjectString
     char chars[];
 };
 
+struct ObjectFunction
+{
+    Obj object;
+    int arity;
+    ObjectString *name;
+    Chunk code;
+};
+
 struct Obj *allocate_obj(ObjType type, size_t size);
+
+#define AS_BOOL(value) ((value).as.boolean)
+#define AS_NUMBER(value) ((value).as.decimal)
+#define AS_OBJ(value) ((Obj *)(value).as.obj)
+#define AS_STRING(value) ((ObjectString *)AS_OBJ(value))
+#define AS_C_STRING(value) (((ObjectString *)AS_OBJ(value))->chars)
+#define STRINGIFY(value) ((ObjectString *)stringify(AS_OBJ(value)))
+#define AS_FUNCTION(value) ((ObjectFunction *)AS_OBJ(value))
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define ALLOC_OBJ(type, obj_type) ((type *)allocate_obj(obj_type, sizeof(type)))
 
 #define IS_STRING(value) IsObjType(value, OBJ_STRING)
+#define IS_FUNCTION(value) IsObjType(value, OBJ_FUNCTION)
+
 #define FREE_OBJ(ptr) (reallocate(ptr, sizeof(Obj), 0))
+#define FREE(type, ptr) (reallocate(ptr, sizeof(type), 0))
 
 static inline int IsObjType(Value value, ObjType type)
 {
@@ -43,7 +63,7 @@ static inline int IsObjType(Value value, ObjType type)
 
 ObjectString *allocate_string(const char *chars, int length);
 ObjectString *copy_string(const char *start, int length);
-ObjectString *take_string(char* chars, int length);
+ObjectString *take_string(char *chars, int length);
 void free_obj(Obj *obj);
 
 #endif // !CWS_OBJECT_H

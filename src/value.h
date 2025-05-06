@@ -15,6 +15,7 @@ typedef enum
 typedef struct Obj Obj;
 
 typedef struct ObjectString ObjectString;
+typedef struct ObjectFunction ObjectFunction;
 
 typedef struct
 {
@@ -46,7 +47,7 @@ typedef struct
         .type = TYPE_BOOLEAN, .as = {.boolean = value }                                                                \
     }
 
-#define VALUE_NIL                                                                                                    \
+#define VALUE_NIL                                                                                                      \
     (Value)                                                                                                            \
     {                                                                                                                  \
         .type = TYPE_NIL, .as = {.boolean = 0 }                                                                        \
@@ -63,20 +64,11 @@ typedef struct
 #define IS_OBJ(value) (value.type == TYPE_OBJ)
 #define IS_OBJ_TYPE(obj, type) (obj->object->type == type)
 
-#define AS_BOOL(value) ((value).as.boolean)
-#define AS_NUMBER(value) ((value).as.decimal)
-#define AS_OBJ(value) ((Obj*)(value).as.obj)
-#define AS_STRING(value) ((ObjectString *)AS_OBJ(value))
-#define AS_C_STRING(value) (((ObjectString *)AS_OBJ(value))->chars)
-#define STRINGIFY(value) ((ObjectString *)stringify(AS_OBJ(value)))
-
-
 void init_values(Values *values);
 void append_values(Values *values, Value newItem);
 void free_values(Values *values);
 void print_value(Value value);
 int compare(Value value1, Value value2);
 int is_falsy(Value v);
-
 
 #endif // !CWS_VALUE_H

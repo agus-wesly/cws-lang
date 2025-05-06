@@ -68,11 +68,23 @@ ObjectString *copy_string(const char *chars, int length)
     return allocate_string(chars, length);
 }
 
+ObjectFunction *new_function()
+{
+    ObjectFunction *function = ALLOC_OBJ(ObjectFunction, OBJ_FUNCTION);
+
+    function->name = NULL;
+    function->arity = 0;
+    init_chunk(&function->code);
+
+    return function;
+}
+
 Obj *allocate_obj(ObjType type, size_t size)
 {
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
     obj->type = type;
     obj->next = vm.objects;
+    vm.objects = obj;
     return obj;
 }
 
@@ -81,14 +93,17 @@ void free_obj(Obj *obj)
     switch (obj->type)
     {
     case OBJ_STRING: {
-        ObjectString *string = (ObjectString *)(obj);
-        FREE_ARRAY(char, string->chars, string->length);
+        FREE(ObjectString, obj);
+        break;
+    }
+    case OBJ_FUNCTION: {
+        ObjectFunction *function = (ObjectFunction *)(obj);
+        free_chunk(&function->code);
+        FREE(ObjectFunction, obj);
         break;
     }
     default:
         assert(0 && "TODO : implement free for another type");
         break;
     }
-
-    FREE_OBJ(obj);
 }
