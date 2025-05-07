@@ -74,7 +74,7 @@ ObjectFunction *new_function()
 
     function->name = NULL;
     function->arity = 0;
-    init_chunk(&function->code);
+    init_chunk(&function->chunk);
 
     return function;
 }
@@ -98,7 +98,7 @@ void free_obj(Obj *obj)
     }
     case OBJ_FUNCTION: {
         ObjectFunction *function = (ObjectFunction *)(obj);
-        free_chunk(&function->code);
+        free_chunk(&function->chunk);
         FREE(ObjectFunction, obj);
         break;
     }

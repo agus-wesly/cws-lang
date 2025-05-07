@@ -33,7 +33,14 @@ void print_string(ObjectString *obj)
 
 void print_function(ObjectFunction *obj)
 {
-    printf("fn<%s>", obj->name->chars);
+    if (obj->name == NULL)
+    {
+        printf("<script>");
+    }
+    else
+    {
+        printf("fn<%s>", obj->name->chars);
+    }
 }
 
 void print_obj(Value value)

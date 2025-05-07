@@ -2,11 +2,12 @@
 #define CWS_VM_H
 
 #include "compiler.h"
+#include "hashmap.h"
 #include "memory.h"
 #include "stdarg.h"
-#include "hashmap.h"
 
-#define STACK_MAX 1024
+#define FRAME_MAX 60
+#define STACK_MAX FRAME_MAX * 1024
 
 typedef struct
 {
@@ -18,13 +19,27 @@ typedef struct
 
 typedef struct
 {
-    Chunk *chunk;
+    ObjectFunction *function;
+
+    Value *slots;
     uint8_t *ip;
+} CallFrame;
+
+void init_call_frame(CallFrame *call_frame);
+void free_call_frame(CallFrame *call_frame);
+
+typedef struct
+{
+    // Chunk *chunk;
+    // uint8_t *ip;
 
     Stack *stack;
 
     // Value stack[STACK_MAX];
     Value *stackPointer;
+
+    int frame_count;
+    CallFrame frame[FRAME_MAX];
 
     Obj *objects;
 

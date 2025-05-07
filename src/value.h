@@ -59,6 +59,7 @@ typedef struct
         .type = TYPE_OBJ, .as = {.obj = (Obj *)object }                                                                \
     }
 
+
 #define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define IS_NIL(value) (value.type == TYPE_NIL)
 #define IS_OBJ(value) (value.type == TYPE_OBJ)

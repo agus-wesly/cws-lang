@@ -34,8 +34,13 @@ struct ObjectFunction
     Obj object;
     int arity;
     ObjectString *name;
-    Chunk code;
+    Chunk chunk;
 };
+
+typedef enum {
+    TYPE_SCRIPT,
+    TYPE_FUNCTION,
+} FunctionType;
 
 struct Obj *allocate_obj(ObjType type, size_t size);
 
@@ -64,6 +69,8 @@ static inline int IsObjType(Value value, ObjType type)
 ObjectString *allocate_string(const char *chars, int length);
 ObjectString *copy_string(const char *start, int length);
 ObjectString *take_string(char *chars, int length);
+ObjectFunction *new_function();
+
 void free_obj(Obj *obj);
 
 #endif // !CWS_OBJECT_H

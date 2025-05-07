@@ -39,6 +39,9 @@ typedef struct
     int jump_count;
     int jump_stack[LOOP_STACK_MAX_LENGTH];
 
+    FunctionType type;
+    ObjectFunction *function;
+
 } Compiler;
 
 static void expression();
@@ -57,7 +60,7 @@ Compiler *current = NULL;
 
 Chunk *current_chunk()
 {
-    return compiling_chunk;
+    return &current->function->chunk;
 }
 
 static void error_at(Token token, char *message)
@@ -173,15 +176,21 @@ void emit_return()
     emit_byte(OP_RETURN);
 }
 
-void end_compiler()
+ObjectFunction *end_compiler()
 {
     emit_return();
+    ObjectFunction *function = current->function;
 #ifdef DEBUG_PRINT
     if (!parser.is_error)
     {
-        DisassembleChunk(current_chunk(), "Inside of the chunk");
+        disassemble_chunk(current_chunk(), function->name != NULL ? function->name->chars : "<script>");
     }
 #endif
+
+    if (parser.is_error)
+        return NULL;
+
+    return function;
 }
 
 /*====== PREFIX & INFIX ====== */
@@ -1091,27 +1100,34 @@ static void declaration()
     }
 }
 
-void init_compiler(Compiler *compiler)
+void init_compiler(Compiler *compiler, FunctionType type)
 {
     compiler->count = 0;
     compiler->depth = 0;
     compiler->loop_count = 0;
     compiler->jump_count = 0;
 
+    compiler->function = new_function();
+    compiler->type = type;
+
     current = compiler;
+
+    Local *local = &current->locals[current->count++];
+    local->depth = 0;
+    local->is_assignable = 0;
+    local->name.start = "";
+    local->name.length = 0;
 }
 
-int compile(const char *source, Chunk *chunk)
+ObjectFunction *compile(const char *source)
 {
-    compiling_chunk = chunk;
-
     parser.is_error = 0;
     parser.is_panic = 0;
 
     init_scanner(source);
 
     Compiler compiler;
-    init_compiler(&compiler);
+    init_compiler(&compiler, TYPE_SCRIPT);
 
     advance();
     while (!match(TOKEN_EOF))
@@ -1119,7 +1135,5 @@ int compile(const char *source, Chunk *chunk)
         declaration();
     }
 
-    end_compiler();
-
-    return parser.is_error;
+    return end_compiler();
 }
