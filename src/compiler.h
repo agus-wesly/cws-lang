@@ -2,13 +2,14 @@
 #define CWS_COMPILER_H
 
 #include "chunk.h"
-#include "scanner.h"
 #include "debug.h"
+#include "scanner.h"
 #include "value.h"
 
 ObjectFunction *compile(const char *code);
 
-typedef enum {
+typedef enum
+{
     PREC_NONE,
     PREC_ASSIGNMENT,
     PREC_TERNARY,
@@ -25,12 +26,23 @@ typedef enum {
 
 typedef void (*ParseFn)(int can_parse_set);
 
-typedef struct {
+typedef struct
+{
     ParseFn prefix;
     ParseFn infix;
     Precedence precedence;
 } ParseRule;
 
+typedef struct
+{
+    int idx;
+    int depth;
+} Jump;
 
+typedef struct
+{
+    int offset;
+    int depth;
+} Loop;
 
 #endif // !CWS_COMPILER_H

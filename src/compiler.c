@@ -33,11 +33,11 @@ typedef struct
 
     /*continue statement*/
     int loop_count;
-    int loop_stack[LOOP_STACK_MAX_LENGTH];
+    Loop loop_stack[LOOP_STACK_MAX_LENGTH];
 
     /*break statement*/
     int jump_count;
-    int jump_stack[LOOP_STACK_MAX_LENGTH];
+    Jump jump_stack[JUMP_STACK_MAX_LENGTH];
 
     FunctionType type;
     ObjectFunction *function;
@@ -597,18 +597,20 @@ static void begin_scope()
     current->depth++;
 }
 
-static void begin_loop(int offset)
+static void begin_loop(int offset, int depth)
 {
     // Push to stack
     assert(current->loop_count <= LOOP_STACK_MAX_LENGTH && "Already reach max length of loop stack");
 
-    current->loop_stack[current->loop_count++] = offset;
+    Loop *loop = &current->loop_stack[current->loop_count++];
+    loop->offset = offset;
+    loop->depth = depth;
 }
 
-static int peek_loop()
+static Loop *peek_loop()
 {
     assert(current->loop_count > 0 && "Cannot peek loop stack if empty");
-    return current->loop_stack[current->loop_count - 1];
+    return &current->loop_stack[current->loop_count - 1];
 }
 
 static void end_loop()
@@ -618,18 +620,20 @@ static void end_loop()
     current->loop_count--;
 }
 
-static void begin_jump(int offset)
+static void begin_jump(int offset, int depth)
 {
     // Push to stack
     assert(current->jump_count <= JUMP_STACK_MAX_LENGTH && "Already reach max length of jump stack");
 
-    current->jump_stack[current->jump_count++] = offset;
+    Jump *jump = &current->jump_stack[current->jump_count++];
+    jump->idx = offset;
+    jump->depth = depth;
 }
 
-static int peek_jump()
+static Jump *peek_jump()
 {
     assert(current->jump_count > 0 && "Cannot peek jump stack if empty");
-    return current->jump_stack[current->jump_count - 1];
+    return &current->jump_stack[current->jump_count - 1];
 }
 
 static void end_jump()
@@ -712,8 +716,23 @@ static void continue_statement()
         return;
     }
 
+    Loop *current_loop = peek_loop();
+
+    for (int i = current->count - 1; i >= 0; --i)
+    {
+        Local local = current->locals[i];
+        if (local.depth > current_loop->depth)
+        {
+            emit_byte(OP_POP);
+        }
+        else
+        {
+            break;
+        }
+    }
+
     // We need offset to be able to move backward
-    int offset = peek_loop();
+    int offset = peek_loop()->offset;
     emit_loop(offset);
 
     consume(TOKEN_SEMICOLON, "Expected ';' after continue");
@@ -729,7 +748,22 @@ static void break_statement()
 
     consume(TOKEN_SEMICOLON, "Expected ';' after break");
 
-    int jump_idx = peek_jump();
+    Jump *current_jump = peek_jump();
+
+    for (int i = current->count - 1; i >= 0; --i)
+    {
+        Local local = current->locals[i];
+        if (local.depth > current_jump->depth)
+        {
+            emit_byte(OP_POP);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    int jump_idx = current_jump->idx;
     int offset = current_chunk()->count - (jump_idx - 1);
 
     emit_byte(OP_SWITCH_JUMP);
@@ -740,10 +774,10 @@ static void break_statement()
 static void begin_while(int *while_jump, int *offset)
 {
     *while_jump = emit_jump(OP_MARK_JUMP);
-    begin_jump(*while_jump);
+    begin_jump(*while_jump, current->depth);
 
     *offset = current_chunk()->count;
-    begin_loop(*offset);
+    begin_loop(*offset, current->depth);
 }
 
 static void end_while(int while_jump)
@@ -790,18 +824,18 @@ static void begin_for(int *for_jump)
 {
     begin_scope();
     *for_jump = emit_jump(OP_MARK_JUMP);
-    begin_jump(*for_jump);
+    begin_jump(*for_jump, current->depth);
 }
 
 static void end_for(int for_jump, int then_jump)
 {
-    patch_jump(for_jump);
-
     if (then_jump != -1)
     {
         patch_jump(then_jump);
         emit_byte(OP_POP);
     }
+
+    patch_jump(for_jump);
 
     end_jump();
     end_loop();
@@ -854,7 +888,7 @@ static void for_statement()
 
     consume(TOKEN_RIGHT_PAREN, "Expected ')' after for");
 
-    begin_loop(offset);
+    begin_loop(offset, current->depth);
     statement();
     emit_loop(offset);
 
@@ -911,7 +945,7 @@ static int begin_switch()
     int switch_jump = emit_jump(OP_MARK_JUMP);
 
     begin_scope();
-    begin_jump(switch_jump);
+    begin_jump(switch_jump, current->depth);
 
     return switch_jump;
 }
