@@ -460,6 +460,39 @@ static InterpretResult run()
             break;
         }
 
+        case OP_CALL: {
+            frame->ip += 1;
+            uint8_t count = *(frame->ip - 1);
+            Value value = PEEK(count);
+
+            if(!IS_FUNCTION(value)){
+                runtime_error("Attempted to call to non-function value");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjectFunction *function = AS_FUNCTION(value);
+            if (function->arity < count)
+            {
+                runtime_error("Too many arguments to function call, expected %d, have %d", function->arity, count);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            if (function->arity > count)
+            {
+                runtime_error("Too few arguments to function call, expected %d, have %d", function->arity, count);
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            CallFrame *current = &vm.frame[vm.frame_count++];
+            current->slots = vm.stackPointer - count - 1;
+            current->ip = function->chunk.code;
+            current->function = function;
+
+            run();
+            vm.frame_count--;
+
+            break;
+        }
+
         default:
             return INTERPRET_OK;
         }

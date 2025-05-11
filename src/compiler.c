@@ -24,7 +24,7 @@ typedef struct
     int is_assignable;
 } Local;
 
-typedef struct
+typedef struct Compiler
 {
     // TODO : make this to be a hashmap
     Local locals[LOCAL_MAX_LENGTH];
@@ -42,6 +42,7 @@ typedef struct
     FunctionType type;
     ObjectFunction *function;
 
+    struct Compiler *enclosing;
 } Compiler;
 
 static void expression();
@@ -57,6 +58,32 @@ static void var_declaration(int is_assignable);
 Parser parser;
 Chunk *compiling_chunk;
 Compiler *current = NULL;
+
+void init_compiler(Compiler *compiler, FunctionType type)
+{
+    compiler->count = 0;
+    compiler->depth = 0;
+    compiler->loop_count = 0;
+    compiler->jump_count = 0;
+
+    compiler->function = new_function();
+    compiler->type = type;
+
+    compiler->enclosing = current;
+
+    current = compiler;
+
+    if (type != TYPE_SCRIPT)
+    {
+        compiler->function->name = copy_string(parser.previous.start, parser.previous.length);
+    }
+
+    Local *local = &current->locals[current->count++];
+    local->depth = 0;
+    local->is_assignable = 0;
+    local->name.start = "";
+    local->name.length = 0;
+}
 
 Chunk *current_chunk()
 {
@@ -186,6 +213,8 @@ ObjectFunction *end_compiler()
         disassemble_chunk(current_chunk(), function->name != NULL ? function->name->chars : "<script>");
     }
 #endif
+
+    current = current->enclosing;
 
     if (parser.is_error)
         return NULL;
@@ -374,6 +403,25 @@ static void grouping(int can_assign)
     consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
 }
 
+static void call(int can_assign)
+{
+    if (can_assign)
+    {
+    }
+
+    uint8_t arity = 0;
+    if (!check(TOKEN_RIGHT_PAREN))
+    {
+        do
+        {
+            expression();
+            arity += 1;
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
+    emit_bytes(OP_CALL, arity);
+}
+
 static void ternary()
 {
     expression();
@@ -490,7 +538,7 @@ ParseRule rules[] = {
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
 
-    [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
+    [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
@@ -574,6 +622,7 @@ static void declare_local(Token identifier, int is_assignable)
     }
 
     Local *local = &current->locals[current->count++];
+
     local->name = identifier;
     local->depth = -1;
     local->is_assignable = is_assignable;
@@ -581,6 +630,9 @@ static void declare_local(Token identifier, int is_assignable)
 
 static void define_local()
 {
+    if (current->depth == 0)
+        return;
+
     Local *local = &current->locals[current->count - 1];
     local->depth = current->depth;
 }
@@ -816,6 +868,7 @@ static void expression_statement()
     }
     else
     {
+        // this
         emit_byte(OP_POP);
     }
 }
@@ -1054,8 +1107,16 @@ static uint32_t identifier_constant(const Token *token)
 
 static void define_variable(uint32_t identifier_idx)
 {
-    emit_byte(OP_GLOBAL_VAR);
-    emit_constant_byte(identifier_idx);
+    if (current->depth > 0)
+    {
+        Local *local = &current->locals[current->count - 1];
+        local->depth = current->depth;
+    }
+    else
+    {
+        emit_byte(OP_GLOBAL_VAR);
+        emit_constant_byte(identifier_idx);
+    }
 }
 
 static int parse_variable(int is_assignable)
@@ -1114,6 +1175,45 @@ static void var_declaration(int is_assignable)
     }
 }
 
+static void function_declaration()
+{
+    uint32_t identifier_idx = parse_variable(0);
+    // define_local();
+
+    Compiler compiler;
+    init_compiler(&compiler, TYPE_FUNCTION);
+
+    begin_scope();
+
+    consume(TOKEN_LEFT_PAREN, "Expected '(' after function name");
+
+    if (!check(TOKEN_RIGHT_PAREN))
+    {
+        do
+        {
+            ++current->function->arity;
+            uint32_t constant = parse_variable(1);
+            define_variable(constant);
+        } while (match(TOKEN_COMMA));
+    }
+
+    consume(TOKEN_RIGHT_PAREN, "Expected ')' after function parameter");
+    consume(TOKEN_LEFT_BRACE, "Expected '{' before function body");
+
+    block_statement();
+
+    /* Workaround because currently we dont have `return` */
+    emit_byte(OP_NIL);
+    emit_byte(OP_RETURN);
+
+    ObjectFunction *function = end_compiler();
+
+    Value value = VALUE_OBJ(function);
+    write_constant(current_chunk(), value, parser.previous.line_number);
+
+    define_variable(identifier_idx);
+}
+
 static void declaration()
 {
     if (match(TOKEN_LET))
@@ -1124,6 +1224,10 @@ static void declaration()
     {
         var_declaration(0);
     }
+    else if (match(TOKEN_FUN))
+    {
+        function_declaration();
+    }
     else
     {
         statement();
@@ -1132,25 +1236,6 @@ static void declaration()
     {
         synchronize();
     }
-}
-
-void init_compiler(Compiler *compiler, FunctionType type)
-{
-    compiler->count = 0;
-    compiler->depth = 0;
-    compiler->loop_count = 0;
-    compiler->jump_count = 0;
-
-    compiler->function = new_function();
-    compiler->type = type;
-
-    current = compiler;
-
-    Local *local = &current->locals[current->count++];
-    local->depth = 0;
-    local->is_assignable = 0;
-    local->name.start = "";
-    local->name.length = 0;
 }
 
 ObjectFunction *compile(const char *source)

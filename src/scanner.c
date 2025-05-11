@@ -278,6 +278,8 @@ Token scan_token()
         return make_token(TOKEN_QUESTION_MARK);
     case ':':
         return make_token(TOKEN_COLON);
+    case ',':
+        return make_token(TOKEN_COMMA);
 
     case '+':
         if (match('='))
