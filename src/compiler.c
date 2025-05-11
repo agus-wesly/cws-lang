@@ -51,8 +51,8 @@ static ParseRule *get_rule(TokenType token_type);
 static void declaration();
 static void statement();
 static uint32_t identifier_constant(const Token *token);
-static int match(TokenType type);
-static int check(TokenType type);
+static bool match(TokenType type);
+static bool check(TokenType type);
 static void var_declaration(int is_assignable);
 
 Parser parser;
@@ -152,7 +152,7 @@ static void consume(TokenType token_type, char *message)
     error(message);
 }
 
-static int peek(TokenType token_type)
+static bool peek(TokenType token_type)
 {
     return parser.current.type == token_type;
 }
@@ -285,13 +285,13 @@ static void boolean(int can_assign)
     }
 }
 
-int compare_token(Token *t1, Token *t2)
+bool compare_token(Token *t1, Token *t2)
 {
     if (t1->type != t2->type)
-        return 0;
+        return false;
 
     if (t1->length != t2->length)
-        return 0;
+        return false;
 
     return (memcmp(t1->start, t2->start, t1->length) == 0);
 }
@@ -597,12 +597,12 @@ static void parse_precedence(Precedence precedence)
     }
 }
 
-static int check(TokenType type)
+static bool check(TokenType type)
 {
     return parser.current.type == type;
 }
 
-static int match(TokenType type)
+static bool match(TokenType type)
 {
     if (parser.current.type == type)
     {
@@ -610,7 +610,7 @@ static int match(TokenType type)
         return 1;
     };
 
-    return 0;
+    return false;
 }
 
 static void declare_local(Token identifier, int is_assignable)

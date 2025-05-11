@@ -24,15 +24,15 @@ char is_at_end()
     return peek() == '\0';
 }
 
-int match(char c)
+bool match(char c)
 {
     if (c == scanner.current[0])
     {
         scanner.current++;
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 static Token make_token(TokenType type)
@@ -57,12 +57,12 @@ static Token error_token(char *message)
     return token;
 }
 
-static int is_digit(char c)
+static bool is_digit(char c)
 {
     return (c >= '0' && c <= '9');
 }
 
-static int is_alpha(char c)
+static bool is_alpha(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_');
 }
@@ -150,7 +150,7 @@ static TokenType get_token_type()
                 }
                 break;
                 }
-                        
+
                 break;
             }
             case 'a':

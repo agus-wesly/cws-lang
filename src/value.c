@@ -104,15 +104,15 @@ int compare_string(Value a, Value b)
     return (string_a->length == string_b->length) && (memcmp(string_a->chars, string_b->chars, string_a->length) == 0);
 }
 
-int compare(Value a, Value b)
+bool compare(Value a, Value b)
 {
     if (a.type != b.type)
-        return 0;
+        return false;
 
     switch (a.type)
     {
     case TYPE_NIL:
-        return 1;
+        return true;
 
     case TYPE_BOOLEAN:
         return AS_BOOL(a) == AS_BOOL(b);
@@ -123,7 +123,7 @@ int compare(Value a, Value b)
     case TYPE_OBJ: {
 
         if (OBJ_TYPE(a) != OBJ_TYPE(b))
-            return 0;
+            return false;
 
         switch (OBJ_TYPE(a))
         {
@@ -132,7 +132,7 @@ int compare(Value a, Value b)
             return AS_STRING(a) == AS_STRING(b);
         }
         default:
-            return 0;
+            return false;
         }
     }
 
@@ -141,7 +141,7 @@ int compare(Value a, Value b)
     }
 }
 
-int is_falsy(Value v)
+bool is_falsy(Value v)
 {
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));

@@ -72,13 +72,13 @@ void adjust_capacity(Map *old, size_t capacity)
     old->capacity = capacity;
 }
 
-int map_set_value(Map *h, Value key, Value value)
+bool map_set_value(Map *h, Value key, Value value)
 {
     ObjectString *str_key = stringify(key);
     return map_set(h, str_key, value);
 }
 
-int map_set(Map *h, ObjectString *key, Value value)
+bool map_set(Map *h, ObjectString *key, Value value)
 {
     if ((h->capacity * FACTOR_TERM) <= h->size)
     {
@@ -87,7 +87,7 @@ int map_set(Map *h, ObjectString *key, Value value)
     }
 
     Entry *entry = find_entry(h->entries, key, h->capacity);
-    int is_new = entry->key == NULL;
+    bool is_new = entry->key == NULL;
     if (is_new && IS_NIL(entry->value))
         h->size++;
 
@@ -97,23 +97,23 @@ int map_set(Map *h, ObjectString *key, Value value)
     return is_new;
 }
 
-int map_get_value(Map *h, Value key, Value *value)
+bool map_get_value(Map *h, Value key, Value *value)
 {
     ObjectString *str_key = stringify(key);
     return map_get(h, str_key, value);
 }
 
-int map_get(Map *h, ObjectString *key, Value *value)
+bool map_get(Map *h, ObjectString *key, Value *value)
 {
     if (h->capacity == 0)
-        return 0;
+        return false;
 
     Entry *entry = find_entry(h->entries, key, h->capacity);
     if (entry->key == NULL)
-        return 0;
+        return false;
 
     *value = entry->value;
-    return 1;
+    return true;
 }
 
 void map_add_all(Map *from, Map *to)
@@ -129,17 +129,17 @@ void map_add_all(Map *from, Map *to)
     }
 }
 
-int map_delete(Map *h, ObjectString *key)
+bool map_delete(Map *h, ObjectString *key)
 {
     if (h->size == 0)
-        return 0;
+        return false;
 
     Entry *entry = find_entry(h->entries, key, h->capacity);
     if (entry->key == NULL)
-        return 0;
+        return false;
 
     entry->key = NULL;
     entry->value = VALUE_BOOL(0);
 
-    return 1;
+    return true;
 }

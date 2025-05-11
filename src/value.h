@@ -69,7 +69,7 @@ void init_values(Values *values);
 void append_values(Values *values, Value newItem);
 void free_values(Values *values);
 void print_value(Value value);
-int compare(Value value1, Value value2);
-int is_falsy(Value v);
+bool compare(Value value1, Value value2);
+bool is_falsy(Value v);
 
 #endif // !CWS_VALUE_H

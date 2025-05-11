@@ -165,12 +165,12 @@ ObjectString *concatenate()
     return take_string(result, length);
 }
 
-static int call(ObjectFunction *callee, int args_count)
+static bool call(ObjectFunction *callee, int args_count)
 {
     if (callee->arity != args_count)
     {
         runtime_error("Expected %d arguments but got %d", callee->arity, args_count);
-        return 0;
+        return false;
     }
 
     CallFrame *current = &vm.frame[vm.frame_count++];
@@ -178,10 +178,10 @@ static int call(ObjectFunction *callee, int args_count)
     current->ip = callee->chunk.code;
     current->function = callee;
 
-    return 1;
+    return true;
 }
 
-static int call_value(Value callee, int args_count)
+static bool call_value(Value callee, int args_count)
 {
     if (IS_OBJ(callee))
     {
@@ -196,7 +196,7 @@ static int call_value(Value callee, int args_count)
     }
 
     runtime_error("Attempted to call to non-function value");
-    return 0;
+    return false;
 }
 
 static InterpretResult run()
