@@ -165,6 +165,40 @@ ObjectString *concatenate()
     return take_string(result, length);
 }
 
+static int call(ObjectFunction *callee, int args_count)
+{
+    if (callee->arity != args_count)
+    {
+        runtime_error("Expected %d arguments but got %d", callee->arity, args_count);
+        return 0;
+    }
+
+    CallFrame *current = &vm.frame[vm.frame_count++];
+    current->slots = vm.stackPointer - args_count - 1;
+    current->ip = callee->chunk.code;
+    current->function = callee;
+
+    return 1;
+}
+
+static int call_value(Value callee, int args_count)
+{
+    if (IS_OBJ(callee))
+    {
+        switch (OBJ_TYPE(callee))
+        {
+        case OBJ_FUNCTION:
+            return call(AS_FUNCTION(callee), args_count);
+
+        default:
+            break;
+        }
+    }
+
+    runtime_error("Attempted to call to non-function value");
+    return 0;
+}
+
 static InterpretResult run()
 {
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
@@ -460,35 +494,14 @@ static InterpretResult run()
             break;
         }
 
+
         case OP_CALL: {
-            frame->ip += 1;
-            uint8_t count = *(frame->ip - 1);
-            Value value = PEEK(count);
-
-            if(!IS_FUNCTION(value)){
-                runtime_error("Attempted to call to non-function value");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            ObjectFunction *function = AS_FUNCTION(value);
-            if (function->arity < count)
+            uint8_t args_count = READ_BYTE();
+            Value callee = PEEK(args_count);
+            if (!call_value(callee, args_count))
             {
-                runtime_error("Too many arguments to function call, expected %d, have %d", function->arity, count);
                 return INTERPRET_RUNTIME_ERROR;
-            }
-            if (function->arity > count)
-            {
-                runtime_error("Too few arguments to function call, expected %d, have %d", function->arity, count);
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
-            CallFrame *current = &vm.frame[vm.frame_count++];
-            current->slots = vm.stackPointer - count - 1;
-            current->ip = function->chunk.code;
-            current->function = function;
-
-            run();
-            vm.frame_count--;
+            };
 
             break;
         }

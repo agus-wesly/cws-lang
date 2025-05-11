@@ -63,7 +63,7 @@ typedef struct
 #define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define IS_NIL(value) (value.type == TYPE_NIL)
 #define IS_OBJ(value) (value.type == TYPE_OBJ)
-#define IS_OBJ_TYPE(obj, type) (obj->object->type == type)
+#define IS_OBJ_TYPE(obj, obj_type) (obj->type == obj_type)
 
 void init_values(Values *values);
 void append_values(Values *values, Value newItem);
