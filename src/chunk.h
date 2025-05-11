@@ -65,6 +65,7 @@ void write_chunk(Chunk *chunk, uint8_t newItem, uint32_t line);
 void print_chunk(Chunk *chunk);
 void free_chunk(Chunk *chunk);
 int find_line(Chunk *chunk, int offset);
+uint32_t get_line(Chunk *chunk, uint8_t idx);
 uint8_t add_constant(Chunk *chunk, Value newConstant);
 uint32_t add_long_constant(Chunk *chunk, Value constant);
 

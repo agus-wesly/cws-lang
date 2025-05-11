@@ -135,7 +135,7 @@ int jump_instruction(const char *name, int sign, Chunk *chunk, int offset)
     return offset + 3;
 }
 
-uint32_t getLine(Chunk *chunk, uint8_t idx)
+uint32_t get_line(Chunk *chunk, uint8_t idx)
 {
     for (int i = chunk->lines->count - 1; i >= 0; --i)
     {
@@ -267,6 +267,10 @@ int disassemble_instruction(Chunk *chunk, int offset)
     }
     case OP_LOOP: {
         return jump_instruction("OP_LOOP", -1, chunk, offset);
+    }
+    case OP_CALL: {
+        printf("OP_CALL\n");
+        return offset + 2;
     }
     default:
         // printf("Unknown instruction\n");

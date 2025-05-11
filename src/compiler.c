@@ -200,6 +200,7 @@ void emit_constant_byte(uint32_t idx)
 
 void emit_return()
 {
+    emit_byte(OP_NIL);
     emit_byte(OP_RETURN);
 }
 
@@ -1201,10 +1202,6 @@ static void function_declaration()
     consume(TOKEN_LEFT_BRACE, "Expected '{' before function body");
 
     block_statement();
-
-    /* Workaround because currently we dont have `return` */
-    emit_byte(OP_NIL);
-    emit_byte(OP_RETURN);
 
     ObjectFunction *function = end_compiler();
 

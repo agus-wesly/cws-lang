@@ -55,17 +55,30 @@ void free_vm()
 
 void runtime_error(char *format, ...)
 {
-    CallFrame *frame = &vm.frame[vm.frame_count - 1];
-
-    int token_idx = (int)(frame->ip - frame->function->chunk.code) - 1;
-    fprintf(stderr, "[Line : %d] ", find_line(&frame->function->chunk, token_idx));
-
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
 
     fputs("\n", stderr);
+
+    for (int i = vm.frame_count - 1; i >= 0; --i)
+    {
+        CallFrame *frame = &vm.frame[i];
+        ObjectFunction *function = frame->function;
+        uint8_t idx = frame->ip - function->chunk.code;
+
+        uint32_t line_number = get_line(&frame->function->chunk, idx);
+        fprintf(stderr, "[Line %d] in", line_number);
+        if (function->name == NULL)
+        {
+            fprintf(stderr, "script\n");
+        }
+        else
+        {
+            fprintf(stderr, "%s\n", function->name->chars);
+        }
+    }
 
     resetStack();
 }
@@ -287,9 +300,25 @@ static InterpretResult run()
         uint8_t instruction;
         switch (instruction = READ_BYTE())
         {
-        case OP_RETURN:
+        case OP_RETURN: {
+            Value return_value = pop();
+
+            vm.frame_count--;
+            if (vm.frame_count == 0)
+            {
+                pop();
+                return INTERPRET_OK;
+            }
+
+            CallFrame *current = &vm.frame[vm.frame_count];
+            vm.stackPointer = current->slots;
+
+            frame = &vm.frame[vm.frame_count - 1];
+            push(return_value);
+
+            break;
+        }
             // pop();
-            return INTERPRET_OK;
 
         case OP_CONSTANT: {
             Value constant_value = READ_CONSTANT();
@@ -402,7 +431,7 @@ static InterpretResult run()
             Value val;
             if (!map_get(&vm.globals, name, &val))
             {
-                runtime_error("Cannot access undeclared variable : %s\n", name->chars);
+                runtime_error("Cannot access undeclared variable : %s", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(val);
@@ -494,7 +523,6 @@ static InterpretResult run()
             break;
         }
 
-
         case OP_CALL: {
             uint8_t args_count = READ_BYTE();
             Value callee = PEEK(args_count);
@@ -502,6 +530,7 @@ static InterpretResult run()
             {
                 return INTERPRET_RUNTIME_ERROR;
             };
+            frame = &vm.frame[vm.frame_count - 1];
 
             break;
         }
