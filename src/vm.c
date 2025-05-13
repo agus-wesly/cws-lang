@@ -87,8 +87,8 @@ void push(Value value)
 {
     if (vm.stack->size >= vm.stack->capacity)
     {
-        uint8_t old_capacity = vm.stack->capacity;
-        uint8_t new_capacity = GROW_CAPACITY(old_capacity);
+        int old_capacity = vm.stack->capacity;
+        int new_capacity = GROW_CAPACITY(old_capacity);
         vm.stack->capacity = new_capacity;
         vm.stack->items = GROW_ARRAY(Value, vm.stack->items, old_capacity, new_capacity);
     }
@@ -177,6 +177,12 @@ static bool call(ObjectFunction *callee, int args_count)
     if (callee->arity != args_count)
     {
         runtime_error("Expected %d arguments but got %d", callee->arity, args_count);
+        return false;
+    }
+
+    if (vm.frame_count >= FRAME_MAX)
+    {
+        runtime_error("Maximum call frame has been exceeded");
         return false;
     }
 
@@ -278,9 +284,10 @@ static InterpretResult run()
 #ifdef DEBUG_TRACE_EXECUTION
 
         printf("[");
-        for (Value *cur = vm.stack->items; cur < vm.stack_top; ++cur)
+        for (int i = 0; i < vm.stack_top; ++i)
         {
-            print_value(*cur);
+            Value cur = vm.stack->items[i];
+            print_value(cur);
             printf(",");
         }
         printf("]");
@@ -303,10 +310,9 @@ static InterpretResult run()
             }
 
             int dist = (int)(vm.stack_top - frame->slots);
-            for (int i = 0; i < dist; ++i)
-            {
-                pop();
-            }
+
+            vm.stack_top = frame->slots;
+            vm.stack->size -= dist;
 
             push(return_value);
 

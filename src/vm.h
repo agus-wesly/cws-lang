@@ -11,8 +11,8 @@
 
 typedef struct
 {
-    uint8_t capacity;
-    uint8_t size;
+    int capacity;
+    int size;
 
     Value *items;
 } Stack;
