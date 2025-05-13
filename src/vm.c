@@ -8,13 +8,13 @@ VM vm;
 
 void resetStack()
 {
-    vm.stackPointer = vm.stack->items;
+    vm.stack_top = 0;
     vm.frame_count = 0;
 }
 
 void update_stack_ptr()
 {
-    vm.stackPointer = vm.stack->items;
+    vm.stack_top = 0;
 }
 
 void init_vm()
@@ -69,7 +69,7 @@ void runtime_error(char *format, ...)
         uint8_t idx = frame->ip - function->chunk.code;
 
         uint32_t line_number = get_line(&frame->function->chunk, idx);
-        fprintf(stderr, "[Line %d] in", line_number);
+        fprintf(stderr, "[Line %d] in ", line_number);
         if (function->name == NULL)
         {
             fprintf(stderr, "script\n");
@@ -87,19 +87,13 @@ void push(Value value)
 {
     if (vm.stack->size >= vm.stack->capacity)
     {
-        int dist = (int)(vm.stackPointer - vm.stack->items);
-
         uint8_t old_capacity = vm.stack->capacity;
         uint8_t new_capacity = GROW_CAPACITY(old_capacity);
         vm.stack->capacity = new_capacity;
         vm.stack->items = GROW_ARRAY(Value, vm.stack->items, old_capacity, new_capacity);
-        vm.stackPointer = vm.stack->items;
-
-        vm.stackPointer += dist;
     }
 
-    *vm.stackPointer = value;
-    vm.stackPointer++;
+    vm.stack->items[vm.stack_top++] = value;
     vm.stack->size++;
 }
 
@@ -110,9 +104,9 @@ Value pop()
         assert(0 && "Cannot Pop if stack is empty");
     }
 
-    vm.stackPointer--;
+    vm.stack_top--;
     vm.stack->size--;
-    return *vm.stackPointer;
+    return vm.stack->items[vm.stack_top];
 }
 
 #define HANDLE_CONCAT()                                                                                                \
@@ -128,7 +122,7 @@ Value pop()
         push(VALUE_OBJ(concat(a, b)));                                                                                 \
     } while (0);
 
-#define PEEK(index) (vm.stackPointer[(-1 - index)])
+#define PEEK(index) (vm.stack->items[vm.stack_top - 1 - index])
 
 ObjectString *stringify(Value value)
 {
@@ -187,7 +181,7 @@ static bool call(ObjectFunction *callee, int args_count)
     }
 
     CallFrame *current = &vm.frame[vm.frame_count++];
-    current->slots = vm.stackPointer - args_count - 1;
+    current->slots = (vm.stack_top - args_count - 1);
     current->ip = callee->chunk.code;
     current->function = callee;
 
@@ -216,7 +210,6 @@ static InterpretResult run()
 {
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
 
-#define IS_NUMBER(value) (value.type == TYPE_NUMBER)
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() ((frame->ip += 2), ((uint16_t)(frame->ip[-2] | frame->ip[-1])))
 #define READ_CONSTANT() (frame->function->chunk.constants->values[READ_BYTE()])
@@ -285,9 +278,8 @@ static InterpretResult run()
 #ifdef DEBUG_TRACE_EXECUTION
 
         printf("[");
-        for (Value *cur = vm.stack->items; cur < vm.stackPointer; ++cur)
+        for (Value *cur = vm.stack->items; cur < vm.stack_top; ++cur)
         {
-            // Value foo = *cur;
             print_value(*cur);
             printf(",");
         }
@@ -310,11 +302,15 @@ static InterpretResult run()
                 return INTERPRET_OK;
             }
 
-            CallFrame *current = &vm.frame[vm.frame_count];
-            vm.stackPointer = current->slots;
+            int dist = (int)(vm.stack_top - frame->slots);
+            for (int i = 0; i < dist; ++i)
+            {
+                pop();
+            }
+
+            push(return_value);
 
             frame = &vm.frame[vm.frame_count - 1];
-            push(return_value);
 
             break;
         }
@@ -347,12 +343,12 @@ static InterpretResult run()
         }
 
         case OP_NEGATE: {
-            if (!IS_NUMBER(PEEK(0)))
+            if (IS_NUMBER(PEEK(0)))
             {
                 runtime_error("Expected number");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            (vm.stackPointer - 1)->as.decimal *= -1;
+            vm.stack->items[vm.stack_top - 1].as.decimal *= -1;
             break;
         }
         case OP_BANG: {
@@ -453,13 +449,13 @@ static InterpretResult run()
 
         case OP_GET_LOCAL: {
             uint32_t idx = READ_LONG_BYTE();
-            push(frame->slots[idx]);
+            push(vm.stack->items[frame->slots + idx]);
             break;
         }
 
         case OP_SET_LOCAL: {
             uint32_t idx = READ_LONG_BYTE();
-            frame->slots[idx] = PEEK(0);
+            vm.stack->items[frame->slots + idx] = PEEK(0);
             break;
         }
 
@@ -504,11 +500,9 @@ static InterpretResult run()
         }
 
         case OP_CASE_COMPARE: {
-            // [e, false, e]
-            // [e, true]
             Value b = pop();
             Value a = PEEK(1);
-            *(vm.stackPointer - 1) = VALUE_BOOL(compare(a, b));
+            vm.stack->items[vm.stack_top - 1] = VALUE_BOOL(compare(a, b));
             break;
         }
 
@@ -549,8 +543,7 @@ static InterpretResult run()
 void init_call_frame(CallFrame *call_frame)
 {
     call_frame->ip = call_frame->function->chunk.code;
-    call_frame->slots = NULL;
-    call_frame->slots = NULL;
+    call_frame->slots = 0;
 }
 
 InterpretResult interpret(const char *source)
@@ -562,7 +555,7 @@ InterpretResult interpret(const char *source)
     push(VALUE_OBJ(base_function));
 
     CallFrame *current = &vm.frame[vm.frame_count++];
-    current->slots = vm.stack->items;
+    current->slots = 0;
     current->ip = base_function->chunk.code;
     current->function = base_function;
 

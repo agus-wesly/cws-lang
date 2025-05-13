@@ -17,11 +17,12 @@ typedef struct
     Value *items;
 } Stack;
 
+// p (int)(vm.stackPointer-vm.frame[3]->slots)
 typedef struct
 {
     ObjectFunction *function;
 
-    Value *slots;
+    int slots;
     uint8_t *ip;
 } CallFrame;
 
@@ -36,7 +37,7 @@ typedef struct
     Stack *stack;
 
     // Value stack[STACK_MAX];
-    Value *stackPointer;
+    int stack_top;
 
     int frame_count;
     CallFrame frame[FRAME_MAX];

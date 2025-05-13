@@ -206,7 +206,7 @@ void emit_return()
 
 ObjectFunction *end_compiler()
 {
-    emit_return();
+     emit_return();
     ObjectFunction *function = current->function;
 #ifdef DEBUG_PRINT
     if (!parser.is_error)
@@ -464,7 +464,7 @@ static void binary(int can_assign)
         break;
     };
     case TOKEN_GREATER_EQUAL: {
-        emit_bytes(OP_LESS, OP_NEGATE);
+        emit_bytes(OP_LESS, OP_BANG);
         break;
     };
     case TOKEN_LESS: {
@@ -472,7 +472,7 @@ static void binary(int can_assign)
         break;
     };
     case TOKEN_LESS_EQUAL: {
-        emit_bytes(OP_GREATER, OP_NEGATE);
+        emit_bytes(OP_GREATER, OP_BANG);
         break;
     };
     case TOKEN_EQUAL_EQUAL: {
@@ -1038,6 +1038,21 @@ static void switch_statement()
     end_switch(switch_jump);
 }
 
+static void return_statement()
+{
+    if (!check(TOKEN_SEMICOLON))
+    {
+        expression();
+        emit_byte(OP_RETURN);
+    }
+    else
+    {
+        emit_return();
+    }
+
+    consume(TOKEN_SEMICOLON, "Expected ';' after statement");
+}
+
 static void statement()
 {
     if (match(TOKEN_PRINT))
@@ -1063,6 +1078,10 @@ static void statement()
     else if (match(TOKEN_SWITCH))
     {
         switch_statement();
+    }
+    else if (match(TOKEN_RETURN))
+    {
+        return return_statement();
     }
     else if (match(TOKEN_CONTINUE))
     {
@@ -1178,8 +1197,8 @@ static void var_declaration(int is_assignable)
 
 static void function_declaration()
 {
-    uint32_t identifier_idx = parse_variable(0);
-    // define_local();
+    uint32_t identifier_idx = parse_variable(1);
+    define_local();
 
     Compiler compiler;
     init_compiler(&compiler, TYPE_FUNCTION);

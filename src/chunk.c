@@ -124,6 +124,24 @@ int constantLongInstruction(const char *name, Chunk *chunk, int offset)
     return offset + 1 + 4;
 }
 
+
+int get_local_instruction(const char *name, Chunk *chunk, int offset)
+{
+
+    printf("%-20s %d ", name, offset);
+    uint32_t operand = 0;
+
+    for (size_t i = 0; i < 4; ++i)
+    {
+        uint32_t byt = chunk->code[offset + 1 + i];
+        operand = operand | (byt << (8 * (3 - i)));
+    }
+    printf("%d", operand);
+    printf("\n");
+
+    return offset + 1 + 4;
+}
+
 int jump_instruction(const char *name, int sign, Chunk *chunk, int offset)
 {
 
@@ -247,7 +265,7 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return constantLongInstruction("OP_SET_GLOBAL", chunk, offset);
     }
     case OP_GET_LOCAL: {
-        return constantLongInstruction("OP_GET_LOCAL", chunk, offset);
+        return get_local_instruction("OP_GET_LOCAL", chunk, offset);
     }
     case OP_SET_LOCAL: {
         return constantLongInstruction("OP_SET_LOCAL", chunk, offset);
