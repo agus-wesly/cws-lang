@@ -1,10 +1,13 @@
 #include "vm.h"
 #include "chunk.h"
 #include "hashmap.h"
+#include "native.h"
 #include "object.h"
 #include "value.h"
 
 VM vm;
+
+void define_native(const char *name, NativeFn function);
 
 void resetStack()
 {
@@ -32,6 +35,8 @@ void init_vm()
     init_map(&vm.globals);
 
     update_stack_ptr();
+
+    define_native("time", time_native);
 }
 
 void freeObjects()
@@ -107,6 +112,17 @@ Value pop()
     vm.stack_top--;
     vm.stack->size--;
     return vm.stack->items[vm.stack_top];
+}
+
+void define_native(const char *name, NativeFn function)
+{
+    push(VALUE_OBJ(copy_string(name, strlen(name))));
+    push(VALUE_OBJ(new_native(function)));
+
+    map_set(&vm.globals, AS_STRING(vm.stack->items[0]), vm.stack->items[1]);
+
+    pop();
+    pop();
 }
 
 #define HANDLE_CONCAT()                                                                                                \
@@ -202,6 +218,14 @@ static bool call_value(Value callee, int args_count)
         {
         case OBJ_FUNCTION:
             return call(AS_FUNCTION(callee), args_count);
+
+        case OBJ_NATIVE: {
+            NativeFn function = AS_NATIVE(callee)->function;
+            Value returned = function(args_count, vm.stack_top - args_count);
+            vm.stack_top = vm.stack_top - args_count - 1;
+            push(returned);
+            return true;
+        }
 
         default:
             break;

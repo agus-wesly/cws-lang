@@ -56,6 +56,11 @@ void print_obj(Value value)
         break;
     }
 
+    case OBJ_NATIVE: {
+        printf("<nativefn>");
+        break;
+    }
+
     default:
         return;
     }

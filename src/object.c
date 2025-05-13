@@ -79,6 +79,13 @@ ObjectFunction *new_function()
     return function;
 }
 
+ObjectNative *new_native(NativeFn function)
+{
+    ObjectNative *native = ALLOC_OBJ(ObjectNative, OBJ_NATIVE);
+    native->function = function;
+    return native;
+}
+
 Obj *allocate_obj(ObjType type, size_t size)
 {
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
@@ -100,6 +107,10 @@ void free_obj(Obj *obj)
         ObjectFunction *function = (ObjectFunction *)(obj);
         free_chunk(&function->chunk);
         FREE(ObjectFunction, obj);
+        break;
+    }
+    case OBJ_NATIVE: {
+        FREE(ObjectNative, obj);
         break;
     }
     default:
