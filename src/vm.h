@@ -17,7 +17,6 @@ typedef struct
     Value *items;
 } Stack;
 
-// p (int)(vm.stackPointer-vm.frame[3]->slots)
 typedef struct
 {
     ObjectFunction *function;
