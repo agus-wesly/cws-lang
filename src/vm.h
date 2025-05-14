@@ -64,6 +64,7 @@ void free_vm();
 void init_stack(Stack *stack);
 void write_stack(Stack *stack, Value *value);
 void free_stack(Stack *stack);
+void runtime_error(char *format, ...);
 
 ObjectString *stringify(Value value);
 

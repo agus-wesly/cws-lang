@@ -38,7 +38,7 @@ struct ObjectFunction
     Chunk chunk;
 };
 
-typedef Value (*NativeFn)(int args_count, int stack_ptr);
+typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);
 typedef struct
 {
     Obj object;

@@ -7,7 +7,7 @@
 
 VM vm;
 
-void define_native(const char *name, NativeFn function);
+static void define_native(const char *name, NativeFn function);
 
 void resetStack()
 {
@@ -114,7 +114,7 @@ Value pop()
     return vm.stack->items[vm.stack_top];
 }
 
-void define_native(const char *name, NativeFn function)
+static void define_native(const char *name, NativeFn function)
 {
     push(VALUE_OBJ(copy_string(name, strlen(name))));
     push(VALUE_OBJ(new_native(function)));
@@ -220,8 +220,14 @@ static bool call_value(Value callee, int args_count)
             return call(AS_FUNCTION(callee), args_count);
 
         case OBJ_NATIVE: {
-            NativeFn function = AS_NATIVE(callee)->function;
-            Value returned = function(args_count, vm.stack_top - args_count);
+            ObjectNative *native = AS_NATIVE(callee);
+            NativeFn function = native->function;
+            Value returned;
+            if (!function(args_count, vm.stack_top - args_count, &returned))
+            {
+                return false;
+            }
+
             vm.stack_top = vm.stack_top - args_count - 1;
             push(returned);
             return true;
@@ -552,13 +558,12 @@ static InterpretResult run()
         case OP_CALL: {
             uint8_t args_count = READ_BYTE();
             Value callee = PEEK(args_count);
-            if (!call_value(callee, args_count))
-            {
-                return INTERPRET_RUNTIME_ERROR;
-            };
 
             frame->ip = ip;
-                
+
+            if (!call_value(callee, args_count))
+                return INTERPRET_RUNTIME_ERROR;
+
             frame = &vm.frame[vm.frame_count - 1];
             ip = frame->ip;
 
