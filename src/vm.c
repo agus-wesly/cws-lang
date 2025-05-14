@@ -238,10 +238,12 @@ static bool call_value(Value callee, int args_count)
 
 static InterpretResult run()
 {
+    /* TODO : make `ip` to be local variable */
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
+    uint8_t *ip = frame->ip;
 
-#define READ_BYTE() (*frame->ip++)
-#define READ_SHORT() ((frame->ip += 2), ((uint16_t)(frame->ip[-2] | frame->ip[-1])))
+#define READ_BYTE() (*ip++)
+#define READ_SHORT() ((ip += 2), ((uint16_t)(ip[-2] | ip[-1])))
 #define READ_CONSTANT() (frame->function->chunk.constants->values[READ_BYTE()])
 #define STRING() (AS_STRING(READ_CONSTANT()))
 #define READ_LONG_BYTE()                                                                                               \
@@ -316,7 +318,7 @@ static InterpretResult run()
         }
         printf("]");
         printf("\n");
-        disassemble_instruction(&frame->function->chunk, (int)(frame->ip - frame->function->chunk.code));
+        disassemble_instruction(&frame->function->chunk, (int)(ip - frame->function->chunk.code));
         printf("\n");
 #endif
 
@@ -341,6 +343,7 @@ static InterpretResult run()
             push(return_value);
 
             frame = &vm.frame[vm.frame_count - 1];
+            ip = frame->ip;
 
             break;
         }
@@ -493,7 +496,7 @@ static InterpretResult run()
             uint16_t jump = READ_SHORT();
             if (is_falsy(PEEK(0)))
             {
-                frame->ip += jump;
+                ip += jump;
             }
             break;
         }
@@ -502,25 +505,25 @@ static InterpretResult run()
             uint16_t jump = READ_SHORT();
             if (!is_falsy(PEEK(0)))
             {
-                frame->ip += jump;
+                ip += jump;
             }
             break;
         }
 
         case OP_JUMP: {
             uint16_t jump = READ_SHORT();
-            frame->ip += jump;
+            ip += jump;
             break;
         }
 
         case OP_LOOP: {
             uint16_t jump = READ_SHORT();
-            frame->ip -= jump;
+            ip -= jump;
             break;
         }
 
         case OP_MARK_JUMP: {
-            frame->ip += 2;
+            ip += 2;
             break;
         }
 
@@ -537,12 +540,12 @@ static InterpretResult run()
         }
 
         case OP_SWITCH_JUMP: {
-            frame->ip += 2;
-            uint8_t idx = *(frame->ip - 2);
+            ip += 2;
+            uint8_t idx = *(ip - 2);
             uint16_t jump = ((uint16_t)(frame->function->chunk.code[idx] | frame->function->chunk.code[idx + 1]));
-            uint8_t dist = *(frame->ip - 1);
+            uint8_t dist = *(ip - 1);
 
-            frame->ip += (jump - dist);
+            ip += (jump - dist);
 
             break;
         }
@@ -554,7 +557,11 @@ static InterpretResult run()
             {
                 return INTERPRET_RUNTIME_ERROR;
             };
+
+            frame->ip = ip;
+                
             frame = &vm.frame[vm.frame_count - 1];
+            ip = frame->ip;
 
             break;
         }
