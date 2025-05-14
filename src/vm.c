@@ -238,7 +238,6 @@ static bool call_value(Value callee, int args_count)
 
 static InterpretResult run()
 {
-    /* TODO : make `ip` to be local variable */
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
     uint8_t *ip = frame->ip;
 
