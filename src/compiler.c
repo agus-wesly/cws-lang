@@ -22,6 +22,7 @@ typedef struct
     Token name;
     int depth;
     int is_assignable;
+    bool is_captured;
 } Local;
 
 typedef struct Compiler
@@ -43,6 +44,10 @@ typedef struct Compiler
     ObjectFunction *function;
 
     struct Compiler *enclosing;
+
+    int upvalue_count;
+    UpValue upvalue[UPVALUE_MAX];
+
 } Compiler;
 
 static void expression();
@@ -65,6 +70,7 @@ void init_compiler(Compiler *compiler, FunctionType type)
     compiler->depth = 0;
     compiler->loop_count = 0;
     compiler->jump_count = 0;
+    compiler->upvalue_count = 0;
 
     compiler->function = new_function();
     compiler->type = type;
@@ -162,6 +168,15 @@ void emit_byte(uint8_t byte)
     write_chunk(current_chunk(), byte, parser.previous.line_number);
 }
 
+void emit_int(int d)
+{
+    for (size_t i = 0; i < 4; ++i)
+    {
+        uint8_t byte = (d >> (8 * (3 - i)));
+        emit_byte(byte);
+    }
+}
+
 void emit_bytes(uint8_t byte1, uint8_t byte2)
 {
     emit_byte(byte1);
@@ -206,8 +221,11 @@ void emit_return()
 
 ObjectFunction *end_compiler()
 {
-     emit_return();
+    emit_return();
+
     ObjectFunction *function = current->function;
+    function->upvalue_count = current->upvalue_count;
+
 #ifdef DEBUG_PRINT
     if (!parser.is_error)
     {
@@ -252,7 +270,7 @@ Precedence _get_presedence(TokenType token_type)
 static void number()
 {
     Value value = VALUE_NUMBER(strtod(parser.previous.start, NULL));
-    write_constant(current_chunk(), value, parser.previous.line_number);
+    emit_constant(current_chunk(), value, parser.previous.line_number);
     // uint8_t idx = AddConstant(current_chunk(), value);
     // emit_bytes(OP_CONSTANT, idx);
 }
@@ -297,7 +315,7 @@ bool compare_token(Token *t1, Token *t2)
     return (memcmp(t1->start, t2->start, t1->length) == 0);
 }
 
-int find_local(Token token)
+int find_local(Compiler *current, Token token)
 {
     for (int i = current->count - 1; i >= 0; --i)
     {
@@ -315,6 +333,33 @@ int find_local(Token token)
     return -1;
 }
 
+int resolve_upvalue(Compiler *current, Token token)
+{
+    if (current->enclosing == NULL)
+        return -1;
+
+    int res = find_local(current->enclosing, token);
+
+    if (res >= 0)
+    {
+        current->enclosing->locals[res].is_captured = true;
+
+        current->upvalue[current->upvalue_count].index = res;
+        current->upvalue[current->upvalue_count].is_local = true;
+        return current->upvalue_count++;
+    }
+
+    res = resolve_upvalue(current->enclosing, token);
+    if (res >= 0)
+    {
+        current->upvalue[current->upvalue_count].index = res;
+        current->upvalue[current->upvalue_count].is_local = false;
+        return current->upvalue_count++;
+    }
+
+    return -1;
+}
+
 int is_local_assignable(uint32_t identifier_idx)
 {
     Local *local = &current->locals[identifier_idx];
@@ -326,19 +371,25 @@ static void variable(int can_assign)
     uint8_t OP_GET, OP_SET;
     uint32_t identifier_idx;
 
-    int find_idx = find_local(parser.previous);
+    int find_idx = find_local(current, parser.previous);
 
-    if (current->depth == 0 || find_idx == -1)
-    {
-        OP_GET = OP_GET_GLOBAL;
-        OP_SET = OP_SET_GLOBAL;
-        identifier_idx = identifier_constant(&parser.previous);
-    }
-    else
+    if (current->depth > 0 && find_idx >= 0)
     {
         OP_GET = OP_GET_LOCAL;
         OP_SET = OP_SET_LOCAL;
         identifier_idx = find_idx;
+    }
+    else if ((find_idx = resolve_upvalue(current, parser.previous)) >= 0)
+    {
+        OP_GET = OP_GET_UPVALUE;
+        OP_SET = OP_SET_UPVALUE;
+        identifier_idx = find_idx;
+    }
+    else
+    {
+        OP_GET = OP_GET_GLOBAL;
+        OP_SET = OP_SET_GLOBAL;
+        identifier_idx = identifier_constant(&parser.previous);
     }
 
     if (can_assign && check(TOKEN_EQUAL))
@@ -366,8 +417,8 @@ static void string(int can_assign)
     if (can_assign)
     {
     }
-    write_constant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
-                   parser.previous.line_number);
+    emit_constant(current_chunk(), VALUE_OBJ(copy_string(parser.previous.start + 1, parser.previous.length - 2)),
+                  parser.previous.line_number);
 }
 
 static void unary(int can_assign)
@@ -627,6 +678,7 @@ static void declare_local(Token identifier, int is_assignable)
     local->name = identifier;
     local->depth = -1;
     local->is_assignable = is_assignable;
+    local->is_captured = false;
 }
 
 static void define_local()
@@ -705,7 +757,15 @@ static void end_scope()
         Local local = current->locals[i];
         if (local.depth > current->depth)
         {
-            emit_byte(OP_POP);
+            if (local.is_captured)
+            {
+                emit_byte(OP_CLOSE_UPVALUE);
+            }
+            else
+            {
+                emit_byte(OP_POP);
+            }
+
             current->count--;
         }
         else
@@ -1224,8 +1284,15 @@ static void function_declaration()
 
     ObjectFunction *function = end_compiler();
 
-    Value value = VALUE_OBJ(function);
-    write_constant(current_chunk(), value, parser.previous.line_number);
+    emit_byte(OP_CLOSURE);
+    make_constant(current_chunk(), VALUE_OBJ(function), parser.previous.line_number);
+
+    for (int i = 0; i < compiler.upvalue_count; ++i)
+    {
+        /* TODO : Various bit size */
+        emit_byte(compiler.upvalue[i].is_local);
+        emit_int(compiler.upvalue[i].index);
+    }
 
     define_variable(identifier_idx);
 }

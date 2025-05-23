@@ -16,6 +16,8 @@ typedef struct Obj Obj;
 
 typedef struct ObjectString ObjectString;
 typedef struct ObjectFunction ObjectFunction;
+typedef struct ObjectClosure ObjectClosure;
+typedef struct ObjectUpValue ObjectUpValue;
 
 typedef struct
 {

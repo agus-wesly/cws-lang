@@ -1,6 +1,7 @@
 #include "chunk.h"
 #include "debug.h"
 #include "memory.h"
+#include "object.h"
 
 void init_chunk(Chunk *chunk)
 {
@@ -40,12 +41,9 @@ uint32_t add_long_constant(Chunk *chunk, Value constant)
     return chunk->constantsLong->count - 1;
 }
 
-// 5e520
-void write_constant(Chunk *chunk, Value value, uint32_t lineNumber)
+void make_constant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
     append_long_values(chunk->constantsLong, value);
-
-    write_chunk(chunk, OP_CONSTANT_LONG, lineNumber);
 
     uint32_t constantIndex = chunk->constantsLong->count - 1;
     for (size_t i = 0; i < 4; ++i)
@@ -53,6 +51,12 @@ void write_constant(Chunk *chunk, Value value, uint32_t lineNumber)
         uint8_t chunkIdx = (constantIndex >> (8 * (3 - i)));
         write_chunk(chunk, chunkIdx, lineNumber);
     }
+}
+
+void emit_constant(Chunk *chunk, Value value, uint32_t lineNumber)
+{
+    write_chunk(chunk, OP_CONSTANT_LONG, lineNumber);
+    make_constant(chunk, value, lineNumber);
 }
 
 void writeLine(Chunk *chunk, uint32_t lineNumber)
@@ -109,21 +113,15 @@ int constant_instruction(const char *name, Chunk *chunk, int offset)
 
 int constantLongInstruction(const char *name, Chunk *chunk, int offset)
 {
-
+    ++offset;
     printf("%-20s %d ", name, offset);
-    uint32_t operand = 0;
+    uint32_t operand = READ4BYTE(offset);
 
-    for (size_t i = 0; i < 4; ++i)
-    {
-        uint32_t byt = chunk->code[offset + 1 + i];
-        operand = operand | (byt << (8 * (3 - i)));
-    }
     print_value(chunk->constantsLong->values[operand]);
     printf("\n");
 
-    return offset + 1 + 4;
+    return offset;
 }
-
 
 int get_local_instruction(const char *name, Chunk *chunk, int offset)
 {
@@ -255,6 +253,9 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_POP: {
         return simple_instruction("OP_POP", offset);
     }
+    case OP_CLOSE_UPVALUE: {
+        return simple_instruction("OP_TAKE", offset);
+    }
     case OP_GLOBAL_VAR: {
         return constantLongInstruction("OP_GLOBAL_VAR", chunk, offset);
     }
@@ -269,6 +270,12 @@ int disassemble_instruction(Chunk *chunk, int offset)
     }
     case OP_SET_LOCAL: {
         return constantLongInstruction("OP_SET_LOCAL", chunk, offset);
+    }
+    case OP_GET_UPVALUE: {
+        return get_local_instruction("OP_GET_UPVALUE", chunk, offset);
+    }
+    case OP_SET_UPVALUE: {
+        return constantLongInstruction("OP_SET_UPVALUE", chunk, offset);
     }
     case OP_JUMP_IF_FALSE: {
         return jump_instruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
@@ -290,8 +297,25 @@ int disassemble_instruction(Chunk *chunk, int offset)
         printf("OP_CALL\n");
         return offset + 2;
     }
+    case OP_CLOSURE: {
+        ++offset;
+        printf("%-20s %d ", "OP_CLOSURE", offset);
+        uint32_t operand = READ4BYTE(offset);
+
+        ObjectFunction *fn = AS_FUNCTION(chunk->constantsLong->values[operand]);
+        printf("fn<%s>", fn->name->chars);
+        printf("\n");
+
+        for (int i = 0; i < fn->upvalue_count; ++i)
+        {
+            int is_local = chunk->code[offset++];
+            uint32_t index = READ4BYTE(offset);
+
+            printf("%04d    |                      %s %d\n", offset - 2, is_local ? "local" : "upvalue", index);
+        }
+        return offset;
+    }
     default:
-        // printf("Unknown instruction\n");
         return offset + 1;
     }
 }

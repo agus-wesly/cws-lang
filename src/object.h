@@ -7,6 +7,8 @@
 #include "memory.h"
 #include "value.h"
 
+#define UPVALUE_MAX 2056
+
 typedef struct Object Object;
 
 typedef enum
@@ -14,6 +16,8 @@ typedef enum
     OBJ_STRING,
     OBJ_FUNCTION,
     OBJ_NATIVE,
+    OBJ_CLOSURE,
+    OBJ_UPVALUE,
 } ObjType;
 
 struct Obj
@@ -30,12 +34,37 @@ struct ObjectString
     char chars[];
 };
 
+typedef struct
+{
+    bool is_local;
+    int index;
+} UpValue;
+
 struct ObjectFunction
 {
     Obj object;
     int arity;
     ObjectString *name;
     Chunk chunk;
+
+    int upvalue_count;
+};
+
+struct ObjectClosure
+{
+    Obj object;
+    ObjectFunction *function;
+    int upvalue_count;
+    ObjectUpValue **upvalues;
+};
+
+struct ObjectUpValue {
+    Obj object;
+    Value val;
+    Value *p_val;
+    int idx;
+
+    ObjectUpValue *next;
 };
 
 typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);
@@ -62,6 +91,8 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define STRINGIFY(value) ((ObjectString *)stringify(AS_OBJ(value)))
 #define AS_FUNCTION(value) ((ObjectFunction *)AS_OBJ(value))
 #define AS_NATIVE(value) ((ObjectNative *)AS_OBJ(value))
+#define AS_CLOSURE(value) ((ObjectClosure *)AS_OBJ(value))
+#define AS_UPVALUE(value) ((ObjectUpValue *)AS_OBJ(value))
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define ALLOC_OBJ(type, obj_type) ((type *)allocate_obj(obj_type, sizeof(type)))
@@ -69,6 +100,7 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define IS_STRING(value) IsObjType(value, OBJ_STRING)
 #define IS_FUNCTION(value) IsObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value) IsObjType(value, OBJ_NATIVE)
+#define IS_CLOSURE(value) IsObjType(value, OBJ_CLOSURE)
 
 #define FREE_OBJ(ptr) (reallocate(ptr, sizeof(Obj), 0))
 #define FREE(type, ptr) (reallocate(ptr, sizeof(type), 0))
@@ -83,6 +115,8 @@ ObjectString *copy_string(const char *start, int length);
 ObjectString *take_string(char *chars, int length);
 ObjectFunction *new_function();
 ObjectNative *new_native(NativeFn function);
+ObjectClosure *new_closure(ObjectFunction *function);
+ObjectUpValue *new_upvalue();
 
 void free_obj(Obj *obj);
 

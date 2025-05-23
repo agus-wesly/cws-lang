@@ -86,6 +86,30 @@ ObjectNative *new_native(NativeFn function)
     return native;
 }
 
+ObjectClosure *new_closure(ObjectFunction *function)
+{
+    ObjectUpValue **upvalues = ALLOC(ObjectUpValue *, function->upvalue_count * sizeof(ObjectUpValue *));
+    for (int i = 0; i < function->upvalue_count; ++i)
+    {
+        upvalues[i] = NULL;
+    }
+
+    ObjectClosure *closure = ALLOC_OBJ(ObjectClosure, OBJ_CLOSURE);
+    closure->function = function;
+    closure->upvalues = upvalues;
+    closure->upvalue_count = function->upvalue_count;
+
+    return closure;
+}
+
+ObjectUpValue *new_upvalue()
+{
+    ObjectUpValue *upvalue = ALLOC_OBJ(ObjectUpValue, OBJ_UPVALUE);
+    upvalue->p_val = NULL;
+    upvalue->next = NULL;
+    return upvalue;
+}
+
 Obj *allocate_obj(ObjType type, size_t size)
 {
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
@@ -111,6 +135,14 @@ void free_obj(Obj *obj)
     }
     case OBJ_NATIVE: {
         FREE(ObjectNative, obj);
+        break;
+    }
+    case OBJ_CLOSURE: {
+        FREE(ObjectClosure, obj);
+        break;
+    }
+    case OBJ_UPVALUE: {
+        FREE(ObjectUpValue, obj);
         break;
     }
     default:

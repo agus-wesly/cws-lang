@@ -61,6 +61,15 @@ void print_obj(Value value)
         break;
     }
 
+    case OBJ_CLOSURE: {
+        print_function(AS_CLOSURE(value)->function);
+        break;
+    }
+
+    case OBJ_UPVALUE: {
+        print_value((*AS_UPVALUE(value)->p_val));
+    }
+
     default:
         return;
     }

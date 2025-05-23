@@ -34,6 +34,8 @@ typedef enum
     OP_SET_GLOBAL,
     OP_GET_LOCAL,
     OP_SET_LOCAL,
+    OP_GET_UPVALUE,
+    OP_SET_UPVALUE,
 
     OP_MARK_JUMP,
     OP_JUMP_IF_FALSE,
@@ -44,7 +46,9 @@ typedef enum
     OP_SWITCH,
     OP_CASE_COMPARE,
 
-    OP_CALL
+    OP_CALL,
+    OP_CLOSURE,
+    OP_CLOSE_UPVALUE,
 } OpCode;
 
 typedef struct
@@ -60,6 +64,19 @@ typedef struct
 
 } Chunk;
 
+#define READ4BYTE(offset)  \
+    ({ \
+        uint32_t operand = 0; \
+        do { \
+            for (size_t i = 0; i < 4; ++i) \
+            { \
+                uint32_t byt = chunk->code[offset++]; \
+                operand = operand | (byt << (8 * (3 - i))); \
+            } \
+        } while(false); \
+        operand; \
+    }) \
+
 void init_chunk(Chunk *chunk);
 void write_chunk(Chunk *chunk, uint8_t newItem, uint32_t line);
 void print_chunk(Chunk *chunk);
@@ -69,6 +86,7 @@ uint32_t get_line(Chunk *chunk, uint8_t idx);
 uint8_t add_constant(Chunk *chunk, Value newConstant);
 uint32_t add_long_constant(Chunk *chunk, Value constant);
 
-void write_constant(Chunk *chunk, Value value, uint32_t lineNumber);
+void emit_constant(Chunk *chunk, Value value, uint32_t lineNumber);
+void make_constant(Chunk *chunk, Value value, uint32_t lineNumber);
 
 #endif // !CWS_CHUNK_H

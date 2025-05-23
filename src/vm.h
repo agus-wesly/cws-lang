@@ -19,7 +19,7 @@ typedef struct
 
 typedef struct
 {
-    ObjectFunction *function;
+    ObjectClosure *closure;
 
     int slots;
     uint8_t *ip;
@@ -45,6 +45,8 @@ typedef struct
 
     Map strings;
     Map globals;
+
+    ObjectUpValue *upvalues;
 
 } VM;
 
