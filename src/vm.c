@@ -106,7 +106,7 @@ void push(Value value)
         int new_capacity = GROW_CAPACITY(old_capacity);
         vm.stack->capacity = new_capacity;
         // vm.stack->items = GROW_ARRAY(Value, vm.stack->items, old_capacity, new_capacity);
-        vm.stack->items = (Value *)realloc(vm.stack->items, new_capacity);
+        vm.stack->items = (Value *)realloc(vm.stack->items, new_capacity * sizeof(Value));
     }
 
     vm.stack->items[vm.stack_top++] = value;
@@ -136,9 +136,6 @@ static void define_native(const char *name, NativeFn function)
 
     push(str);
     push(fn);
-
-    free(vm.strings.entries);
-    assert(0 && "Test");
 
     map_set(&vm.globals, AS_STRING(vm.stack->items[0]), vm.stack->items[1]);
 

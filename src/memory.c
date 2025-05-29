@@ -25,15 +25,12 @@ void mark_obj(Obj *obj)
         vm.grey_cap = GROW_CAPACITY(old_cap);
         size_t s = vm.grey_cap * sizeof(Obj *);
         vm.grey_stack = (Obj **)(realloc(vm.grey_stack, s));
-        printf("Aloccate : %p \n", vm.grey_stack);
     }
 
     if (vm.grey_stack == NULL)
     {
         exit(1);
     }
-
-    printf("Add idx : %d\n", vm.grey_count);
 
     vm.grey_stack[vm.grey_count++] = obj;
 }
@@ -84,7 +81,6 @@ static void mark_roots()
 
 static void mark_array(Value *val, int count)
 {
-    printf("Count is %d\n", count);
     for (int i = 0; i < count; ++i)
     {
         print_value(val[i]);
@@ -98,7 +94,6 @@ static void mark_references()
     while (vm.grey_count > 0)
     {
         Obj *obj = vm.grey_stack[--vm.grey_count];
-        printf("Pop idx : %d\n", vm.grey_count);
 
 #ifdef DEBUG_GC
         printf("%p blacken :  %d ", obj, obj->is_marked);
@@ -199,7 +194,7 @@ void collect_garbage()
     mark_references();
 
     sweep_strings(&vm.strings);
-    // sweep();
+    sweep();
 
 #ifdef DEBUG_GC
 #endif
