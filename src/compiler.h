@@ -45,4 +45,7 @@ typedef struct
     int depth;
 } Loop;
 
+
+void mark_compiler();
+
 #endif // !CWS_COMPILER_H

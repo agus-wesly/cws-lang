@@ -24,6 +24,7 @@ struct Obj
 {
     ObjType type;
     Obj *next;
+    bool is_marked;
 };
 
 struct ObjectString

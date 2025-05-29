@@ -48,6 +48,10 @@ typedef struct
 
     ObjectUpValue *upvalues;
 
+    int grey_cap;
+    int grey_count;
+    Obj **grey_stack;
+
 } VM;
 
 typedef enum
@@ -67,6 +71,9 @@ void init_stack(Stack *stack);
 void write_stack(Stack *stack, Value *value);
 void free_stack(Stack *stack);
 void runtime_error(char *format, ...);
+
+void push(Value value);
+Value pop();
 
 ObjectString *stringify(Value value);
 

@@ -11,7 +11,7 @@ void init_map(Map *h)
 
 void free_map(Map *h)
 {
-    FREE_ARRAY(Map *, h->entries, h->capacity);
+    free(h->entries);
     init_map(h);
 }
 
@@ -44,7 +44,8 @@ Entry *find_entry(Entry *entries, ObjectString *key, int capacity)
 
 void adjust_capacity(Map *old, size_t capacity)
 {
-    Entry *entries = ALLOC(Entry, sizeof(Entry) * capacity);
+    // Entry *entries = ALLOC(Entry, (sizeof(Entry) * capacity));
+    Entry *entries = (Entry *)calloc(capacity, sizeof(Entry));
     for (size_t i = 0; i < capacity; ++i)
     {
         Entry *entry = &entries[i];
@@ -67,7 +68,7 @@ void adjust_capacity(Map *old, size_t capacity)
         old->size++;
     }
 
-    FREE_ARRAY(Entry, old->entries, old->capacity);
+    // FREE_ARRAY(Entry, old->entries, old->capacity);
     old->entries = entries;
     old->capacity = capacity;
 }
@@ -80,11 +81,15 @@ bool map_set_value(Map *h, Value key, Value value)
 
 bool map_set(Map *h, ObjectString *key, Value value)
 {
+    push(VALUE_OBJ(key));
+
     if ((h->capacity * FACTOR_TERM) <= h->size)
     {
         size_t capacity = GROW_CAPACITY(h->capacity);
         adjust_capacity(h, capacity);
     }
+
+    pop();
 
     Entry *entry = find_entry(h->entries, key, h->capacity);
     bool is_new = entry->key == NULL;
