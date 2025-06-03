@@ -1,5 +1,6 @@
 #include "value.h"
 #include "object.h"
+#include "vm.h"
 
 void init_values(Values *values)
 {
@@ -68,9 +69,11 @@ void print_obj(Value value)
 
     case OBJ_UPVALUE: {
         print_value((*AS_UPVALUE(value)->p_val));
+        break;
     }
 
     default:
+        assert(0 && "Unreachable");
         return;
     }
 }
@@ -160,3 +163,4 @@ bool is_falsy(Value v)
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));
 }
+

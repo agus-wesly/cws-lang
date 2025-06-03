@@ -1,5 +1,6 @@
 #include "compiler.h"
 #include "object.h"
+#include "vm.h"
 
 extern int IS_IN_REPL;
 
@@ -1182,7 +1183,10 @@ static void synchronize()
 static uint32_t identifier_constant(const Token *token)
 {
     ObjectString *string = copy_string(token->start, token->length);
-    return add_long_constant(current_chunk(), VALUE_OBJ(string));
+    push(VALUE_OBJ(string));
+    uint32_t res = add_long_constant(current_chunk(), VALUE_OBJ(string));
+    pop();
+    return res;
 }
 
 static void define_variable(uint32_t identifier_idx)
@@ -1284,8 +1288,10 @@ static void function_declaration()
 
     ObjectFunction *function = end_compiler();
 
+    push(VALUE_OBJ(function));
     emit_byte(OP_CLOSURE);
     make_constant(current_chunk(), VALUE_OBJ(function), parser.previous.line_number);
+    pop();
 
     for (int i = 0; i < compiler.upvalue_count; ++i)
     {
@@ -1338,4 +1344,14 @@ ObjectFunction *compile(const char *source)
     }
 
     return end_compiler();
+}
+
+void mark_compiler()
+{
+    Compiler *c = current;
+    while (c != NULL)
+    {
+        mark_obj((Obj *)c->function);
+        c = c->enclosing;
+    }
 }

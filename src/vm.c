@@ -27,6 +27,7 @@ void init_vm()
     vm.objects = NULL;
     vm.frame_count = 0;
     vm.upvalues = NULL;
+    vm.stack_top = 0;
 
     Stack *stack_ptr = malloc(sizeof(Stack));
     vm.stack = stack_ptr;
@@ -34,6 +35,10 @@ void init_vm()
 
     init_map(&vm.strings);
     init_map(&vm.globals);
+
+    vm.grey_count = 0;
+    vm.grey_cap = 0;
+    vm.grey_stack = NULL;
 
     update_stack_ptr();
 
@@ -49,14 +54,18 @@ void freeObjects()
         free_obj(object);
         object = next;
     }
+    printf("Free : %p\n", vm.grey_stack);
+    // free(NULL);
 }
 
 void free_vm()
 {
-    freeObjects();
-    free(vm.stack);
-    free_map(&vm.strings);
-    free_map(&vm.globals);
+    // freeObjects();
+    // free(vm.stack);
+    // free_map(&vm.strings);
+    // free_map(&vm.globals);
+
+    free(vm.strings.entries);
 }
 
 void runtime_error(char *format, ...)
@@ -96,7 +105,8 @@ void push(Value value)
         int old_capacity = vm.stack->capacity;
         int new_capacity = GROW_CAPACITY(old_capacity);
         vm.stack->capacity = new_capacity;
-        vm.stack->items = GROW_ARRAY(Value, vm.stack->items, old_capacity, new_capacity);
+        // vm.stack->items = GROW_ARRAY(Value, vm.stack->items, old_capacity, new_capacity);
+        vm.stack->items = (Value *)realloc(vm.stack->items, new_capacity * sizeof(Value));
     }
 
     vm.stack->items[vm.stack_top++] = value;
@@ -117,8 +127,13 @@ Value pop()
 
 static void define_native(const char *name, NativeFn function)
 {
-    push(VALUE_OBJ(copy_string(name, strlen(name))));
-    push(VALUE_OBJ(new_native(function)));
+    ObjectString *s = copy_string(name, strlen(name));
+    Value str = VALUE_OBJ(s);
+    push(str);
+
+    ObjectNative *f = new_native(function);
+    Value fn = VALUE_OBJ(f);
+    push(fn);
 
     map_set(&vm.globals, AS_STRING(vm.stack->items[0]), vm.stack->items[1]);
 

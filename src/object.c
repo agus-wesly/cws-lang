@@ -83,21 +83,26 @@ ObjectNative *new_native(NativeFn function)
 {
     ObjectNative *native = ALLOC_OBJ(ObjectNative, OBJ_NATIVE);
     native->function = function;
+
     return native;
 }
 
 ObjectClosure *new_closure(ObjectFunction *function)
 {
+    push(VALUE_OBJ(function));
     ObjectUpValue **upvalues = ALLOC(ObjectUpValue *, function->upvalue_count * sizeof(ObjectUpValue *));
     for (int i = 0; i < function->upvalue_count; ++i)
     {
         upvalues[i] = NULL;
     }
 
+    // Why it is not marking <script> in here ?
     ObjectClosure *closure = ALLOC_OBJ(ObjectClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalue_count = function->upvalue_count;
+
+    pop();
 
     return closure;
 }
@@ -115,12 +120,24 @@ Obj *allocate_obj(ObjType type, size_t size)
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
     obj->type = type;
     obj->next = vm.objects;
+    obj->is_marked = false;
     vm.objects = obj;
+
+#ifdef DEBUG_GC
+    printf("Object %p allocate %zu of type %d\n", obj, size, obj->type);
+#endif
+
     return obj;
 }
 
 void free_obj(Obj *obj)
 {
+
+#ifdef DEBUG_GC
+    printf("%p free type %d\n", obj, obj->type);
+    //assert(0);
+#endif
+
     switch (obj->type)
     {
     case OBJ_STRING: {

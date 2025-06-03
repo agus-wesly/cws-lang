@@ -58,7 +58,7 @@ typedef struct
 #define VALUE_OBJ(object)                                                                                              \
     (Value)                                                                                                            \
     {                                                                                                                  \
-        .type = TYPE_OBJ, .as = {.obj = (Obj *)object }                                                                \
+        .type = TYPE_OBJ, .as = {.obj = (Obj *)(object) }                                                                \
     }
 
 
@@ -74,5 +74,9 @@ void free_values(Values *values);
 void print_value(Value value);
 bool compare(Value value1, Value value2);
 bool is_falsy(Value v);
+
+void mark_obj(Obj *obj);
+void mark_value(Value val);
+void print_obj(Value value);
 
 #endif // !CWS_VALUE_H

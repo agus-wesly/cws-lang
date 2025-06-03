@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "memory.h"
 #include "object.h"
+#include "vm.h"
 
 void init_chunk(Chunk *chunk)
 {
@@ -43,7 +44,9 @@ uint32_t add_long_constant(Chunk *chunk, Value constant)
 
 void make_constant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
+    push(value);
     append_long_values(chunk->constantsLong, value);
+    pop();
 
     uint32_t constantIndex = chunk->constantsLong->count - 1;
     for (size_t i = 0; i < 4; ++i)
@@ -55,8 +58,10 @@ void make_constant(Chunk *chunk, Value value, uint32_t lineNumber)
 
 void emit_constant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
+    push(value);
     write_chunk(chunk, OP_CONSTANT_LONG, lineNumber);
     make_constant(chunk, value, lineNumber);
+    pop();
 }
 
 void writeLine(Chunk *chunk, uint32_t lineNumber)
@@ -332,6 +337,7 @@ void disassemble_chunk(Chunk *chunk, const char *title)
 
 uint8_t add_constant(Chunk *chunk, Value constant)
 {
+    assert(0 && "Small constant is deprecated");
     append_values(chunk->constants, constant);
     return chunk->constants->count - 1;
 }
