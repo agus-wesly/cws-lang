@@ -127,14 +127,12 @@ Value pop()
 
 static void define_native(const char *name, NativeFn function)
 {
-    size_t l = strlen(name);
-    ObjectString *s = copy_string(name, l);
-    ObjectNative *f = new_native(function);
-
+    ObjectString *s = copy_string(name, strlen(name));
     Value str = VALUE_OBJ(s);
-    Value fn = VALUE_OBJ(f);
-
     push(str);
+
+    ObjectNative *f = new_native(function);
+    Value fn = VALUE_OBJ(f);
     push(fn);
 
     map_set(&vm.globals, AS_STRING(vm.stack->items[0]), vm.stack->items[1]);

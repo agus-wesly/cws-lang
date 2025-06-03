@@ -44,7 +44,9 @@ uint32_t add_long_constant(Chunk *chunk, Value constant)
 
 void make_constant(Chunk *chunk, Value value, uint32_t lineNumber)
 {
+    push(value);
     append_long_values(chunk->constantsLong, value);
+    pop();
 
     uint32_t constantIndex = chunk->constantsLong->count - 1;
     for (size_t i = 0; i < 4; ++i)

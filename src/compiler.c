@@ -1288,8 +1288,10 @@ static void function_declaration()
 
     ObjectFunction *function = end_compiler();
 
+    push(VALUE_OBJ(function));
     emit_byte(OP_CLOSURE);
     make_constant(current_chunk(), VALUE_OBJ(function), parser.previous.line_number);
+    pop();
 
     for (int i = 0; i < compiler.upvalue_count; ++i)
     {

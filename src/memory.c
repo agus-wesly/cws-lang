@@ -205,7 +205,6 @@ void *reallocate(void *array, int oldSize, int newSize)
 {
     if (newSize == 0)
     {
-        printf("Free-obj : %p\n", array);
         free(array);
         return NULL;
     }
