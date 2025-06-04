@@ -10,6 +10,6 @@
 // #define DEBUG_PRINT
 
 // #define TEST_STRESS_GC
-#define DEBUG_GC
+// #define DEBUG_GC
 
 #endif // !ws_common_h

@@ -193,8 +193,8 @@ ObjectString *stringify(Value value)
 
 ObjectString *concatenate()
 {
-    ObjectString *b = stringify(pop());
-    ObjectString *a = stringify(pop());
+    ObjectString *b = stringify(PEEK(0));
+    ObjectString *a = stringify(PEEK(1));
 
     int length = a->length + b->length;
     char *result = ALLOC(char, length + 1);
@@ -202,6 +202,9 @@ ObjectString *concatenate()
     memcpy(result, a->chars, a->length);
     memcpy(result + a->length, b->chars, b->length);
     result[length] = '\0';
+
+    pop();
+    pop();
 
     return take_string(result, length);
 }
