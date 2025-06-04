@@ -186,8 +186,9 @@ static void sweep()
 
 void collect_garbage()
 {
-    printf("--gc begin\n");
 #ifdef DEBUG_GC
+    printf("--gc begin\n");
+    size_t before = vm.current_bytes;
 #endif
 
     mark_roots();
@@ -196,25 +197,32 @@ void collect_garbage()
     sweep_strings(&vm.strings);
     sweep();
 
+    vm.next_gc = vm.current_bytes * GC_GROW_FACTOR;
+
 #ifdef DEBUG_GC
-#endif
     printf("--gc end\n");
+    printf("Collected : %zu, before : %zu, after : %zu\n", before - vm.current_bytes, before, vm.current_bytes);
+#endif
 }
 
 void *reallocate(void *array, int oldSize, int newSize)
 {
+    vm.current_bytes += newSize - oldSize;
+
     if (newSize == 0)
     {
         free(array);
         return NULL;
     }
 
-    if (newSize > oldSize)
-    {
 #ifdef TEST_STRESS_GC
+    collect_garbage();
+#else
+    if (vm.current_bytes > vm.next_gc)
+    {
         collect_garbage();
-#endif
     }
+#endif
 
     void *result = realloc(array, newSize);
     if (result == NULL)

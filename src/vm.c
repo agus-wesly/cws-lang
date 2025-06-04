@@ -28,6 +28,8 @@ void init_vm()
     vm.frame_count = 0;
     vm.upvalues = NULL;
     vm.stack_top = 0;
+    vm.current_bytes = 0;
+    vm.next_gc = 10;
 
     Stack *stack_ptr = malloc(sizeof(Stack));
     vm.stack = stack_ptr;

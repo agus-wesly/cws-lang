@@ -52,6 +52,8 @@ typedef struct
     int grey_count;
     Obj **grey_stack;
 
+    size_t current_bytes;
+    size_t next_gc;
 } VM;
 
 typedef enum
