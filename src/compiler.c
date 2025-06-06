@@ -482,6 +482,11 @@ static void unary(int can_assign)
     }
 }
 
+static void del()
+{
+    assert(0 && "TODO");
+}
+
 static void grouping(int can_assign)
 {
     if (can_assign)
@@ -616,6 +621,7 @@ ParseRule rules[] = {
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_LET] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
+    [TOKEN_DEL] = {del, NULL, PREC_NONE},
     [TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
     [TOKEN_OR] = {NULL, or_, PREC_OR},
     [TOKEN_AND] = {NULL, and_, PREC_AND},

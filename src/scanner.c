@@ -101,8 +101,25 @@ static TokenType get_token_type()
         return match_token(1, 2, "nd", TOKEN_AND);
     case 'b':
         return match_token(1, 4, "reak", TOKEN_BREAK);
-    case 'd':
-        return match_token(1, 6, "efault", TOKEN_DEFAULT);
+    case 'd': {
+        if ((scanner.current - scanner.start) > 1)
+        {
+            switch (scanner.start[1])
+            {
+            case 'e': {
+                switch (scanner.start[2])
+                {
+                case 'f':
+                    return match_token(3, 4, "ault", TOKEN_DEFAULT);
+                case 'l':
+                    return match_token(3, 0, "\0", TOKEN_DEL);
+                }
+            }
+            }
+        }
+        break;
+    }
+
     case 'e':
         return match_token(1, 3, "lse", TOKEN_ELSE);
     case 'i':
