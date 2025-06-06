@@ -260,7 +260,6 @@ static bool call_value(Value callee, int args_count)
             ObjectInstance *inst = new_instance(klass);
 
             vm.stack_top = vm.stack_top - args_count - 1;
-            // pop();
             push(VALUE_OBJ(inst));
             return true;
         }
@@ -511,7 +510,7 @@ static InterpretResult run()
             if (!IsObjType(val, OBJ_INSTANCE))
             {
                 // TODO : pass the real ip to this function
-                runtime_error("Invalid left operand for '.' operator");
+                runtime_error("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -520,11 +519,13 @@ static InterpretResult run()
 
             Value get_val;
             if (map_get(&inst->table, key, &get_val))
+            {
                 push(get_val);
-            else
-                push(VALUE_NIL);
+                break;
+            }
 
-            break;
+            runtime_error("Undefined field '%s'", key->chars);
+            return INTERPRET_RUNTIME_ERROR;
         }
 
         case OP_SET_DOT: {
@@ -534,7 +535,7 @@ static InterpretResult run()
             if (!IsObjType(inst_val, OBJ_INSTANCE))
             {
                 // TODO : pass the real ip to this function
-                runtime_error("Invalid left operand for '.' operator");
+                runtime_error("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -744,7 +745,6 @@ static InterpretResult run()
         }
 
         case OP_CLASS: {
-            // todo : disassemble
             push(VALUE_OBJ(new_class(AS_STRING(READ_LONG_CONSTANT()))));
             break;
         }

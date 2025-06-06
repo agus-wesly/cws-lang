@@ -276,15 +276,14 @@ static void number()
     // emit_bytes(OP_CONSTANT, idx);
 }
 
-static void dot()
+static void dot(int can_assign)
 {
     consume(TOKEN_IDENTIFIER, "Expected identifer");
 
     uint32_t name_attr = identifier_constant(&parser.previous);
 
-    if (match(TOKEN_EQUAL))
+    if (can_assign && match(TOKEN_EQUAL))
     {
-        // setter
         expression();
         emit_byte(OP_SET_DOT);
         emit_constant_byte(name_attr);
