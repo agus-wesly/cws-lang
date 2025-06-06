@@ -4,7 +4,7 @@
 #include "common.h"
 #include "hash.h"
 #include "memory.h"
-#include "object.h"
+#include "value.h"
 
 #define FACTOR_TERM 0.75
 
@@ -24,8 +24,8 @@ typedef struct
 
 void init_map(Map *h);
 void free_map(Map *h);
-bool map_set(Map *h, ObjectString *key, Value value);
 bool map_set_value(Map *h, Value key, Value value);
+bool map_set(Map *h, ObjectString *key, Value value);
 bool map_get(Map *h, ObjectString *key, Value *value);
 bool map_get_value(Map *h, Value key, Value *value);
 bool map_delete(Map *h, ObjectString *key);

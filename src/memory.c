@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "object.h"
 #include "vm.h"
 
 extern VM vm;
@@ -83,8 +84,6 @@ static void mark_array(Value *val, int count)
 {
     for (int i = 0; i < count; ++i)
     {
-        print_value(val[i]);
-        printf(" \n");
         mark_value(val[i]);
     }
 }
@@ -132,6 +131,19 @@ static void mark_references()
         case OBJ_NATIVE: {
             break;
         }
+
+        case OBJ_CLASS: {
+            ObjectClass *klass = (ObjectClass *)obj;
+            mark_obj((Obj *)klass->name);
+            break;
+        }
+        case OBJ_INSTANCE: {
+            ObjectInstance *inst = (ObjectInstance *)obj;
+            mark_obj((Obj *)inst->klass);
+            mark_table(&inst->table);
+            break;
+        }
+
         default: {
             assert(0 && "Unreachable");
             break;

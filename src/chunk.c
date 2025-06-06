@@ -224,6 +224,12 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_ADD: {
         return simple_instruction("OP_ADD", offset);
     }
+    case OP_GET_DOT: {
+        return constantLongInstruction("OP_GET_DOT", chunk, offset);
+    }
+    case OP_SET_DOT: {
+        return constantLongInstruction("OP_SET_DOT", chunk, offset);
+    }
     case OP_SUBTRACT: {
         return simple_instruction("OP_SUBTRACT", offset);
     }
@@ -320,6 +326,15 @@ int disassemble_instruction(Chunk *chunk, int offset)
         }
         return offset;
     }
+
+    case OP_CLASS: {
+        ++offset;
+        printf("%-20s %d ", "OP_CLASS", offset);
+        uint32_t klass_name = READ4BYTE(offset);
+        printf("%d \n", klass_name);
+        return offset;
+    }
+
     default:
         return offset + 1;
     }

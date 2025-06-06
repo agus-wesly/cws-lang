@@ -276,6 +276,26 @@ static void number()
     // emit_bytes(OP_CONSTANT, idx);
 }
 
+static void dot()
+{
+    consume(TOKEN_IDENTIFIER, "Expected identifer");
+
+    uint32_t name_attr = identifier_constant(&parser.previous);
+
+    if (match(TOKEN_EQUAL))
+    {
+        // setter
+        expression();
+        emit_byte(OP_SET_DOT);
+        emit_constant_byte(name_attr);
+    }
+    else
+    {
+        emit_byte(OP_GET_DOT);
+        emit_constant_byte(name_attr);
+    }
+}
+
 static void nil(int can_assign)
 {
     if (can_assign)
@@ -604,6 +624,7 @@ ParseRule rules[] = {
     [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
     [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
     [TOKEN_NUMBER] = {number, NULL, PREC_PRIMARY},
+    [TOKEN_DOT] = {NULL, dot, PREC_PRIMARY},
 
     [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
@@ -680,6 +701,30 @@ static void declare_local(Token identifier, int is_assignable)
     local->depth = -1;
     local->is_assignable = is_assignable;
     local->is_captured = false;
+}
+
+static void declare(bool is_assignable)
+{
+    if (current->depth > 0)
+    {
+        for (int i = current->count - 1; i >= 0; --i)
+        {
+            Local *local = &current->locals[i];
+            if (local->depth == -1 || local->depth < current->depth)
+            {
+                break;
+            }
+
+            if (compare_token(&parser.previous, &local->name))
+            {
+                error("Redeclaration of variable");
+                return;
+            }
+        }
+
+        declare_local(parser.previous, is_assignable);
+        return;
+    }
 }
 
 static void define_local()
@@ -1261,7 +1306,7 @@ static void var_declaration(int is_assignable)
 
 static void function_declaration()
 {
-    uint32_t identifier_idx = parse_variable(1);
+    uint32_t identifier_idx = parse_variable(false);
     define_local();
 
     Compiler compiler;
@@ -1303,6 +1348,21 @@ static void function_declaration()
     define_variable(identifier_idx);
 }
 
+static void class_declaration()
+{
+    consume(TOKEN_IDENTIFIER, "Expected variable name.");
+    int klass_name = identifier_constant(&parser.previous);
+    declare(false);
+
+    emit_byte(OP_CLASS);
+    emit_constant_byte(klass_name);
+
+    define_variable(klass_name);
+
+    consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' after class declaration");
+}
+
 static void declaration()
 {
     if (match(TOKEN_LET))
@@ -1316,6 +1376,10 @@ static void declaration()
     else if (match(TOKEN_FUN))
     {
         function_declaration();
+    }
+    else if (match(TOKEN_CLASS))
+    {
+        class_declaration();
     }
     else
     {

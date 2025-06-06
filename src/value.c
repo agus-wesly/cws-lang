@@ -72,6 +72,18 @@ void print_obj(Value value)
         break;
     }
 
+    case OBJ_CLASS: {
+        printf("class ");
+        print_string(AS_CLASS(value)->name);
+        break;
+    }
+
+    case OBJ_INSTANCE: {
+        printf("instance class ");
+        print_string(AS_INSTANCE(value)->klass->name);
+        break;
+    }
+
     default:
         assert(0 && "Unreachable");
         return;
@@ -163,4 +175,3 @@ bool is_falsy(Value v)
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));
 }
-

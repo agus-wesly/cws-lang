@@ -1,6 +1,6 @@
 #include "hashmap.h"
-#include "value.h"
 #include "vm.h"
+#include "object.h"
 
 void init_map(Map *h)
 {

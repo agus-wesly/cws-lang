@@ -326,6 +326,9 @@ Token scan_token()
         return string();
     case '`':
         return make_token(TOKEN_BACKTICK);
+
+    case '.':
+        return make_token(TOKEN_DOT);
     }
 
     if (is_digit(cur))

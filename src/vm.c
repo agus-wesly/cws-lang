@@ -254,6 +254,16 @@ static bool call_value(Value callee, int args_count)
             return true;
         }
 
+        case OBJ_CLASS: {
+            ObjectClass *klass = AS_CLASS(callee);
+            ObjectInstance *inst = new_instance(klass);
+            
+            vm.stack_top = vm.stack_top - args_count - 1;
+            // pop();
+            push(VALUE_OBJ(inst));
+            return true;
+        }
+
         default:
             break;
         }
@@ -495,6 +505,46 @@ static InterpretResult run()
         case OP_EQUAL_EQUAL:
             HANDLE_EQUAL();
             break;
+        case OP_GET_DOT: {
+            Value val = pop();
+            if (!IsObjType(val, OBJ_INSTANCE))
+            {
+                // TODO : pass the real ip to this function
+                runtime_error("Invalid left operand for '.' operator");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjectInstance *inst = AS_INSTANCE(val);
+            ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
+
+            Value get_val;
+            if (map_get(&inst->table, key, &get_val))
+                push(get_val);
+            else
+                push(VALUE_NIL);
+
+            break;
+        }
+
+        case OP_SET_DOT: {
+            Value new_val = pop();
+            Value inst_val = pop();
+
+            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            {
+                // TODO : pass the real ip to this function
+                runtime_error("Invalid left operand for '.' operator");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjectInstance *inst = AS_INSTANCE(inst_val);
+            ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
+
+            map_set(&inst->table, key, new_val);
+            push(new_val);
+
+            break;
+        }
 
         case OP_TERNARY:
             HANDLE_TERNARY();
@@ -689,6 +739,12 @@ static InterpretResult run()
             }
 
             push(VALUE_OBJ(closure));
+            break;
+        }
+
+        case OP_CLASS: {
+            // todo : disassemble
+            push(VALUE_OBJ(new_class(AS_STRING(READ_LONG_CONSTANT()))));
             break;
         }
 

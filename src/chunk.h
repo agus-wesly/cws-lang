@@ -5,7 +5,6 @@
 #include "line.h"
 #include "long_value.h"
 #include "std.h"
-#include "value.h"
 
 typedef enum
 {
@@ -21,6 +20,8 @@ typedef enum
     OP_ADD,
     OP_SUBTRACT,
     OP_DIVIDE,
+    OP_GET_DOT,
+    OP_SET_DOT,
     OP_MULTIPLY,
     OP_TRUE,
     OP_FALSE,
@@ -49,6 +50,8 @@ typedef enum
     OP_CALL,
     OP_CLOSURE,
     OP_CLOSE_UPVALUE,
+
+    OP_CLASS,
 } OpCode;
 
 typedef struct
@@ -64,18 +67,19 @@ typedef struct
 
 } Chunk;
 
-#define READ4BYTE(offset)  \
-    ({ \
-        uint32_t operand = 0; \
-        do { \
-            for (size_t i = 0; i < 4; ++i) \
-            { \
-                uint32_t byt = chunk->code[offset++]; \
-                operand = operand | (byt << (8 * (3 - i))); \
-            } \
-        } while(false); \
-        operand; \
-    }) \
+#define READ4BYTE(offset)                                                                                              \
+    ({                                                                                                                 \
+        uint32_t operand = 0;                                                                                          \
+        do                                                                                                             \
+        {                                                                                                              \
+            for (size_t i = 0; i < 4; ++i)                                                                             \
+            {                                                                                                          \
+                uint32_t byt = chunk->code[offset++];                                                                  \
+                operand = operand | (byt << (8 * (3 - i)));                                                            \
+            }                                                                                                          \
+        } while (false);                                                                                               \
+        operand;                                                                                                       \
+    })
 
 void init_chunk(Chunk *chunk);
 void write_chunk(Chunk *chunk, uint8_t newItem, uint32_t line);

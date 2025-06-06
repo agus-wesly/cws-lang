@@ -5,7 +5,7 @@
 #include "common.h"
 #include "hash.h"
 #include "memory.h"
-#include "value.h"
+#include "hashmap.h"
 
 #define UPVALUE_MAX 2056
 
@@ -18,6 +18,8 @@ typedef enum
     OBJ_NATIVE,
     OBJ_CLOSURE,
     OBJ_UPVALUE,
+    OBJ_CLASS,
+    OBJ_INSTANCE,
 } ObjType;
 
 struct Obj
@@ -59,13 +61,27 @@ struct ObjectClosure
     ObjectUpValue **upvalues;
 };
 
-struct ObjectUpValue {
+struct ObjectUpValue
+{
     Obj object;
     Value val;
     Value *p_val;
     int idx;
 
     ObjectUpValue *next;
+};
+
+struct ObjectClass
+{
+    Obj object;
+    ObjectString *name;
+};
+
+struct ObjectInstance
+{
+    Obj object;
+    ObjectClass *klass;
+    Map table;
 };
 
 typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);
@@ -94,6 +110,8 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define AS_NATIVE(value) ((ObjectNative *)AS_OBJ(value))
 #define AS_CLOSURE(value) ((ObjectClosure *)AS_OBJ(value))
 #define AS_UPVALUE(value) ((ObjectUpValue *)AS_OBJ(value))
+#define AS_CLASS(value) ((ObjectClass *)AS_OBJ(value))
+#define AS_INSTANCE(value) ((ObjectInstance *)AS_OBJ(value))
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define ALLOC_OBJ(type, obj_type) ((type *)allocate_obj(obj_type, sizeof(type)))
@@ -118,6 +136,8 @@ ObjectFunction *new_function();
 ObjectNative *new_native(NativeFn function);
 ObjectClosure *new_closure(ObjectFunction *function);
 ObjectUpValue *new_upvalue();
+ObjectClass *new_class(ObjectString *name);
+ObjectInstance *new_instance(ObjectClass *klass);
 
 void free_obj(Obj *obj);
 

@@ -115,6 +115,21 @@ ObjectUpValue *new_upvalue()
     return upvalue;
 }
 
+ObjectClass *new_class(ObjectString *name)
+{
+    ObjectClass *klass = ALLOC_OBJ(ObjectClass, OBJ_CLASS);
+    klass->name = name;
+    return klass;
+}
+
+ObjectInstance *new_instance(ObjectClass *klass)
+{
+    ObjectInstance *instance = ALLOC_OBJ(ObjectInstance, OBJ_INSTANCE);
+    instance->klass = klass;
+    init_map(&instance->table);
+    return instance;
+}
+
 Obj *allocate_obj(ObjType type, size_t size)
 {
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
@@ -135,7 +150,7 @@ void free_obj(Obj *obj)
 
 #ifdef DEBUG_GC
     printf("%p free type %d\n", obj, obj->type);
-    //assert(0);
+    // assert(0);
 #endif
 
     switch (obj->type)
