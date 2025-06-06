@@ -285,12 +285,12 @@ static void dot(int can_assign)
     if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
-        emit_byte(OP_SET_DOT);
+        emit_byte(OP_SET_FIELD);
         emit_constant_byte(name_attr);
     }
     else
     {
-        emit_byte(OP_GET_DOT);
+        emit_byte(OP_GET_FIELD);
         emit_constant_byte(name_attr);
     }
 }

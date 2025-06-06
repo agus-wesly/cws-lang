@@ -224,11 +224,11 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_ADD: {
         return simple_instruction("OP_ADD", offset);
     }
-    case OP_GET_DOT: {
-        return constantLongInstruction("OP_GET_DOT", chunk, offset);
+    case OP_GET_FIELD: {
+        return constantLongInstruction("OP_GET_FIELD", chunk, offset);
     }
-    case OP_SET_DOT: {
-        return constantLongInstruction("OP_SET_DOT", chunk, offset);
+    case OP_SET_FIELD: {
+        return constantLongInstruction("OP_SET_FIELD", chunk, offset);
     }
     case OP_SUBTRACT: {
         return simple_instruction("OP_SUBTRACT", offset);

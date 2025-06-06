@@ -512,7 +512,7 @@ static InterpretResult run()
         case OP_EQUAL_EQUAL:
             HANDLE_EQUAL();
             break;
-        case OP_GET_DOT: {
+        case OP_GET_FIELD: {
             Value val = pop();
             if (!IsObjType(val, OBJ_INSTANCE))
             {
@@ -531,11 +531,11 @@ static InterpretResult run()
                 break;
             }
 
-            RUNTIME_ERROR("Undefined field '%s'", key->chars);
+            RUNTIME_ERROR("Field error : '%s'", key->chars);
             return INTERPRET_RUNTIME_ERROR;
         }
 
-        case OP_SET_DOT: {
+        case OP_SET_FIELD: {
             Value new_val = pop();
             Value inst_val = pop();
 
