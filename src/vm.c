@@ -112,7 +112,8 @@ void push(Value value)
     }
 
     vm.stack->items[vm.stack_top++] = value;
-    vm.stack->size++;
+    if (vm.stack_top > vm.stack->size)
+        vm.stack->size++;
 }
 
 Value pop()
@@ -123,7 +124,7 @@ Value pop()
     }
 
     vm.stack_top--;
-    vm.stack->size--;
+    // vm.stack->size--;
     return vm.stack->items[vm.stack_top];
 }
 
@@ -257,7 +258,7 @@ static bool call_value(Value callee, int args_count)
         case OBJ_CLASS: {
             ObjectClass *klass = AS_CLASS(callee);
             ObjectInstance *inst = new_instance(klass);
-            
+
             vm.stack_top = vm.stack_top - args_count - 1;
             // pop();
             push(VALUE_OBJ(inst));
