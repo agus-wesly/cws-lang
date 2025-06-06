@@ -78,26 +78,6 @@ void runtime_error(char *format, ...)
     va_end(args);
 
     fputs("\n", stderr);
-
-    for (int i = vm.frame_count - 1; i >= 0; --i)
-    {
-        CallFrame *frame = &vm.frame[i];
-        ObjectFunction *function = frame->closure->function;
-        uint8_t idx = frame->ip - function->chunk.code;
-
-        uint32_t line_number = get_line(&frame->closure->function->chunk, idx);
-        fprintf(stderr, "[Line %d] in ", line_number);
-        if (function->name == NULL)
-        {
-            fprintf(stderr, "script\n");
-        }
-        else
-        {
-            fprintf(stderr, "%s\n", function->name->chars);
-        }
-    }
-
-    resetStack();
 }
 
 void push(Value value)
@@ -315,6 +295,26 @@ static void close_up_values(int last)
     }
 }
 
+void print_error_line(uint8_t *ip)
+{
+    for (int i = vm.frame_count - 1; i >= 0; --i)
+    {
+        CallFrame *frame = &vm.frame[i];
+        ObjectFunction *function = frame->closure->function;
+        uint8_t idx = ip - function->chunk.code;
+        uint32_t line_number = get_line(&frame->closure->function->chunk, idx);
+        fprintf(stderr, "[Line %d] in ", line_number);
+        if (function->name == NULL)
+        {
+            fprintf(stderr, "script\n");
+        }
+        else
+        {
+            fprintf(stderr, "%s\n", function->name->chars);
+        }
+    }
+}
+
 static InterpretResult run()
 {
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
@@ -354,7 +354,7 @@ static InterpretResult run()
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
                                                                                                                        \
         {                                                                                                              \
-            runtime_error("Operand must be of type number");                                                           \
+            RUNTIME_ERROR("Operand must be of type number");                                                           \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
@@ -380,6 +380,14 @@ static InterpretResult run()
             push(VALUE_NUMBER(true_expr));                                                                             \
         else                                                                                                           \
             push(VALUE_NUMBER(false_expr));                                                                            \
+    } while (0);
+
+#define RUNTIME_ERROR(...)                                                                                             \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        runtime_error(__VA_ARGS__);                                                                                    \
+        print_error_line(ip);                                                                                          \
+        resetStack();                                                                                                  \
     } while (0);
 
     for (;;)
@@ -427,7 +435,6 @@ static InterpretResult run()
 
             break;
         }
-            // pop();
 
         case OP_CONSTANT: {
             Value constant_value = READ_CONSTANT();
@@ -456,9 +463,9 @@ static InterpretResult run()
         }
 
         case OP_NEGATE: {
-            if (IS_NUMBER(PEEK(0)))
+            if (!IS_NUMBER(PEEK(0)))
             {
-                runtime_error("Expected number");
+                RUNTIME_ERROR("Expected number");
                 return INTERPRET_RUNTIME_ERROR;
             }
             vm.stack->items[vm.stack_top - 1].as.decimal *= -1;
@@ -483,7 +490,7 @@ static InterpretResult run()
             }
             else
             {
-                runtime_error("Operands must be number or string");
+                RUNTIME_ERROR("Operands must be number or string");
                 return INTERPRET_RUNTIME_ERROR;
             }
         }
@@ -510,7 +517,7 @@ static InterpretResult run()
             if (!IsObjType(val, OBJ_INSTANCE))
             {
                 // TODO : pass the real ip to this function
-                runtime_error("Only instances have fields");
+                RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -524,7 +531,7 @@ static InterpretResult run()
                 break;
             }
 
-            runtime_error("Undefined field '%s'", key->chars);
+            RUNTIME_ERROR("Undefined field '%s'", key->chars);
             return INTERPRET_RUNTIME_ERROR;
         }
 
@@ -534,8 +541,7 @@ static InterpretResult run()
 
             if (!IsObjType(inst_val, OBJ_INSTANCE))
             {
-                // TODO : pass the real ip to this function
-                runtime_error("Only instances have fields");
+                RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -588,7 +594,7 @@ static InterpretResult run()
             Value val;
             if (!map_get(&vm.globals, name, &val))
             {
-                runtime_error("Cannot access undeclared variable : %s", name->chars);
+                RUNTIME_ERROR("Cannot access undeclared variable : %s", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(val);
@@ -602,7 +608,7 @@ static InterpretResult run()
             if (map_set(&vm.globals, name, val))
             {
                 map_delete(&vm.globals, name);
-                runtime_error("Cannot set to undefined variable : '%s'", name->chars);
+                RUNTIME_ERROR("Cannot set to undefined variable : '%s'", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
             break;
