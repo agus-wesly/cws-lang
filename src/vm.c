@@ -104,7 +104,6 @@ Value pop()
     }
 
     vm.stack_top--;
-    // vm.stack->size--;
     return vm.stack->items[vm.stack_top];
 }
 
@@ -130,7 +129,7 @@ static void define_native(const char *name, NativeFn function)
         if (!IS_STRING(PEEK(0)) || !IS_STRING(PEEK(1)))                                                                \
         {                                                                                                              \
             runtimeError("Operand must be of type string");                                                            \
-            return INTERPRET_RUNTIME_ERROR;                                                                            \
+            resetStack() return INTERPRET_RUNTIME_ERROR;                                                               \
         }                                                                                                              \
         ObjectString *b = AS_STRING(pop());                                                                            \
         ObjectString *a = AS_STRING(pop());                                                                            \
@@ -516,7 +515,6 @@ static InterpretResult run()
             Value val = pop();
             if (!IsObjType(val, OBJ_INSTANCE))
             {
-                // TODO : pass the real ip to this function
                 RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -534,10 +532,9 @@ static InterpretResult run()
             RUNTIME_ERROR("Field error : '%s'", key->chars);
             return INTERPRET_RUNTIME_ERROR;
         }
-
         case OP_SET_FIELD: {
-            Value new_val = pop();
-            Value inst_val = pop();
+            Value new_val = PEEK(0);
+            Value inst_val = PEEK(1);
 
             if (!IsObjType(inst_val, OBJ_INSTANCE))
             {
@@ -549,6 +546,65 @@ static InterpretResult run()
             ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
 
             map_set(&inst->table, key, new_val);
+            pop();
+            pop();
+            push(new_val);
+
+            break;
+        }
+        case OP_GET_FIELD_B: {
+            Value key_val = pop();
+            Value val = pop();
+
+            if (!IsObjType(key_val, OBJ_STRING))
+            {
+                RUNTIME_ERROR("Expression inside key must be type of string");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            if (!IsObjType(val, OBJ_INSTANCE))
+            {
+                RUNTIME_ERROR("Only instances have fields");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjectInstance *inst = AS_INSTANCE(val);
+            ObjectString *key = AS_STRING(key_val);
+
+            Value get_val;
+            if (map_get(&inst->table, key, &get_val))
+            {
+                push(get_val);
+                break;
+            }
+
+            RUNTIME_ERROR("Field error : '%s'", key->chars);
+            return INTERPRET_RUNTIME_ERROR;
+        }
+        case OP_SET_FIELD_B: {
+            Value new_val = PEEK(0);
+            Value key_val = PEEK(1);
+            Value inst_val = PEEK(2);
+
+            if (!IsObjType(key_val, OBJ_STRING))
+            {
+                RUNTIME_ERROR("Expression inside bracket must be type of string");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            {
+                RUNTIME_ERROR("Only instances have fields");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjectInstance *inst = AS_INSTANCE(inst_val);
+            ObjectString *key = AS_STRING(key_val);
+
+            map_set(&inst->table, key, new_val);
+            pop();
+            pop();
+            pop();
             push(new_val);
 
             break;

@@ -230,6 +230,12 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_SET_FIELD: {
         return constantLongInstruction("OP_SET_FIELD", chunk, offset);
     }
+    case OP_GET_FIELD_B: {
+        return simple_instruction("OP_GET_FIELD_B", offset);
+    }
+    case OP_SET_FIELD_B: {
+        return simple_instruction("OP_SET_FIELD_B", offset);
+    }
     case OP_SUBTRACT: {
         return simple_instruction("OP_SUBTRACT", offset);
     }

@@ -22,6 +22,9 @@ typedef enum
     OP_DIVIDE,
     OP_GET_FIELD,
     OP_SET_FIELD,
+    // TODO : find better name T_T
+    OP_GET_FIELD_B,
+    OP_SET_FIELD_B,
     OP_MULTIPLY,
     OP_TRUE,
     OP_FALSE,

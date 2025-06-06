@@ -272,6 +272,10 @@ Token scan_token()
         return make_token(TOKEN_LEFT_PAREN);
     case ')':
         return make_token(TOKEN_RIGHT_PAREN);
+    case '[':
+        return make_token(TOKEN_LEFT_SQR_BRACKET);
+    case ']':
+        return make_token(TOKEN_RIGHT_SQR_BRACKET);
     case ';':
         return make_token(TOKEN_SEMICOLON);
     case '?':

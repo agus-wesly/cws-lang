@@ -295,6 +295,22 @@ static void dot(int can_assign)
     }
 }
 
+static void sqrbracket(int can_assign)
+{
+    expression();
+    consume(TOKEN_RIGHT_SQR_BRACKET, "Expecting closing ']'");
+
+    if (can_assign && match(TOKEN_EQUAL))
+    {
+        expression();
+        emit_byte(OP_SET_FIELD_B);
+    }
+    else
+    {
+        emit_byte(OP_GET_FIELD_B);
+    }
+}
+
 static void nil(int can_assign)
 {
     if (can_assign)
@@ -614,6 +630,8 @@ ParseRule rules[] = {
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LEFT_SQR_BRACKET] = {NULL, sqrbracket, PREC_CALL},
+    [TOKEN_RIGHT_SQR_BRACKET] = {NULL, NULL, PREC_NONE},
 
     [TOKEN_MINUS] = {unary, binary, PREC_TERM},
     [TOKEN_BANG] = {unary, NULL, PREC_NONE},
@@ -623,7 +641,7 @@ ParseRule rules[] = {
     [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
     [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
     [TOKEN_NUMBER] = {number, NULL, PREC_PRIMARY},
-    [TOKEN_DOT] = {NULL, dot, PREC_PRIMARY},
+    [TOKEN_DOT] = {NULL, dot, PREC_CALL},
 
     [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
     [TOKEN_EOF] = {NULL, NULL, PREC_NONE},
