@@ -482,7 +482,7 @@ static void unary(int can_assign)
     }
 }
 
-static void del()
+static void del_statement()
 {
     consume(TOKEN_IDENTIFIER, "Expected identifier after 'del'");
     variable(0);
@@ -506,6 +506,7 @@ static void del()
     } while (match(TOKEN_DOT));
 
     emit_byte(OP_DEL);
+    consume(TOKEN_SEMICOLON, "Expected ';' after identifier");
 }
 
 static void grouping(int can_assign)
@@ -642,7 +643,6 @@ ParseRule rules[] = {
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_LET] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_DEL] = {del, NULL, PREC_NONE},
     [TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
     [TOKEN_OR] = {NULL, or_, PREC_OR},
     [TOKEN_AND] = {NULL, and_, PREC_AND},
@@ -1240,6 +1240,10 @@ static void statement()
     else if (match(TOKEN_BREAK))
     {
         break_statement();
+    }
+    else if (match(TOKEN_DEL))
+    {
+        del_statement();
     }
     else
     {

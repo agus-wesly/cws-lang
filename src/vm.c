@@ -835,8 +835,6 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             };
 
-            push(VALUE_NIL);
-
             break;
         }
 

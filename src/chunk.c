@@ -236,6 +236,8 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_SET_FIELD_B: {
         return simple_instruction("OP_SET_FIELD_B", offset);
     }
+    case OP_DEL:
+        return simple_instruction("OP_DEL", offset);
     case OP_SUBTRACT: {
         return simple_instruction("OP_SUBTRACT", offset);
     }
@@ -340,6 +342,7 @@ int disassemble_instruction(Chunk *chunk, int offset)
         printf("%d \n", klass_name);
         return offset;
     }
+
 
     default:
         return offset + 1;
