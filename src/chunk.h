@@ -55,6 +55,8 @@ typedef enum
     OP_CLOSE_UPVALUE,
 
     OP_CLASS,
+    OP_DEL,
+    OP_MERGE_ATTR,
 } OpCode;
 
 typedef struct

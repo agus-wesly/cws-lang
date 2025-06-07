@@ -484,7 +484,28 @@ static void unary(int can_assign)
 
 static void del()
 {
-    assert(0 && "TODO");
+    consume(TOKEN_IDENTIFIER, "Expected identifier after 'del'");
+    variable(0);
+    consume(TOKEN_DOT, "Expected first identifier");
+    do
+    {
+        consume(TOKEN_IDENTIFIER, "Expected identifier");
+        uint32_t name_attr = identifier_constant(&parser.previous);
+
+        if (check(TOKEN_DOT))
+        {
+            emit_byte(OP_GET_FIELD);
+            emit_constant_byte(name_attr);
+        }
+        else
+        {
+            emit_byte(OP_CONSTANT_LONG);
+            emit_constant_byte(name_attr);
+        }
+
+    } while (match(TOKEN_DOT));
+
+    emit_byte(OP_DEL);
 }
 
 static void grouping(int can_assign)

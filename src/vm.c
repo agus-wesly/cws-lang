@@ -811,6 +811,35 @@ static InterpretResult run()
             break;
         }
 
+        case OP_DEL: {
+            Value key_val = pop();
+            Value inst_val = pop();
+
+            if (!IsObjType(key_val, OBJ_STRING))
+            {
+                RUNTIME_ERROR("Expression must be type of string");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            {
+                RUNTIME_ERROR("Only instances have fields");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
+            ObjectInstance *inst = AS_INSTANCE(inst_val);
+            ObjectString *key = AS_STRING(key_val);
+            if (!map_delete(&inst->table, key))
+            {
+                RUNTIME_ERROR("Key Error : '%s'", key->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            };
+
+            push(VALUE_NIL);
+
+            break;
+        }
+
         default:
             return INTERPRET_OK;
         }
