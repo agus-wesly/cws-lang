@@ -20,6 +20,7 @@ typedef struct ObjectClosure ObjectClosure;
 typedef struct ObjectUpValue ObjectUpValue;
 typedef struct ObjectClass ObjectClass;
 typedef struct ObjectInstance ObjectInstance;
+typedef struct ObjectMethod ObjectMethod;
 
 typedef struct
 {

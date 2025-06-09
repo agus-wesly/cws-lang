@@ -243,6 +243,11 @@ static bool call_value(Value callee, int args_count)
             return true;
         }
 
+        case OBJ_METHOD: {
+            ObjectMethod *method = AS_METHOD(callee);
+            return call(method->closure, args_count);
+        }
+
         default:
             break;
         }
@@ -529,6 +534,14 @@ static InterpretResult run()
                 break;
             }
 
+            // find in the method
+            if (map_get(&inst->klass->table, key, &get_val))
+            {
+                assert(IS_METHOD(get_val));
+                push(get_val);
+                break;
+            };
+
             RUNTIME_ERROR("Field error : '%s'", key->chars);
             return INTERPRET_RUNTIME_ERROR;
         }
@@ -552,7 +565,7 @@ static InterpretResult run()
 
             break;
         }
-        case OP_GET_FIELD_B: {
+        case OP_GET_FIELD_SQR_BRACKET: {
             Value key_val = pop();
             Value val = pop();
 
@@ -581,7 +594,7 @@ static InterpretResult run()
             RUNTIME_ERROR("Field error : '%s'", key->chars);
             return INTERPRET_RUNTIME_ERROR;
         }
-        case OP_SET_FIELD_B: {
+        case OP_SET_FIELD_SQR_BRACKET: {
             Value new_val = PEEK(0);
             Value key_val = PEEK(1);
             Value inst_val = PEEK(2);
@@ -808,6 +821,23 @@ static InterpretResult run()
 
         case OP_CLASS: {
             push(VALUE_OBJ(new_class(AS_STRING(READ_LONG_CONSTANT()))));
+            break;
+        }
+
+        case OP_METHOD: {
+            Value val_name = READ_LONG_CONSTANT();
+            assert(IS_CLOSURE(PEEK(0)));
+            assert(IS_CLASS(PEEK(1)));
+            assert(IS_STRING(val_name));
+
+            ObjectMethod *method = new_method(AS_CLOSURE(PEEK(0)));
+            ObjectClass *klass = AS_CLASS(PEEK(1));
+            ObjectString *name = AS_STRING(val_name);
+
+            map_set(&klass->table, name, VALUE_OBJ(method));
+
+            pop();
+
             break;
         }
 

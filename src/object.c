@@ -119,6 +119,7 @@ ObjectClass *new_class(ObjectString *name)
 {
     ObjectClass *klass = ALLOC_OBJ(ObjectClass, OBJ_CLASS);
     klass->name = name;
+    init_map(&klass->table);
     return klass;
 }
 
@@ -128,6 +129,13 @@ ObjectInstance *new_instance(ObjectClass *klass)
     instance->klass = klass;
     init_map(&instance->table);
     return instance;
+}
+
+ObjectMethod *new_method(ObjectClosure *closure)
+{
+    ObjectMethod *method = ALLOC_OBJ(ObjectMethod, OBJ_METHOD);
+    method->closure = closure;
+    return method;
 }
 
 Obj *allocate_obj(ObjType type, size_t size)
@@ -175,6 +183,19 @@ void free_obj(Obj *obj)
     }
     case OBJ_UPVALUE: {
         FREE(ObjectUpValue, obj);
+        break;
+    }
+
+    case OBJ_CLASS: {
+        ObjectClass *klass = (ObjectClass *)obj;
+        free_map(&klass->table);
+
+        FREE(ObjectClass, obj);
+        break;
+    }
+
+    case OBJ_METHOD: {
+        FREE(ObjectMethod, obj);
         break;
     }
     default:

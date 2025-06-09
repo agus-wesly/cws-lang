@@ -22,9 +22,8 @@ typedef enum
     OP_DIVIDE,
     OP_GET_FIELD,
     OP_SET_FIELD,
-    // TODO : find better name T_T
-    OP_GET_FIELD_B,
-    OP_SET_FIELD_B,
+    OP_GET_FIELD_SQR_BRACKET,
+    OP_SET_FIELD_SQR_BRACKET,
     OP_MULTIPLY,
     OP_TRUE,
     OP_FALSE,
@@ -55,8 +54,8 @@ typedef enum
     OP_CLOSE_UPVALUE,
 
     OP_CLASS,
+    OP_METHOD,
     OP_DEL,
-    OP_MERGE_ATTR,
 } OpCode;
 
 typedef struct

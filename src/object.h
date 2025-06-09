@@ -4,8 +4,8 @@
 #include "chunk.h"
 #include "common.h"
 #include "hash.h"
-#include "memory.h"
 #include "hashmap.h"
+#include "memory.h"
 
 #define UPVALUE_MAX 2056
 
@@ -20,6 +20,7 @@ typedef enum
     OBJ_UPVALUE,
     OBJ_CLASS,
     OBJ_INSTANCE,
+    OBJ_METHOD,
 } ObjType;
 
 struct Obj
@@ -75,6 +76,7 @@ struct ObjectClass
 {
     Obj object;
     ObjectString *name;
+    Map table;
 };
 
 struct ObjectInstance
@@ -82,6 +84,12 @@ struct ObjectInstance
     Obj object;
     ObjectClass *klass;
     Map table;
+};
+
+struct ObjectMethod
+{
+    Obj object;
+    ObjectClosure *closure;
 };
 
 typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);
@@ -112,6 +120,7 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define AS_UPVALUE(value) ((ObjectUpValue *)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjectClass *)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjectInstance *)AS_OBJ(value))
+#define AS_METHOD(value) ((ObjectMethod *)AS_OBJ(value))
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define ALLOC_OBJ(type, obj_type) ((type *)allocate_obj(obj_type, sizeof(type)))
@@ -120,6 +129,8 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define IS_FUNCTION(value) IsObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value) IsObjType(value, OBJ_NATIVE)
 #define IS_CLOSURE(value) IsObjType(value, OBJ_CLOSURE)
+#define IS_CLASS(value) IsObjType(value, OBJ_CLASS)
+#define IS_METHOD(value) IsObjType(value, OBJ_METHOD)
 
 #define FREE_OBJ(ptr) (reallocate(ptr, sizeof(Obj), 0))
 #define FREE(type, ptr) (reallocate(ptr, sizeof(type), 0))
@@ -138,6 +149,7 @@ ObjectClosure *new_closure(ObjectFunction *function);
 ObjectUpValue *new_upvalue();
 ObjectClass *new_class(ObjectString *name);
 ObjectInstance *new_instance(ObjectClass *klass);
+ObjectMethod *new_method(ObjectClosure *closure);
 
 void free_obj(Obj *obj);
 

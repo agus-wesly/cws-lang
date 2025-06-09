@@ -135,12 +135,19 @@ static void mark_references()
         case OBJ_CLASS: {
             ObjectClass *klass = (ObjectClass *)obj;
             mark_obj((Obj *)klass->name);
+            mark_table(&klass->table);
             break;
         }
         case OBJ_INSTANCE: {
             ObjectInstance *inst = (ObjectInstance *)obj;
             mark_obj((Obj *)inst->klass);
             mark_table(&inst->table);
+            break;
+        }
+
+        case OBJ_METHOD: {
+            ObjectMethod *method = (ObjectMethod *)obj;
+            mark_obj((Obj *)method->closure);
             break;
         }
 

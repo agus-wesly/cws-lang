@@ -303,11 +303,11 @@ static void sqrbracket(int can_assign)
     if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
-        emit_byte(OP_SET_FIELD_B);
+        emit_byte(OP_SET_FIELD_SQR_BRACKET);
     }
     else
     {
-        emit_byte(OP_GET_FIELD_B);
+        emit_byte(OP_GET_FIELD_SQR_BRACKET);
     }
 }
 
@@ -484,6 +484,10 @@ static void unary(int can_assign)
 
 static void del_statement()
 {
+    /*
+     * Currently `del` just support notation
+     * In the future we can support the sqr_bracket notation
+     */
     consume(TOKEN_IDENTIFIER, "Expected identifier after 'del'");
     variable(0);
     consume(TOKEN_DOT, "Expected first identifier");
@@ -1298,7 +1302,7 @@ static void define_variable(uint32_t identifier_idx)
 
 static int parse_variable(int is_assignable)
 {
-    consume(TOKEN_IDENTIFIER, "Expected variable name.");
+    consume(TOKEN_IDENTIFIER, "Expected variable name");
 
     if (current->depth > 0)
     {
@@ -1407,8 +1411,30 @@ static void class_declaration()
 
     define_variable(klass_name);
 
+    // TODO : verify this ??
+    variable(false);
+
     consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
+    begin_scope();
+
+    while (!peek(TOKEN_RIGHT_BRACE))
+    {
+        if (!peek(TOKEN_IDENTIFIER))
+        {
+            error("Expected identifier");
+            break;
+        }
+
+        uint32_t name_method = identifier_constant(&parser.current);
+        function_declaration();
+        emit_byte(OP_METHOD);
+        emit_constant_byte(name_method);
+    }
+
     consume(TOKEN_RIGHT_BRACE, "Expected '}' after class declaration");
+    emit_byte(OP_POP);
+
+    current->depth--;
 }
 
 static void declaration()
