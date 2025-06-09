@@ -535,7 +535,7 @@ static InterpretResult run()
             }
 
             // find in the method
-            if (map_get(&inst->klass->table, key, &get_val))
+            if (map_get(&inst->klass->methods, key, &get_val))
             {
                 assert(IS_METHOD(get_val));
                 push(get_val);
@@ -834,7 +834,7 @@ static InterpretResult run()
             ObjectClass *klass = AS_CLASS(PEEK(1));
             ObjectString *name = AS_STRING(val_name);
 
-            map_set(&klass->table, name, VALUE_OBJ(method));
+            map_set(&klass->methods, name, VALUE_OBJ(method));
 
             pop();
 

@@ -119,7 +119,7 @@ ObjectClass *new_class(ObjectString *name)
 {
     ObjectClass *klass = ALLOC_OBJ(ObjectClass, OBJ_CLASS);
     klass->name = name;
-    init_map(&klass->table);
+    init_map(&klass->methods);
     return klass;
 }
 
@@ -188,7 +188,7 @@ void free_obj(Obj *obj)
 
     case OBJ_CLASS: {
         ObjectClass *klass = (ObjectClass *)obj;
-        free_map(&klass->table);
+        free_map(&klass->methods);
 
         FREE(ObjectClass, obj);
         break;

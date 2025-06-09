@@ -159,11 +159,6 @@ static void consume(TokenType token_type, char *message)
     error(message);
 }
 
-static bool peek(TokenType token_type)
-{
-    return parser.current.type == token_type;
-}
-
 void emit_byte(uint8_t byte)
 {
     write_chunk(current_chunk(), byte, parser.previous.line_number);
@@ -1334,7 +1329,7 @@ static void var_declaration(int is_assignable)
 {
     uint32_t identifier_idx = parse_variable(is_assignable);
 
-    if (peek(TOKEN_EQUAL))
+    if (check(TOKEN_EQUAL))
     {
         advance();
         expression();
@@ -1356,9 +1351,8 @@ static void var_declaration(int is_assignable)
     }
 }
 
-static void function_declaration()
+static void function()
 {
-    uint32_t identifier_idx = parse_variable(false);
     define_local();
 
     Compiler compiler;
@@ -1396,7 +1390,12 @@ static void function_declaration()
         emit_byte(compiler.upvalue[i].is_local);
         emit_int(compiler.upvalue[i].index);
     }
+}
 
+static void function_declaration()
+{
+    uint32_t identifier_idx = parse_variable(false);
+    function();
     define_variable(identifier_idx);
 }
 
@@ -1411,22 +1410,19 @@ static void class_declaration()
 
     define_variable(klass_name);
 
-    // TODO : verify this ??
     variable(false);
 
     consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
     begin_scope();
 
-    while (!peek(TOKEN_RIGHT_BRACE))
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
-        if (!peek(TOKEN_IDENTIFIER))
-        {
-            error("Expected identifier");
-            break;
-        }
+        consume(TOKEN_IDENTIFIER, "Expected identifier");
 
-        uint32_t name_method = identifier_constant(&parser.current);
-        function_declaration();
+        uint32_t name_method = identifier_constant(&parser.previous);
+        function();
+        define_variable(name_method);
+
         emit_byte(OP_METHOD);
         emit_constant_byte(name_method);
     }

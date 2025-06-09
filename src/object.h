@@ -76,7 +76,7 @@ struct ObjectClass
 {
     Obj object;
     ObjectString *name;
-    Map table;
+    Map methods;
 };
 
 struct ObjectInstance
