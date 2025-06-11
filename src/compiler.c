@@ -88,6 +88,7 @@ void init_compiler(Compiler *compiler, FunctionType type)
     Local *local = &current->locals[current->count++];
     local->depth = 0;
     local->is_assignable = 0;
+    // TODO : add some checking here
     local->name.start = "";
     local->name.length = 0;
 }
@@ -1351,12 +1352,12 @@ static void var_declaration(int is_assignable)
     }
 }
 
-static void function()
+static void function(FunctionType type)
 {
     define_local();
 
     Compiler compiler;
-    init_compiler(&compiler, TYPE_FUNCTION);
+    init_compiler(&compiler, type);
 
     begin_scope();
 
@@ -1395,7 +1396,7 @@ static void function()
 static void function_declaration()
 {
     uint32_t identifier_idx = parse_variable(false);
-    function();
+    function(TYPE_FUNCTION);
     define_variable(identifier_idx);
 }
 
@@ -1420,7 +1421,7 @@ static void class_declaration()
         consume(TOKEN_IDENTIFIER, "Expected identifier");
 
         uint32_t name_method = identifier_constant(&parser.previous);
-        function();
+        function(TYPE_METHOD);
         define_variable(name_method);
 
         emit_byte(OP_METHOD);
