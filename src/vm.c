@@ -243,6 +243,12 @@ static bool call_value(Value callee, int args_count)
             return true;
         }
 
+        case OBJ_METHOD: {
+            ObjectMethod *method = AS_METHOD(callee);
+            vm.stack->items[vm.stack_top - args_count - 1] = method->receiver;
+            return call(method->closure, args_count);
+        }
+
         default:
             break;
         }
@@ -512,14 +518,14 @@ static InterpretResult run()
             HANDLE_EQUAL();
             break;
         case OP_GET_FIELD: {
-            Value val = pop();
-            if (!IsObjType(val, OBJ_INSTANCE))
+            Value instance_value = pop();
+            if (!IsObjType(instance_value, OBJ_INSTANCE))
             {
                 RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjectInstance *inst = AS_INSTANCE(val);
+            ObjectInstance *inst = AS_INSTANCE(instance_value);
             ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
 
             Value get_val;
@@ -530,15 +536,16 @@ static InterpretResult run()
             }
 
             // find in the method
-            if (map_get(&inst->klass->methods, key, &get_val))
+            if (!map_get(&inst->klass->methods, key, &get_val))
             {
-                assert(IS_CLOSURE(get_val));
-                push(get_val);
-                break;
+                RUNTIME_ERROR("Field error : '%s'", key->chars);
+                return INTERPRET_RUNTIME_ERROR;
             };
 
-            RUNTIME_ERROR("Field error : '%s'", key->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            assert(IS_CLOSURE(get_val));
+            ObjectMethod *method = new_method(instance_value, AS_CLOSURE(get_val));
+            push(VALUE_OBJ(method));
+            break;
         }
         case OP_SET_FIELD: {
             Value new_val = PEEK(0);

@@ -131,6 +131,13 @@ ObjectInstance *new_instance(ObjectClass *klass)
     return instance;
 }
 
+ObjectMethod *new_method(Value receiver, ObjectClosure *closure)
+{
+    ObjectMethod *method = ALLOC_OBJ(ObjectMethod, OBJ_METHOD);
+    method->receiver = receiver;
+    method->closure = closure;
+    return method;
+}
 
 Obj *allocate_obj(ObjType type, size_t size)
 {
@@ -185,6 +192,11 @@ void free_obj(Obj *obj)
         free_map(&klass->methods);
 
         FREE(ObjectClass, obj);
+        break;
+    }
+
+    case OBJ_METHOD: {
+        FREE(ObjectMethod, obj);
         break;
     }
 

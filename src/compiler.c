@@ -88,9 +88,17 @@ void init_compiler(Compiler *compiler, FunctionType type)
     Local *local = &current->locals[current->count++];
     local->depth = 0;
     local->is_assignable = 0;
-    // TODO : add some checking here
-    local->name.start = "";
-    local->name.length = 0;
+    if (type == TYPE_METHOD)
+    {
+        local->name.start = "this";
+        local->name.length = 4;
+        local->name.type = TOKEN_THIS;
+    }
+    else
+    {
+        local->name.start = "";
+        local->name.length = 0;
+    }
 }
 
 Chunk *current_chunk()
@@ -444,6 +452,11 @@ static void variable(int can_assign)
     }
 }
 
+static void _this()
+{
+    variable(false);
+}
+
 static void string(int can_assign)
 {
     if (can_assign)
@@ -652,6 +665,7 @@ ParseRule rules[] = {
     [TOKEN_FALSE] = {boolean, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
+    [TOKEN_THIS] = {_this, NULL, PREC_NONE},
 
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},

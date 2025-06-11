@@ -73,14 +73,21 @@ void print_obj(Value value)
     }
 
     case OBJ_CLASS: {
-        printf("<class> ");
+        printf("<class");
         print_string(AS_CLASS(value)->name);
+        printf(">");
         break;
     }
 
     case OBJ_INSTANCE: {
-        printf("<instanceof> ");
+        printf("<instanceof ");
         print_string(AS_INSTANCE(value)->klass->name);
+        printf(">");
+        break;
+    }
+
+    case OBJ_METHOD: {
+        print_function(AS_METHOD(value)->closure->function);
         break;
     }
 
