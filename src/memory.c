@@ -145,11 +145,11 @@ static void mark_references()
             break;
         }
 
-        case OBJ_METHOD: {
-            ObjectMethod *method = (ObjectMethod *)obj;
-            mark_obj((Obj *)method->closure);
-            break;
-        }
+        // case OBJ_METHOD: {
+        //     ObjectMethod *method = (ObjectMethod *)obj;
+        //     mark_obj((Obj *)method->closure);
+        //     break;
+        // }
 
         default: {
             assert(0 && "Unreachable");

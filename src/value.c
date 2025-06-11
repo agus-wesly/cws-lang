@@ -84,11 +84,6 @@ void print_obj(Value value)
         break;
     }
 
-    case OBJ_METHOD: {
-        print_function(AS_METHOD(value)->closure->function);
-        break;
-    }
-
     default:
         assert(0 && "Unreachable");
         return;

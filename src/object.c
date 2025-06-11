@@ -131,12 +131,6 @@ ObjectInstance *new_instance(ObjectClass *klass)
     return instance;
 }
 
-ObjectMethod *new_method(ObjectClosure *closure)
-{
-    ObjectMethod *method = ALLOC_OBJ(ObjectMethod, OBJ_METHOD);
-    method->closure = closure;
-    return method;
-}
 
 Obj *allocate_obj(ObjType type, size_t size)
 {
@@ -194,10 +188,6 @@ void free_obj(Obj *obj)
         break;
     }
 
-    case OBJ_METHOD: {
-        FREE(ObjectMethod, obj);
-        break;
-    }
     default:
         assert(0 && "TODO : implement free for another type");
         break;

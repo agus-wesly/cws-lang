@@ -243,11 +243,6 @@ static bool call_value(Value callee, int args_count)
             return true;
         }
 
-        case OBJ_METHOD: {
-            ObjectMethod *method = AS_METHOD(callee);
-            return call(method->closure, args_count);
-        }
-
         default:
             break;
         }
@@ -537,7 +532,7 @@ static InterpretResult run()
             // find in the method
             if (map_get(&inst->klass->methods, key, &get_val))
             {
-                assert(IS_METHOD(get_val));
+                assert(IS_CLOSURE(get_val));
                 push(get_val);
                 break;
             };
@@ -830,7 +825,7 @@ static InterpretResult run()
             assert(IS_CLASS(PEEK(1)));
             assert(IS_STRING(val_name));
 
-            ObjectMethod *method = new_method(AS_CLOSURE(PEEK(0)));
+            ObjectClosure *method = (AS_CLOSURE(PEEK(0)));
             ObjectClass *klass = AS_CLASS(PEEK(1));
             ObjectString *name = AS_STRING(val_name);
 
