@@ -51,6 +51,12 @@ typedef struct Compiler
 
 } Compiler;
 
+typedef struct ClassCompiler
+{
+    struct ClassCompiler *enclosing;
+
+} ClassCompiler;
+
 static void expression();
 static void parse_precedence(Precedence presedence);
 static ParseRule *get_rule(TokenType token_type);
@@ -63,6 +69,7 @@ static void var_declaration(int is_assignable);
 
 Parser parser;
 Chunk *compiling_chunk;
+ClassCompiler *current_class = NULL;
 Compiler *current = NULL;
 
 void init_compiler(Compiler *compiler, FunctionType type)
@@ -454,6 +461,11 @@ static void variable(int can_assign)
 
 static void _this()
 {
+    if (current_class == NULL)
+    {
+        error("'this' expression can only appear inside of class");
+        return;
+    };
     variable(false);
 }
 
@@ -1427,6 +1439,10 @@ static void class_declaration()
 
     variable(false);
 
+    ClassCompiler c;
+    c.enclosing = current_class;
+    current_class = &c;
+
     consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
     begin_scope();
 
@@ -1446,6 +1462,8 @@ static void class_declaration()
     emit_byte(OP_POP);
 
     current->depth--;
+
+    current_class = c.enclosing;
 }
 
 static void declaration()
