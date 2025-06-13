@@ -102,7 +102,10 @@ void print_value(Value value)
     switch (value.type)
     {
     case TYPE_NUMBER:
-        printf("%f", value.as.decimal);
+        if (value.as.decimal == (int)value.as.decimal)
+            printf("%i", (int)value.as.decimal);
+        else
+            printf("%f", value.as.decimal);
         break;
 
     case TYPE_BOOLEAN:
