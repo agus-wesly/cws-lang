@@ -54,6 +54,8 @@ typedef struct
 
     size_t current_bytes;
     size_t next_gc;
+
+    ObjectString *init_string;
 } VM;
 
 typedef enum

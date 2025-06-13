@@ -195,6 +195,12 @@ void free_obj(Obj *obj)
         break;
     }
 
+    case OBJ_INSTANCE: {
+        ObjectInstance *instance = (ObjectInstance *)obj;
+        free_map(&instance->table);
+        break;
+    }
+
     case OBJ_METHOD: {
         FREE(ObjectMethod, obj);
         break;

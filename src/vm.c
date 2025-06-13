@@ -44,6 +44,9 @@ void init_vm()
 
     update_stack_ptr();
 
+    vm.init_string = NULL;
+    vm.init_string = copy_string("init", 4);
+
     define_native("time", time_native);
 }
 
@@ -62,12 +65,14 @@ void freeObjects()
 
 void free_vm()
 {
-    // freeObjects();
-    // free(vm.stack);
-    // free_map(&vm.strings);
-    // free_map(&vm.globals);
+    // TODO : check this
+    freeObjects();
+    free(vm.stack);
+    free_map(&vm.strings);
+    free_map(&vm.globals);
 
     free(vm.strings.entries);
+    vm.init_string = NULL;
 }
 
 void runtime_error(char *format, ...)
@@ -121,6 +126,26 @@ static void define_native(const char *name, NativeFn function)
 
     pop();
     pop();
+}
+
+void print_error_line(uint8_t *ip)
+{
+    for (int i = vm.frame_count - 1; i >= 0; --i)
+    {
+        CallFrame *frame = &vm.frame[i];
+        ObjectFunction *function = frame->closure->function;
+        uint8_t idx = ip - function->chunk.code;
+        uint32_t line_number = get_line(&frame->closure->function->chunk, idx);
+        fprintf(stderr, "[Line %d] in ", line_number);
+        if (function->name == NULL)
+        {
+            fprintf(stderr, "script\n");
+        }
+        else
+        {
+            fprintf(stderr, "%s\n", function->name->chars);
+        }
+    }
 }
 
 #define HANDLE_CONCAT()                                                                                                \
@@ -189,17 +214,20 @@ ObjectString *concatenate()
     return take_string(result, length);
 }
 
-static bool call(ObjectClosure *callee, int args_count)
+static bool call(ObjectClosure *callee, int args_count, uint8_t *ip)
 {
     if (callee->function->arity != args_count)
     {
         runtime_error("Expected %d arguments but got %d", callee->function->arity, args_count);
+        print_error_line(ip);
+
         return false;
     }
 
     if (vm.frame_count >= FRAME_MAX)
     {
         runtime_error("Maximum call frame has been exceeded");
+        print_error_line(ip);
         return false;
     }
 
@@ -211,14 +239,14 @@ static bool call(ObjectClosure *callee, int args_count)
     return true;
 }
 
-static bool call_value(Value callee, int args_count)
+static bool call_value(Value callee, int args_count, uint8_t *ip)
 {
     if (IS_OBJ(callee))
     {
         switch (OBJ_TYPE(callee))
         {
         case OBJ_CLOSURE:
-            return call(AS_CLOSURE(callee), args_count);
+            return call(AS_CLOSURE(callee), args_count, ip);
 
         case OBJ_NATIVE: {
             ObjectNative *native = AS_NATIVE(callee);
@@ -238,15 +266,29 @@ static bool call_value(Value callee, int args_count)
             ObjectClass *klass = AS_CLASS(callee);
             ObjectInstance *inst = new_instance(klass);
 
-            vm.stack_top = vm.stack_top - args_count - 1;
-            push(VALUE_OBJ(inst));
+            vm.stack->items[vm.stack_top - args_count - 1] = VALUE_OBJ(inst);
+
+            Value init_val;
+            if (map_get(&klass->methods, vm.init_string, &init_val))
+            {
+                assert(IS_CLOSURE(init_val));
+                return call(AS_CLOSURE(init_val), args_count, ip);
+            }
+            else if (args_count != 0)
+            {
+                runtime_error("Expected 0 params but got %d", args_count);
+                print_error_line(ip);
+                resetStack();
+                return false;
+            }
+
             return true;
         }
 
         case OBJ_METHOD: {
             ObjectMethod *method = AS_METHOD(callee);
             vm.stack->items[vm.stack_top - args_count - 1] = method->receiver;
-            return call(method->closure, args_count);
+            return call(method->closure, args_count, ip);
         }
 
         default:
@@ -297,26 +339,6 @@ static void close_up_values(int last)
         upvalue->val = vm.stack->items[upvalue->idx];
         upvalue->p_val = &upvalue->val;
         vm.upvalues = vm.upvalues->next;
-    }
-}
-
-void print_error_line(uint8_t *ip)
-{
-    for (int i = vm.frame_count - 1; i >= 0; --i)
-    {
-        CallFrame *frame = &vm.frame[i];
-        ObjectFunction *function = frame->closure->function;
-        uint8_t idx = ip - function->chunk.code;
-        uint32_t line_number = get_line(&frame->closure->function->chunk, idx);
-        fprintf(stderr, "[Line %d] in ", line_number);
-        if (function->name == NULL)
-        {
-            fprintf(stderr, "script\n");
-        }
-        else
-        {
-            fprintf(stderr, "%s\n", function->name->chars);
-        }
     }
 }
 
@@ -790,7 +812,7 @@ static InterpretResult run()
 
             frame->ip = ip;
 
-            if (!call_value(callee, args_count))
+            if (!call_value(callee, args_count, ip))
                 return INTERPRET_RUNTIME_ERROR;
 
             frame = &vm.frame[vm.frame_count - 1];

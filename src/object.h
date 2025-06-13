@@ -106,6 +106,7 @@ typedef enum
     TYPE_SCRIPT,
     TYPE_FUNCTION,
     TYPE_METHOD,
+    TYPE_INIT,
 } FunctionType;
 
 struct Obj *allocate_obj(ObjType type, size_t size);

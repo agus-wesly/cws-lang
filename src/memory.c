@@ -213,6 +213,7 @@ void collect_garbage()
 
     mark_roots();
     mark_references();
+    mark_obj((Obj *)vm.init_string);
 
     sweep_strings(&vm.strings);
     sweep();

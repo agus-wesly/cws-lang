@@ -95,7 +95,7 @@ void init_compiler(Compiler *compiler, FunctionType type)
     Local *local = &current->locals[current->count++];
     local->depth = 0;
     local->is_assignable = 0;
-    if (type == TYPE_METHOD)
+    if (type == TYPE_METHOD || type == TYPE_INIT)
     {
         local->name.start = "this";
         local->name.length = 4;
@@ -227,7 +227,15 @@ void emit_constant_byte(uint32_t idx)
 
 void emit_return()
 {
-    emit_byte(OP_NIL);
+    if (current->type == TYPE_INIT)
+    {
+        emit_byte(OP_GET_LOCAL);
+        emit_constant_byte(0);
+    }
+    else
+    {
+        emit_byte(OP_NIL);
+    }
     emit_byte(OP_RETURN);
 }
 
@@ -1219,12 +1227,20 @@ static void return_statement()
     if (!check(TOKEN_SEMICOLON))
     {
         expression();
-        emit_byte(OP_RETURN);
     }
     else
     {
-        emit_return();
+        emit_byte(OP_NIL);
     }
+
+    if (current->type == TYPE_INIT)
+    {
+        emit_byte(OP_POP);
+        emit_byte(OP_GET_LOCAL);
+        emit_constant_byte(0);
+    }
+
+    emit_byte(OP_RETURN);
 
     consume(TOKEN_SEMICOLON, "Expected ';' after statement");
 }
@@ -1404,6 +1420,7 @@ static void function(FunctionType type)
 
     block_statement();
 
+    // Here
     ObjectFunction *function = end_compiler();
 
     push(VALUE_OBJ(function));
@@ -1451,7 +1468,14 @@ static void class_declaration()
         consume(TOKEN_IDENTIFIER, "Expected identifier");
 
         uint32_t name_method = identifier_constant(&parser.previous);
-        function(TYPE_METHOD);
+        // Check if this is constructor
+        FunctionType func_type = TYPE_METHOD;
+        if (memcmp(vm.init_string->chars, parser.previous.start, vm.init_string->length) == 0)
+        {
+            func_type = TYPE_INIT;
+        }
+
+        function(func_type);
         define_variable(name_method);
 
         emit_byte(OP_METHOD);
