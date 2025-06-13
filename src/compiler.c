@@ -316,7 +316,6 @@ static void dot(int can_assign)
 
     uint32_t name_attr = identifier_constant(&parser.previous);
 
-    // if the next token is '('  then it must be method invocation
     if (match(TOKEN_LEFT_PAREN))
     {
         uint8_t arity = parse_args();
