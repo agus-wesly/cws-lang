@@ -548,7 +548,7 @@ static InterpretResult run()
             }
 
             ObjectInstance *inst = AS_INSTANCE(instance_value);
-            ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
+            ObjectString *key = READ_STRING();
 
             Value get_val;
             if (map_get(&inst->table, key, &get_val))
@@ -580,7 +580,7 @@ static InterpretResult run()
             }
 
             ObjectInstance *inst = AS_INSTANCE(inst_val);
-            ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
+            ObjectString *key = READ_STRING();
 
             map_set(&inst->table, key, new_val);
             pop();
@@ -676,14 +676,14 @@ static InterpretResult run()
         }
 
         case OP_GLOBAL_VAR: {
-            ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
+            ObjectString *name = READ_STRING();
             map_set(&vm.globals, name, pop());
 
             break;
         }
 
         case OP_GET_GLOBAL: {
-            ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
+            ObjectString *name = READ_STRING();
             Value val;
             if (!map_get(&vm.globals, name, &val))
             {
@@ -695,7 +695,7 @@ static InterpretResult run()
         }
 
         case OP_SET_GLOBAL: {
-            ObjectString *name = AS_STRING(READ_LONG_CONSTANT());
+            ObjectString *name = READ_STRING();
             Value val = PEEK(0);
 
             if (map_set(&vm.globals, name, val))
@@ -844,7 +844,7 @@ static InterpretResult run()
         }
 
         case OP_CLASS: {
-            push(VALUE_OBJ(new_class(AS_STRING(READ_LONG_CONSTANT()))));
+            push(VALUE_OBJ(new_class(READ_STRING())));
             break;
         }
 
@@ -935,10 +935,16 @@ static InterpretResult run()
         }
     }
 
+#undef READ_SHORT
 #undef READ_BYTE
+#undef STRING
 #undef READ_CONSTANT
 #undef READ_LONG_CONSTANT
+#undef READ_STRING
 #undef HANDLE_BINARY
+#undef HANDLE_EQUAL
+#undef HANDLE_TERNARY
+#undef RUNTIME_ERROR
 }
 
 void init_call_frame(CallFrame *call_frame)
