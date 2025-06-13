@@ -50,6 +50,7 @@ typedef enum
     OP_CASE_COMPARE,
 
     OP_CALL,
+    OP_INVOKE,
     OP_CLOSURE,
     OP_CLOSE_UPVALUE,
 

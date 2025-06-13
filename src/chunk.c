@@ -316,6 +316,19 @@ int disassemble_instruction(Chunk *chunk, int offset)
         printf("OP_CALL\n");
         return offset + 2;
     }
+
+    case OP_INVOKE: {
+        ++offset;
+        ++offset;
+
+        printf("%-20s %d ", "OP_INVOKE", offset);
+
+        uint32_t operand = READ4BYTE(offset);
+        print_value(chunk->constantsLong->values[operand]);
+        printf("\n");
+
+        return offset;
+    }
     case OP_CLOSURE: {
         ++offset;
         printf("%-20s %d ", "OP_CLOSURE", offset);

@@ -295,13 +295,36 @@ static void number()
     // emit_bytes(OP_CONSTANT, idx);
 }
 
+static uint8_t parse_args()
+{
+    uint8_t arity = 0;
+    if (!check(TOKEN_RIGHT_PAREN))
+    {
+        do
+        {
+            expression();
+            arity += 1;
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses ')'");
+    return arity;
+}
+
 static void dot(int can_assign)
 {
     consume(TOKEN_IDENTIFIER, "Expected identifer");
 
     uint32_t name_attr = identifier_constant(&parser.previous);
 
-    if (can_assign && match(TOKEN_EQUAL))
+    // if the next token is '('  then it must be method invocation
+    if (match(TOKEN_LEFT_PAREN))
+    {
+        uint8_t arity = parse_args();
+
+        emit_bytes(OP_INVOKE, arity);
+        emit_constant_byte(name_attr);
+    }
+    else if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
         emit_byte(OP_SET_FIELD);
@@ -556,17 +579,7 @@ static void call(int can_assign)
     if (can_assign)
     {
     }
-
-    uint8_t arity = 0;
-    if (!check(TOKEN_RIGHT_PAREN))
-    {
-        do
-        {
-            expression();
-            arity += 1;
-        } while (match(TOKEN_COMMA));
-    }
-    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
+    uint8_t arity = parse_args();
     emit_bytes(OP_CALL, arity);
 }
 

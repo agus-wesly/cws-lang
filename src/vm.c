@@ -59,8 +59,6 @@ void freeObjects()
         free_obj(object);
         object = next;
     }
-    printf("Free : %p\n", vm.grey_stack);
-    // free(NULL);
 }
 
 void free_vm()
@@ -374,6 +372,8 @@ static InterpretResult run()
         } while (i < 4);                                                                                               \
         frame->closure->function->chunk.constantsLong->values[res];                                                    \
     })
+
+#define READ_STRING() AS_STRING(READ_LONG_CONSTANT())
 
 #define HANDLE_BINARY(value, op)                                                                                       \
     do                                                                                                                 \
@@ -888,6 +888,44 @@ static InterpretResult run()
                 RUNTIME_ERROR("Key Error : '%s'", key->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
+
+            break;
+        }
+
+        case OP_INVOKE: {
+            uint8_t args_count = READ_BYTE();
+            ObjectString *key = READ_STRING();
+            Value inst_val = PEEK(args_count);
+
+            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            {
+                RUNTIME_ERROR("Only instances have fields");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            ObjectInstance *inst = AS_INSTANCE(inst_val);
+
+            Value val;
+            if (map_get(&inst->table, key, &val))
+            {
+                if (!IsObjType(val, OBJ_CLOSURE))
+                {
+                    RUNTIME_ERROR("Key '%s' is not callable", key->chars);
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+            }
+            else if (!map_get(&inst->klass->methods, key, &val))
+            {
+                RUNTIME_ERROR("Key Error : '%s'", key->chars);
+                return INTERPRET_RUNTIME_ERROR;
+            };
+
+            frame->ip = ip;
+
+            if (!call_value(val, args_count, ip))
+                return INTERPRET_RUNTIME_ERROR;
+
+            frame = &vm.frame[vm.frame_count - 1];
+            ip = frame->ip;
 
             break;
         }
