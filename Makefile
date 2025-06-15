@@ -3,7 +3,7 @@ CFLAGS=-Wall -Wextra -std=gnu17 -ggdb
 
 ifeq ($(TARGET),wasm)
 	CC=emcc
-	CFLAGS=-o output.js
+	CFLAGS=-o output.js -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s TOTAL_STACK=32MB
 endif
 
 SRC_DIR=src
@@ -21,7 +21,7 @@ $(shell mkdir -p $(OBJ_DIR))
 
 ifeq ($(TARGET), wasm)
 $(TARGET): $(SRCS) 
-	$(CC) $(CFLAGS) $(SRCS) -s "EXPORTED_RUNTIME_METHODS=['ccall']"
+	$(CC) $(CFLAGS) $(SRCS) 
 else 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)

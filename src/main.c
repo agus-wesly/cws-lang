@@ -1,5 +1,9 @@
 #include "vm.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 int IS_IN_REPL = 0;
 
 void rep()
@@ -73,18 +77,21 @@ void run_file(const char *file_path)
         exit(70);
 }
 
-
-
 /*
  * This is the function that we will expose to browser via wasm
  * TODO : export that properly
  * */
-void run(const char *source) {
+
+#ifdef __EMSCRIPTEN__
+#define EXTERN
+EXTERN EMSCRIPTEN_KEEPALIVE void RUN_SOURCE(const char *source)
+{
     init_vm();
-    run_file(source);
+    interpret(source);
     free_vm();
 }
 
+#else
 int main(int argc, char **args)
 {
     init_vm();
@@ -107,3 +114,4 @@ int main(int argc, char **args)
 
     return 0;
 }
+#endif
