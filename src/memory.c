@@ -167,7 +167,9 @@ void sweep_strings(Map *strings)
         Entry entry = strings->entries[i];
         if (entry.key != NULL && !entry.key->object.is_marked)
         {
+            #ifdef DEBUG_GC
             printf("Removing : %s\n", entry.key->chars);
+            #endif
             map_delete(strings, entry.key);
             entry.key->object.is_marked = false;
         }

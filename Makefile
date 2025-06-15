@@ -3,7 +3,7 @@ CFLAGS=-Wall -Wextra -std=gnu17 -ggdb
 
 ifeq ($(TARGET),wasm)
 	CC=emcc
-	CFLAGS=-o output.js -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s TOTAL_STACK=32MB
+	CFLAGS=-o script/output.js -s NO_EXIT_RUNTIME=1 -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s TOTAL_STACK=32MB
 endif
 
 SRC_DIR=src

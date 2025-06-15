@@ -287,13 +287,6 @@ Precedence _get_presedence(TokenType token_type)
     }
 }
 
-static void number()
-{
-    Value value = VALUE_NUMBER(strtod(parser.previous.start, NULL));
-    emit_constant(current_chunk(), value, parser.previous.line_number);
-    // uint8_t idx = AddConstant(current_chunk(), value);
-    // emit_bytes(OP_CONSTANT, idx);
-}
 
 static uint8_t parse_args()
 {
@@ -508,6 +501,17 @@ static void string(int can_assign)
                   parser.previous.line_number);
 }
 
+static void _number(int can_assign)
+{
+    if (can_assign)
+    {
+    }
+    Value value = VALUE_NUMBER(strtod(parser.previous.start, NULL));
+    emit_constant(current_chunk(), value, parser.previous.line_number);
+    // uint8_t idx = AddConstant(current_chunk(), value);
+    // emit_bytes(OP_CONSTANT, idx);
+}
+
 static void unary(int can_assign)
 {
     if (can_assign)
@@ -696,6 +700,7 @@ ParseRule rules[] = {
     [TOKEN_TRUE] = {boolean, NULL, PREC_NONE},
     [TOKEN_FALSE] = {boolean, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
+    [TOKEN_NUMBER] = {_number, NULL, PREC_PRIMARY},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_THIS] = {_this, NULL, PREC_NONE},
 
@@ -713,7 +718,6 @@ ParseRule rules[] = {
     [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
     [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
     [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_NUMBER] = {number, NULL, PREC_PRIMARY},
     [TOKEN_DOT] = {NULL, dot, PREC_CALL},
 
     [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
@@ -1532,6 +1536,7 @@ static void declaration()
 
 ObjectFunction *compile(const char *source)
 {
+
     parser.is_error = 0;
     parser.is_panic = 0;
 
