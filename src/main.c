@@ -22,7 +22,7 @@ void rep()
     }
 }
 
-char *read_file(char *file_path)
+char *read_file(const char *file_path)
 {
     /*
      * 1) Find and open the file
@@ -61,7 +61,7 @@ char *read_file(char *file_path)
     return buff;
 }
 
-void run_file(char *file_path)
+void run_file(const char *file_path)
 {
     char *source = read_file(file_path);
     InterpretResult result = interpret(source);
@@ -71,6 +71,18 @@ void run_file(char *file_path)
         exit(65);
     if (result == INTERPRET_COMPILE_ERROR)
         exit(70);
+}
+
+
+
+/*
+ * This is the function that we will expose to browser via wasm
+ * TODO : export that properly
+ * */
+void run(const char *source) {
+    init_vm();
+    run_file(source);
+    free_vm();
 }
 
 int main(int argc, char **args)
