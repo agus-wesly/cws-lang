@@ -77,11 +77,6 @@ void run_file(const char *file_path)
         exit(70);
 }
 
-/*
- * This is the function that we will expose to browser via wasm
- * TODO : export that properly
- * */
-
 #ifdef __EMSCRIPTEN__
 #define EXTERN
 EXTERN EMSCRIPTEN_KEEPALIVE void RUN_SOURCE(const char *source)

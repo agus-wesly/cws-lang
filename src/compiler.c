@@ -1446,7 +1446,6 @@ static void function(FunctionType type)
 
     for (int i = 0; i < compiler.upvalue_count; ++i)
     {
-        /* TODO : Various bit size */
         emit_byte(compiler.upvalue[i].is_local);
         emit_int(compiler.upvalue[i].index);
     }

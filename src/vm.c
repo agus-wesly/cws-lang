@@ -63,7 +63,6 @@ void freeObjects()
 
 void free_vm()
 {
-    // TODO : check this
     freeObjects();
     free(vm.stack);
     free_map(&vm.strings);
