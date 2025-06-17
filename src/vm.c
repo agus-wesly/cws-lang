@@ -849,6 +849,7 @@ static InterpretResult run()
 
         case OP_METHOD: {
             Value val_name = READ_LONG_CONSTANT();
+
             assert(IS_CLOSURE(PEEK(0)));
             assert(IS_CLASS(PEEK(1)));
             assert(IS_STRING(val_name));
@@ -857,6 +858,8 @@ static InterpretResult run()
             ObjectClass *klass = AS_CLASS(PEEK(1));
             ObjectString *name = AS_STRING(val_name);
 
+            // TODO : if this is init, then find another way
+            // to store it
             map_set(&klass->methods, name, VALUE_OBJ(method));
 
             pop();
