@@ -7,7 +7,7 @@ ObjectString *find_string(Map *m, const char *key, int length)
         return NULL;
 
     uint32_t hash = fnv_32a_str(key, length);
-    int idx = hash % m->capacity;
+    int idx = hash & (m->capacity - 1);
 
     for (;;)
     {
@@ -23,7 +23,7 @@ ObjectString *find_string(Map *m, const char *key, int length)
             return entry->key;
         }
 
-        idx = (idx + 1) % m->capacity;
+        idx = (idx + 1) & (m->capacity - 1);
     }
 }
 

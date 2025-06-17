@@ -1,6 +1,6 @@
 #include "hashmap.h"
-#include "vm.h"
 #include "object.h"
+#include "vm.h"
 
 void init_map(Map *h)
 {
@@ -18,7 +18,7 @@ void free_map(Map *h)
 Entry *find_entry(Entry *entries, ObjectString *key, int capacity)
 {
     Entry *grave = NULL;
-    int idx = key->hash % capacity;
+    int idx = key->hash & (capacity - 1);
     for (;;)
     {
         Entry *entry = &entries[idx];
@@ -38,7 +38,7 @@ Entry *find_entry(Entry *entries, ObjectString *key, int capacity)
         else if (entry->key == key)
             return entry;
 
-        idx = (idx + 1) % capacity;
+        idx = (idx + 1) & (capacity - 1);
     }
 }
 
