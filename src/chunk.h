@@ -57,6 +57,9 @@ typedef enum
     OP_CLASS,
     OP_METHOD,
     OP_DEL,
+
+    OP_INIT_TABLE,
+
 } OpCode;
 
 typedef struct

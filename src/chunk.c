@@ -359,6 +359,15 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_METHOD:
         return constantLongInstruction("OP_METHOD", chunk, offset);
 
+    case OP_INIT_TABLE: {
+        ++offset;
+        printf("%-20s %d ", "OP_INIT_TABLE", offset);
+        uint32_t operand = READ4BYTE(offset);
+
+        printf("%d \n", operand);
+        return offset;
+    }
+
     default:
         return offset + 1;
     }

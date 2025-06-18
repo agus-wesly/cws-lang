@@ -139,6 +139,13 @@ ObjectMethod *new_method(Value receiver, ObjectClosure *closure)
     return method;
 }
 
+ObjectTable *new_table()
+{
+    ObjectTable *table = ALLOC_OBJ(ObjectTable, OBJ_TABLE);
+    init_map(&table->values);
+    return table;
+}
+
 Obj *allocate_obj(ObjType type, size_t size)
 {
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
@@ -152,6 +159,13 @@ Obj *allocate_obj(ObjType type, size_t size)
 #endif
 
     return obj;
+}
+
+double number_value(Value value)
+{
+    double number;
+    memcpy(&number, &value, sizeof(Value));
+    return number;
 }
 
 void free_obj(Obj *obj)
@@ -197,12 +211,20 @@ void free_obj(Obj *obj)
 
     case OBJ_INSTANCE: {
         ObjectInstance *instance = (ObjectInstance *)obj;
+        assert(0 && "TODO : implement free for instance");
         free_map(&instance->table);
         break;
     }
 
     case OBJ_METHOD: {
         FREE(ObjectMethod, obj);
+        break;
+    }
+
+    case OBJ_TABLE: {
+        ObjectTable *table = (ObjectTable *)obj;
+        free_map(&table->values);
+        FREE(ObjectTable, obj);
         break;
     }
 

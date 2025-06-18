@@ -152,6 +152,12 @@ static void mark_references()
             break;
         }
 
+        case OBJ_TABLE: {
+            ObjectTable *table = (ObjectTable *)obj;
+            mark_table(&table->values);
+            break;
+        }
+
         default: {
             assert(0 && "Unreachable");
             break;
@@ -167,9 +173,9 @@ void sweep_strings(Map *strings)
         Entry entry = strings->entries[i];
         if (entry.key != NULL && !entry.key->object.is_marked)
         {
-            #ifdef DEBUG_GC
+#ifdef DEBUG_GC
             printf("Removing : %s\n", entry.key->chars);
-            #endif
+#endif
             map_delete(strings, entry.key);
             entry.key->object.is_marked = false;
         }

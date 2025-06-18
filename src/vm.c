@@ -162,6 +162,48 @@ void print_error_line(uint8_t *ip)
 
 ObjectString *stringify(Value value)
 {
+#ifdef NAN_BOXING
+
+    if (IS_NUMBER(value))
+    {
+        int len = 0;
+        char *start = {0};
+        if (AS_NUMBER(value) == (int)AS_NUMBER(value))
+        {
+            int int_num = (int)AS_NUMBER(value);
+            len = snprintf(NULL, 0, "%d", int_num);
+            start = malloc(len + 1);
+            snprintf(start, len + 1, "%d", int_num);
+        }
+        else
+        {
+            double double_num = (double)AS_NUMBER(value);
+            len = snprintf(NULL, 0, "%f", double_num);
+            start = malloc(len + 1);
+            snprintf(start, len + 1, "%f", double_num);
+        }
+
+        ObjectString *result = take_string(start, len);
+        return result;
+    }
+    if (IS_NIL(value))
+    {
+        return copy_string("VALUE_NIL", 3);
+    }
+    if (IS_BOOLEAN(value))
+    {
+        if (AS_BOOL(value))
+            return copy_string("VALUE_TRUE", 4);
+
+        return copy_string("VALUE_FALSE", 5);
+    }
+    if (IS_OBJ(value))
+    {
+        if (IS_STRING(value))
+            return AS_STRING(value);
+    }
+    assert(0 && "Unreachable at stringify");
+#else
     switch (value.type)
     {
     case TYPE_NUMBER: {
@@ -191,6 +233,7 @@ ObjectString *stringify(Value value)
     default:
         assert(0 && "Unreachable at stringify");
     }
+#endif
 }
 
 ObjectString *concatenate()
@@ -339,6 +382,72 @@ static void close_up_values(int last)
     }
 }
 
+static bool get_field(Value container_val, ObjectString *key)
+{
+    Value value;
+    switch (OBJ_TYPE(container_val))
+    {
+    case OBJ_INSTANCE: {
+        ObjectInstance *inst = AS_INSTANCE(container_val);
+        if (map_get(&inst->table, key, &value))
+        {
+            push(value);
+            return true;
+        }
+
+        // find in the method
+        if (!map_get(&inst->klass->methods, key, &value))
+        {
+            return false;
+        };
+
+        assert(IS_CLOSURE(value));
+        ObjectMethod *method = new_method(container_val, AS_CLOSURE(value));
+        push(VALUE_OBJ(method));
+        return true;
+    }
+    case OBJ_TABLE: {
+        ObjectTable *table = AS_TABLE(container_val);
+        if (map_get(&table->values, key, &value))
+        {
+            push(value);
+            return true;
+        }
+        return false;
+    }
+    default:
+        return false;
+    }
+}
+
+static bool set_field(Value container_val, ObjectString *key, Value new_val)
+{
+    if (!IS_OBJ(container_val))
+        return false;
+
+    switch (OBJ_TYPE(container_val))
+    {
+    case OBJ_INSTANCE: {
+        ObjectInstance *inst = AS_INSTANCE(container_val);
+        map_set(&inst->table, key, new_val);
+        break;
+    }
+    case OBJ_TABLE: {
+        ObjectTable *table = AS_TABLE(container_val);
+        map_set(&table->values, key, new_val);
+        break;
+    }
+    default:
+        return false;
+    }
+
+    pop();
+    pop();
+    push(new_val);
+
+    return true;
+}
+
 static InterpretResult run()
 {
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
@@ -475,11 +584,11 @@ static InterpretResult run()
         }
 
         case OP_TRUE: {
-            push(VALUE_BOOL(1));
+            push(VALUE_BOOL(true));
             break;
         }
         case OP_FALSE: {
-            push(VALUE_BOOL(0));
+            push(VALUE_BOOL(false));
             break;
         }
 
@@ -494,7 +603,9 @@ static InterpretResult run()
                 RUNTIME_ERROR("Expected number");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            vm.stack->items[vm.stack_top - 1].as.decimal *= -1;
+            double num = AS_NUMBER(PEEK(0)) * -1;
+            pop();
+            push(VALUE_NUMBER(num));
             break;
         }
         case OP_BANG: {
@@ -539,55 +650,35 @@ static InterpretResult run()
             HANDLE_EQUAL();
             break;
         case OP_GET_FIELD: {
-            Value instance_value = pop();
-            if (!IsObjType(instance_value, OBJ_INSTANCE))
+            Value container_val = pop();
+            ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
+
+            if (!IS_OBJ(container_val))
             {
                 RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjectInstance *inst = AS_INSTANCE(instance_value);
-            ObjectString *key = READ_STRING();
-
-            Value get_val;
-            if (map_get(&inst->table, key, &get_val))
-            {
-                push(get_val);
-                break;
-            }
-
-            // find in the method
-            if (!map_get(&inst->klass->methods, key, &get_val))
+            if (!get_field(container_val, key))
             {
                 RUNTIME_ERROR("Field error : '%s'", key->chars);
                 return INTERPRET_RUNTIME_ERROR;
-            };
-
-            assert(IS_CLOSURE(get_val));
-            ObjectMethod *method = new_method(instance_value, AS_CLOSURE(get_val));
-            push(VALUE_OBJ(method));
+            }
             break;
         }
         case OP_SET_FIELD: {
+            ObjectString *key = READ_STRING();
             Value new_val = PEEK(0);
-            Value inst_val = PEEK(1);
+            Value container_val = PEEK(1);
 
-            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            if (!set_field(container_val, key, new_val))
             {
-                RUNTIME_ERROR("Only instances have fields");
+                RUNTIME_ERROR("Only instance or table have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
-
-            ObjectInstance *inst = AS_INSTANCE(inst_val);
-            ObjectString *key = READ_STRING();
-
-            map_set(&inst->table, key, new_val);
-            pop();
-            pop();
-            push(new_val);
-
             break;
         }
+        // TODO : merge this instruction into the regular one
         case OP_GET_FIELD_SQR_BRACKET: {
             Value key_val = pop();
             Value val = pop();
@@ -929,6 +1020,26 @@ static InterpretResult run()
             frame = &vm.frame[vm.frame_count - 1];
             ip = frame->ip;
 
+            break;
+        }
+
+        case OP_INIT_TABLE: {
+            ObjectTable *table = new_table();
+            uint32_t table_count = READ_LONG_BYTE();
+
+            for (size_t i = 0; i < table_count; ++i)
+            {
+                Value key_val = PEEK(1);
+                Value value_val = PEEK(0);
+                assert(IS_STRING(key_val));
+
+                map_set(&table->values, AS_STRING(key_val), value_val);
+
+                pop();
+                pop();
+            }
+
+            push(VALUE_OBJ(table));
             break;
         }
 

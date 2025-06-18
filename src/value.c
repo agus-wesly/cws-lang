@@ -44,8 +44,79 @@ void print_function(ObjectFunction *obj)
     }
 }
 
+void print_table(ObjectTable *obj)
+{
+    if (!!obj)
+    {
+        // TODO : print the actual value
+    }
+    printf("<table>");
+}
+
 void print_obj(Value value)
 {
+#ifdef NAN_BOXING
+    if (IS_STRING(value))
+    {
+        print_string(AS_STRING(value));
+        return;
+    }
+
+    if (IS_FUNCTION(value))
+    {
+        print_function(AS_FUNCTION(value));
+        return;
+    }
+
+    if (IS_NATIVE(value))
+    {
+        printf("<nativefn>");
+        return;
+    }
+
+    if (IS_CLOSURE(value))
+    {
+        print_function(AS_CLOSURE(value)->function);
+        return;
+    }
+
+    if (IS_UPVALUE(value))
+    {
+        print_value((*AS_UPVALUE(value)->p_val));
+        return;
+    }
+
+    if (IS_CLASS(value))
+    {
+        printf("<class");
+        print_string(AS_CLASS(value)->name);
+        printf(">");
+        return;
+    }
+
+    if (IS_INSTANCE(value))
+    {
+        printf("<instanceof ");
+        print_string(AS_INSTANCE(value)->klass->name);
+        printf(">");
+        return;
+    }
+
+    if (IS_METHOD(value))
+    {
+        print_function(AS_METHOD(value)->closure->function);
+        return;
+    }
+
+    if (IS_TABLE(value))
+    {
+        print_table(AS_TABLE(value));
+        return;
+    }
+
+    assert(0 && "Unreachable");
+
+#else
     switch (OBJ_TYPE(value))
     {
     case OBJ_STRING: {
@@ -91,14 +162,52 @@ void print_obj(Value value)
         break;
     }
 
+    case OBJ_TABLE: {
+        print_table(AS_TABLE(value));
+        break;
+    }
+
     default:
         assert(0 && "Unreachable");
         return;
     }
+
+#endif
 }
 
 void print_value(Value value)
 {
+#ifdef NAN_BOXING
+    if (IS_NUMBER(value))
+    {
+        if (AS_NUMBER(value) == (int)AS_NUMBER(value))
+            printf("%i", (int)AS_NUMBER(value));
+        else
+            printf("%f", AS_NUMBER(value));
+        return;
+    }
+    if (IS_NIL(value))
+    {
+        printf("<nil>");
+        return;
+    }
+    if (IS_BOOLEAN(value))
+    {
+        if (AS_BOOL(value))
+            printf("true");
+        else
+            printf("false");
+
+        return;
+    }
+    if (IS_OBJ(value))
+    {
+        print_obj(value);
+        return;
+    }
+    assert(0 && "Unreachable at print value");
+#else
+
     switch (value.type)
     {
     case TYPE_NUMBER:
@@ -128,6 +237,8 @@ void print_value(Value value)
         assert(0 && "Unreachable at print value");
         break;
     }
+
+#endif
 }
 
 void free_values(Values *values)
@@ -145,6 +256,10 @@ int compare_string(Value a, Value b)
 
 bool compare(Value a, Value b)
 {
+#ifdef NAN_BOXING
+    return a == b;
+#else
+
     if (a.type != b.type)
         return false;
 
@@ -178,10 +293,22 @@ bool compare(Value a, Value b)
     default:
         assert(0 && "Unreachable at compare");
     }
+#endif
 }
 
 bool is_falsy(Value v)
 {
+#ifdef NAN_BOXING
+    return (IS_NIL(v) || (IS_BOOLEAN(v) && IS_FALSE(v)) || (IS_NUMBER(v) && !AS_NUMBER(v)));
+#else
     return (v.type == TYPE_NIL || (v.type == TYPE_BOOLEAN && !v.as.boolean) ||
             (v.type == TYPE_NUMBER && !v.as.decimal));
+#endif
+}
+
+Value value_number(double number)
+{
+    Value value;
+    memcpy(&value, &number, sizeof(number));
+    return value;
 }

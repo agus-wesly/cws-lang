@@ -287,7 +287,6 @@ Precedence _get_presedence(TokenType token_type)
     }
 }
 
-
 static uint8_t parse_args()
 {
     uint8_t arity = 0;
@@ -512,6 +511,29 @@ static void _number(int can_assign)
     // emit_bytes(OP_CONSTANT, idx);
 }
 
+static void table(int can_assign)
+{
+    if (can_assign)
+    {
+    }
+
+    uint32_t table_count = 0;
+    while (!check(TOKEN_RIGHT_BRACE))
+    {
+        consume(TOKEN_STRING, "Expected string key");
+        string(false);
+        consume(TOKEN_COLON, "Expected colon ':' after key");
+        expression();
+        consume(TOKEN_COMMA, "Expected comma ',");
+
+        ++table_count;
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expected closing parentheses '}'");
+
+    emit_byte(OP_INIT_TABLE);
+    emit_constant_byte(table_count);
+}
+
 static void unary(int can_assign)
 {
     if (can_assign)
@@ -706,7 +728,7 @@ ParseRule rules[] = {
 
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
+    [TOKEN_LEFT_BRACE] = {table, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_SQR_BRACKET] = {NULL, sqrbracket, PREC_CALL},
     [TOKEN_RIGHT_SQR_BRACKET] = {NULL, NULL, PREC_NONE},
@@ -1562,3 +1584,5 @@ void mark_compiler()
         c = c->enclosing;
     }
 }
+
+//'0b0111111111111100000000000000000000000000000000000000000000000000'

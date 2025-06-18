@@ -8,7 +8,7 @@
 
 typedef struct
 {
-    uint8_t capacity;
+    uint32_t capacity;
     uint32_t count;
 
     Value *values;

@@ -21,6 +21,7 @@ typedef enum
     OBJ_CLASS,
     OBJ_INSTANCE,
     OBJ_METHOD,
+    OBJ_TABLE,
 } ObjType;
 
 struct Obj
@@ -93,6 +94,12 @@ struct ObjectMethod
     ObjectClosure *closure;
 };
 
+struct ObjectTable
+{
+    Obj object;
+    Map values;
+};
+
 typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);
 typedef struct
 {
@@ -111,9 +118,19 @@ typedef enum
 
 struct Obj *allocate_obj(ObjType type, size_t size);
 
+#ifdef NAN_BOXING
+
+#define AS_BOOL(value) ((Value)(value) == VALUE_TRUE)
+#define AS_NUMBER(value) (number_value(value))
+#define AS_OBJ(value) ((Obj *)(uintptr_t)((value) & ~(SIGNED_BIT | QNAN)))
+
+#else
+
 #define AS_BOOL(value) ((value).as.boolean)
 #define AS_NUMBER(value) ((value).as.decimal)
 #define AS_OBJ(value) ((Obj *)(value).as.obj)
+
+#endif
 #define AS_STRING(value) ((ObjectString *)AS_OBJ(value))
 #define AS_C_STRING(value) (((ObjectString *)AS_OBJ(value))->chars)
 #define STRINGIFY(value) ((ObjectString *)stringify(AS_OBJ(value)))
@@ -124,6 +141,7 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define AS_CLASS(value) ((ObjectClass *)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjectInstance *)AS_OBJ(value))
 #define AS_METHOD(value) ((ObjectMethod *)AS_OBJ(value))
+#define AS_TABLE(value) ((ObjectTable *)AS_OBJ(value))
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define ALLOC_OBJ(type, obj_type) ((type *)allocate_obj(obj_type, sizeof(type)))
@@ -132,8 +150,11 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define IS_FUNCTION(value) IsObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value) IsObjType(value, OBJ_NATIVE)
 #define IS_CLOSURE(value) IsObjType(value, OBJ_CLOSURE)
+#define IS_UPVALUE(value) IsObjType(value, OBJ_UPVALUE)
 #define IS_CLASS(value) IsObjType(value, OBJ_CLASS)
 #define IS_METHOD(value) IsObjType(value, OBJ_METHOD)
+#define IS_INSTANCE(value) IsObjType(value, OBJ_INSTANCE)
+#define IS_TABLE(value) IsObjType(value, OBJ_TABLE)
 
 #define FREE_OBJ(ptr) (reallocate(ptr, sizeof(Obj), 0))
 #define FREE(type, ptr) (reallocate(ptr, sizeof(type), 0))
@@ -153,6 +174,9 @@ ObjectUpValue *new_upvalue();
 ObjectClass *new_class(ObjectString *name);
 ObjectInstance *new_instance(ObjectClass *klass);
 ObjectMethod *new_method(Value receiver, ObjectClosure *closure);
+ObjectTable *new_table();
+
+double number_value(Value value);
 
 void free_obj(Obj *obj);
 
