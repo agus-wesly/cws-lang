@@ -211,7 +211,7 @@ void free_obj(Obj *obj)
 
     case OBJ_INSTANCE: {
         ObjectInstance *instance = (ObjectInstance *)obj;
-        assert(0 && "TODO : implement free for instance");
+        FREE(ObjectInstance, obj);
         free_map(&instance->table);
         break;
     }

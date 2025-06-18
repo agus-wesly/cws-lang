@@ -382,35 +382,32 @@ static void close_up_values(int last)
     }
 }
 
-static bool get_field(Value container_val, ObjectString *key)
+static bool get_field(Value container_val, ObjectString *key, Value *value)
 {
-    Value value;
     switch (OBJ_TYPE(container_val))
     {
     case OBJ_INSTANCE: {
         ObjectInstance *inst = AS_INSTANCE(container_val);
-        if (map_get(&inst->table, key, &value))
+        if (map_get(&inst->table, key, value))
         {
-            push(value);
             return true;
         }
 
         // find in the method
-        if (!map_get(&inst->klass->methods, key, &value))
+        if (!map_get(&inst->klass->methods, key, value))
         {
             return false;
         };
 
-        assert(IS_CLOSURE(value));
-        ObjectMethod *method = new_method(container_val, AS_CLOSURE(value));
-        push(VALUE_OBJ(method));
+        assert(IS_CLOSURE(*value));
+        ObjectMethod *method = new_method(container_val, AS_CLOSURE(*value));
+        *value = (VALUE_OBJ(method));
         return true;
     }
     case OBJ_TABLE: {
         ObjectTable *table = AS_TABLE(container_val);
-        if (map_get(&table->values, key, &value))
+        if (map_get(&table->values, key, value))
         {
-            push(value);
             return true;
         }
         return false;
@@ -440,10 +437,6 @@ static bool set_field(Value container_val, ObjectString *key, Value new_val)
     default:
         return false;
     }
-
-    pop();
-    pop();
-    push(new_val);
 
     return true;
 }
@@ -659,11 +652,13 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if (!get_field(container_val, key))
+            Value value;
+            if (!get_field(container_val, key, &value))
             {
                 RUNTIME_ERROR("Field error : '%s'", key->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
+            push(value);
             break;
         }
         case OP_SET_FIELD: {
@@ -676,12 +671,15 @@ static InterpretResult run()
                 RUNTIME_ERROR("Only instance or table have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
+            pop();
+            pop();
+            push(new_val);
+
             break;
         }
-        // TODO : merge this instruction into the regular one
         case OP_GET_FIELD_SQR_BRACKET: {
             Value key_val = pop();
-            Value val = pop();
+            Value container_val = pop();
 
             if (!IsObjType(key_val, OBJ_STRING))
             {
@@ -689,29 +687,26 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if (!IsObjType(val, OBJ_INSTANCE))
+            if (!IS_OBJ(container_val))
             {
-                RUNTIME_ERROR("Only instances have fields");
+                RUNTIME_ERROR("Only instance or table have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjectInstance *inst = AS_INSTANCE(val);
             ObjectString *key = AS_STRING(key_val);
-
-            Value get_val;
-            if (map_get(&inst->table, key, &get_val))
+            Value value;
+            if (!get_field(container_val, key, &value))
             {
-                push(get_val);
-                break;
+                RUNTIME_ERROR("Field error : '%s'", key->chars);
+                return INTERPRET_RUNTIME_ERROR;
             }
-
-            RUNTIME_ERROR("Field error : '%s'", key->chars);
-            return INTERPRET_RUNTIME_ERROR;
+            push(value);
+            break;
         }
         case OP_SET_FIELD_SQR_BRACKET: {
             Value new_val = PEEK(0);
             Value key_val = PEEK(1);
-            Value inst_val = PEEK(2);
+            Value container_val = PEEK(2);
 
             if (!IsObjType(key_val, OBJ_STRING))
             {
@@ -719,16 +714,19 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            if (!IS_OBJ(container_val))
             {
                 RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjectInstance *inst = AS_INSTANCE(inst_val);
             ObjectString *key = AS_STRING(key_val);
+            if (!set_field(container_val, key, new_val))
+            {
+                RUNTIME_ERROR("Only instance or table have fields");
+                return INTERPRET_RUNTIME_ERROR;
+            }
 
-            map_set(&inst->table, key, new_val);
             pop();
             pop();
             pop();

@@ -336,6 +336,8 @@ static void sqrbracket(int can_assign)
     if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
+        // container, key, new
+        // key, new, container
         emit_byte(OP_SET_FIELD_SQR_BRACKET);
     }
     else
@@ -520,13 +522,22 @@ static void table(int can_assign)
     uint32_t table_count = 0;
     while (!check(TOKEN_RIGHT_BRACE))
     {
-        consume(TOKEN_STRING, "Expected string key");
-        string(false);
+        if (!check(TOKEN_STRING))
+        {
+            advance();
+            error("Key must be a type string and wrapped inside quotes");
+            return;
+        }  
+
+        expression();
         consume(TOKEN_COLON, "Expected colon ':' after key");
         expression();
-        consume(TOKEN_COMMA, "Expected comma ',");
-
         ++table_count;
+
+        if (check(TOKEN_COMMA))
+            advance();
+        else
+            break;
     }
     consume(TOKEN_RIGHT_BRACE, "Expected closing parentheses '}'");
 
