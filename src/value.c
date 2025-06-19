@@ -17,10 +17,6 @@ void append_values(Values *values, Value newItem)
         values->capacity = GROW_CAPACITY(values->capacity);
         values->values = GROW_ARRAY(Value, values->values, oldCapacity, values->capacity);
     }
-
-    // 514
-    // 664
-
     values->values[values->count++] = newItem;
 }
 
@@ -42,6 +38,18 @@ void print_function(ObjectFunction *obj)
     {
         printf("fn<%s>", obj->name->chars);
     }
+}
+
+void print_instance(ObjectInstance *instance, bool debug, int level)
+{
+    if (debug)
+    {
+        printf("<instanceof ");
+        print_string(instance->klass->name);
+        printf(">");
+        return;
+    }
+    print_map(&instance->table, level);
 }
 
 void print_table(ObjectTable *obj, bool debug, int level)
@@ -98,9 +106,7 @@ void print_obj(Value value, bool debug, int level)
 
     if (IS_INSTANCE(value))
     {
-        printf("<instanceof ");
-        print_string(AS_INSTANCE(value)->klass->name);
-        printf(">");
+        print_instance(AS_INSTANCE(value), debug, level);
         return;
     }
 

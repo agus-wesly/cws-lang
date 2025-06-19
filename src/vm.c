@@ -546,7 +546,7 @@ static InterpretResult run()
         for (int i = 0; i < vm.stack_top; ++i)
         {
             Value cur = vm.stack->items[i];
-            print_value(cur);
+            print_value(cur, true, 0);
             printf(",");
         }
         printf("]");
