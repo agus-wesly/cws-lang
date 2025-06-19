@@ -106,13 +106,13 @@ typedef struct
 void init_values(Values *values);
 void append_values(Values *values, Value newItem);
 void free_values(Values *values);
-void print_value(Value value);
 bool compare(Value value1, Value value2);
 bool is_falsy(Value v);
 
 void mark_obj(Obj *obj);
 void mark_value(Value val);
-void print_obj(Value value);
+void print_value(Value value, bool debug, int level);
+void print_obj(Value value, bool debug, int level);
 
 Value value_number(double number);
 

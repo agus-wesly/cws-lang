@@ -441,6 +441,25 @@ static bool set_field(Value container_val, ObjectString *key, Value new_val)
     return true;
 }
 
+static bool del_field(Value container_val, ObjectString *key)
+{
+    assert(IS_OBJ(container_val));
+
+    switch (OBJ_TYPE(container_val))
+    {
+    case OBJ_INSTANCE: {
+        ObjectInstance *inst = AS_INSTANCE(container_val);
+        return map_delete(&inst->table, key);
+    }
+    case OBJ_TABLE: {
+        ObjectTable *table = AS_TABLE(container_val);
+        return map_delete(&table->values, key);
+    }
+    default:
+        return false;
+    }
+}
+
 static InterpretResult run()
 {
     CallFrame *frame = &vm.frame[vm.frame_count - 1];
@@ -741,7 +760,7 @@ static InterpretResult run()
 
         case OP_PRINT: {
             Value value = pop();
-            print_value(value);
+            print_value(value, false, 1);
             printf("\n");
             break;
         }
@@ -957,8 +976,9 @@ static InterpretResult run()
         }
 
         case OP_DEL: {
+            // Support the hashmap
             Value key_val = pop();
-            Value inst_val = pop();
+            Value container_val = pop();
 
             if (!IsObjType(key_val, OBJ_STRING))
             {
@@ -966,17 +986,16 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if (!IsObjType(inst_val, OBJ_INSTANCE))
+            if (!IS_OBJ(container_val))
             {
                 RUNTIME_ERROR("Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjectInstance *inst = AS_INSTANCE(inst_val);
             ObjectString *key = AS_STRING(key_val);
-            if (!map_delete(&inst->table, key))
+            if (!del_field(container_val, key))
             {
-                RUNTIME_ERROR("Key Error : '%s'", key->chars);
+                RUNTIME_ERROR("Field error : '%s'", key->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
 

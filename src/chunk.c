@@ -110,7 +110,7 @@ int constant_instruction(const char *name, Chunk *chunk, int offset)
     printf("%-20s %d ", name, offset);
 
     uint8_t constant = chunk->code[offset + 1];
-    print_value(chunk->constants->values[constant]);
+    print_value(chunk->constants->values[constant], true);
     printf("\n");
 
     return offset + 2;
@@ -122,7 +122,7 @@ int constantLongInstruction(const char *name, Chunk *chunk, int offset)
     printf("%-20s %d ", name, offset);
     uint32_t operand = READ4BYTE(offset);
 
-    print_value(chunk->constantsLong->values[operand]);
+    print_value(chunk->constantsLong->values[operand], true);
     printf("\n");
 
     return offset;
@@ -324,7 +324,7 @@ int disassemble_instruction(Chunk *chunk, int offset)
         printf("%-20s %d ", "OP_INVOKE", offset);
 
         uint32_t operand = READ4BYTE(offset);
-        print_value(chunk->constantsLong->values[operand]);
+        print_value(chunk->constantsLong->values[operand], true);
         printf("\n");
 
         return offset;

@@ -148,3 +148,27 @@ bool map_delete(Map *h, ObjectString *key)
 
     return true;
 }
+
+void print_map(Map *h, int level)
+{
+    printf("{\n");
+    for (size_t i = 0; i < h->capacity; ++i)
+    {
+        Entry *entry = &h->entries[i];
+        if (entry->key != NULL)
+        {
+            for (int i = 0; i < level; ++i)
+            {
+                printf("  ");
+            }
+            printf("%s: ", entry->key->chars);
+            print_value(entry->value, false, level + 1);
+            printf(",\n");
+        }
+    }
+    for (int i = 0; i < level-1; ++i)
+    {
+        printf("  ");
+    }
+    printf("}");
+}

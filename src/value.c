@@ -44,16 +44,18 @@ void print_function(ObjectFunction *obj)
     }
 }
 
-void print_table(ObjectTable *obj)
+void print_table(ObjectTable *obj, bool debug, int level)
 {
-    if (!!obj)
+    if (debug)
     {
-        // TODO : print the actual value
+        printf("<table>");
+        return;
     }
-    printf("<table>");
+
+    print_map(&obj->values, level);
 }
 
-void print_obj(Value value)
+void print_obj(Value value, bool debug, int level)
 {
 #ifdef NAN_BOXING
     if (IS_STRING(value))
@@ -82,7 +84,7 @@ void print_obj(Value value)
 
     if (IS_UPVALUE(value))
     {
-        print_value((*AS_UPVALUE(value)->p_val));
+        print_value((*AS_UPVALUE(value)->p_val), debug, level);
         return;
     }
 
@@ -110,7 +112,7 @@ void print_obj(Value value)
 
     if (IS_TABLE(value))
     {
-        print_table(AS_TABLE(value));
+        print_table(AS_TABLE(value), debug, level);
         return;
     }
 
@@ -175,7 +177,7 @@ void print_obj(Value value)
 #endif
 }
 
-void print_value(Value value)
+void print_value(Value value, bool debug, int level)
 {
 #ifdef NAN_BOXING
     if (IS_NUMBER(value))
@@ -202,7 +204,7 @@ void print_value(Value value)
     }
     if (IS_OBJ(value))
     {
-        print_obj(value);
+        print_obj(value, debug, level);
         return;
     }
     assert(0 && "Unreachable at print value");
@@ -230,7 +232,7 @@ void print_value(Value value)
         break;
 
     case TYPE_OBJ:
-        print_obj(value);
+        print_obj(value, debug, level);
         break;
 
     default:

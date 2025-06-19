@@ -29,5 +29,6 @@ bool map_set(Map *h, ObjectString *key, Value value);
 bool map_get(Map *h, ObjectString *key, Value *value);
 bool map_get_value(Map *h, Value key, Value *value);
 bool map_delete(Map *h, ObjectString *key);
+void print_map(Map *h, int level);
 
 #endif // !HASH_MAP_H
