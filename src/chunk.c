@@ -359,18 +359,19 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_METHOD:
         return constantLongInstruction("OP_METHOD", chunk, offset);
 
-    case OP_INIT_TABLE: {
+    case OP_TABLE:
+        return simple_instruction("OP_TABLE", offset);
+
+    case OP_TABLE_ITEMS: {
         ++offset;
-        printf("%-20s %d ", "OP_INIT_TABLE", offset);
+        printf("%-20s %d ", "OP_TABLE_ITEMS", offset);
         uint32_t operand = READ4BYTE(offset);
 
         printf("%d \n", operand);
         return offset;
     }
-    case OP_ARRAY: {
-        ++offset;
-        return offset;
-    }
+    case OP_ARRAY:
+        return simple_instruction("OP_ARRAY", offset);
 
     case OP_ARRAY_ITEMS: {
         ++offset;

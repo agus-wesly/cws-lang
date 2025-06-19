@@ -58,7 +58,8 @@ typedef enum
     OP_METHOD,
     OP_DEL,
 
-    OP_INIT_TABLE,
+    OP_TABLE,
+    OP_TABLE_ITEMS,
     OP_ARRAY,
     OP_ARRAY_ITEMS,
 } OpCode;

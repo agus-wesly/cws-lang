@@ -65,12 +65,19 @@ void print_table(ObjectTable *obj, bool debug, int level)
 
 void print_array(ObjectArray *array, bool debug)
 {
-    if (true)
+    if (debug)
     {
         printf("<array>");
         return;
     }
-    // todo
+    printf("[");
+    for (int i = array->count - 1; i >= 0; --i)
+    {
+        print_value(array->values[i], debug, 1);
+        if (i != 0)
+            printf(",");
+    }
+    printf("]\n");
 }
 
 void print_obj(Value value, bool debug, int level)
@@ -137,7 +144,6 @@ void print_obj(Value value, bool debug, int level)
         print_array(AS_ARRAY(value), debug);
         return;
     }
-
 
     assert(0 && "Unreachable");
 

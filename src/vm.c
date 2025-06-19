@@ -1034,25 +1034,29 @@ static InterpretResult run()
             break;
         }
 
-        case OP_INIT_TABLE: {
-            // This can also be vanished by GC
-            // Todo : do the same thing like in array
-            ObjectTable *table = new_table();
+        case OP_TABLE: {
+            push(VALUE_OBJ(new_table()));
+            break;
+        }
+
+        case OP_TABLE_ITEMS: {
             uint32_t table_count = READ_LONG_BYTE();
 
             for (size_t i = 0; i < table_count; ++i)
             {
                 Value key_val = PEEK(1);
                 Value value_val = PEEK(0);
-                assert(IS_STRING(key_val));
+                Value inst = PEEK(table_count * 2 - (i * 2));
 
+                assert(IS_TABLE(inst));
+
+                ObjectTable *table = AS_TABLE(inst);
                 map_set(&table->values, AS_STRING(key_val), value_val);
 
                 pop();
                 pop();
             }
 
-            push(VALUE_OBJ(table));
             break;
         }
 

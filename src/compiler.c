@@ -519,6 +519,8 @@ static void table(int can_assign)
     {
     }
 
+    emit_byte(OP_TABLE);
+
     uint32_t table_count = 0;
     while (!check(TOKEN_RIGHT_BRACE))
     {
@@ -541,7 +543,7 @@ static void table(int can_assign)
     }
     consume(TOKEN_RIGHT_BRACE, "Expected closing parentheses '}'");
 
-    emit_byte(OP_INIT_TABLE);
+    emit_byte(OP_TABLE_ITEMS);
     emit_constant_byte(table_count);
 }
 
