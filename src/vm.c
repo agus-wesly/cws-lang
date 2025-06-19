@@ -661,7 +661,7 @@ static InterpretResult run()
         case OP_EQUAL_EQUAL:
             HANDLE_EQUAL();
             break;
-        case OP_GET_FIELD: {
+        case OP_DOT_GET: {
             Value container_val = pop();
             ObjectString *key = AS_STRING(READ_LONG_CONSTANT());
 
@@ -680,7 +680,7 @@ static InterpretResult run()
             push(value);
             break;
         }
-        case OP_SET_FIELD: {
+        case OP_DOT_SET: {
             ObjectString *key = READ_STRING();
             Value new_val = PEEK(0);
             Value container_val = PEEK(1);
@@ -696,7 +696,7 @@ static InterpretResult run()
 
             break;
         }
-        case OP_GET_FIELD_SQR_BRACKET: {
+        case OP_SQR_BRACKET_GET: {
             Value key_val = pop();
             Value container_val = pop();
 
@@ -722,7 +722,7 @@ static InterpretResult run()
             push(value);
             break;
         }
-        case OP_SET_FIELD_SQR_BRACKET: {
+        case OP_SQR_BRACKET_SET: {
             Value new_val = PEEK(0);
             Value key_val = PEEK(1);
             Value container_val = PEEK(2);
@@ -1051,6 +1051,19 @@ static InterpretResult run()
             }
 
             push(VALUE_OBJ(table));
+            break;
+        }
+
+        case OP_INIT_ARRAY: {
+            ObjectArray *array = new_array();
+            uint32_t array_count = READ_LONG_BYTE();
+            for (size_t i = 0; i < array_count; ++i)
+            {
+                Value val = PEEK(0);
+                append_array(array, val);
+                pop();
+            }
+            push(VALUE_OBJ(array));
             break;
         }
 

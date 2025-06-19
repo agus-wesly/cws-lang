@@ -20,10 +20,10 @@ typedef enum
     OP_ADD,
     OP_SUBTRACT,
     OP_DIVIDE,
-    OP_GET_FIELD,
-    OP_SET_FIELD,
-    OP_GET_FIELD_SQR_BRACKET,
-    OP_SET_FIELD_SQR_BRACKET,
+    OP_DOT_GET,
+    OP_DOT_SET,
+    OP_SQR_BRACKET_GET,
+    OP_SQR_BRACKET_SET,
     OP_MULTIPLY,
     OP_TRUE,
     OP_FALSE,
@@ -59,7 +59,7 @@ typedef enum
     OP_DEL,
 
     OP_INIT_TABLE,
-
+    OP_INIT_ARRAY,
 } OpCode;
 
 typedef struct

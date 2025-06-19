@@ -224,16 +224,16 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_ADD: {
         return simple_instruction("OP_ADD", offset);
     }
-    case OP_GET_FIELD: {
+    case OP_DOT_GET: {
         return constantLongInstruction("OP_GET_FIELD", chunk, offset);
     }
-    case OP_SET_FIELD: {
+    case OP_DOT_SET: {
         return constantLongInstruction("OP_SET_FIELD", chunk, offset);
     }
-    case OP_GET_FIELD_SQR_BRACKET: {
+    case OP_SQR_BRACKET_GET: {
         return simple_instruction("OP_GET_FIELD_B", offset);
     }
-    case OP_SET_FIELD_SQR_BRACKET: {
+    case OP_SQR_BRACKET_SET: {
         return simple_instruction("OP_SET_FIELD_B", offset);
     }
     case OP_DEL:
@@ -362,6 +362,14 @@ int disassemble_instruction(Chunk *chunk, int offset)
     case OP_INIT_TABLE: {
         ++offset;
         printf("%-20s %d ", "OP_INIT_TABLE", offset);
+        uint32_t operand = READ4BYTE(offset);
+
+        printf("%d \n", operand);
+        return offset;
+    }
+    case OP_INIT_ARRAY: {
+        ++offset;
+        printf("%-20s %d ", "OP_INIT_ARRAY", offset);
         uint32_t operand = READ4BYTE(offset);
 
         printf("%d \n", operand);

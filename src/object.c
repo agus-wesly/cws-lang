@@ -146,6 +146,26 @@ ObjectTable *new_table()
     return table;
 }
 
+ObjectArray *new_array()
+{
+    ObjectArray *array = ALLOC_OBJ(ObjectArray, OBJ_ARRAY);
+    array->values = NULL;
+    array->cap = 0;
+    array->count = 0;
+    return array;
+}
+
+void append_array(ObjectArray *array, Value newItem)
+{
+    if (array->cap < array->count + 1)
+    {
+        uint16_t oldCapacity = array->cap;
+        array->cap = GROW_CAPACITY(array->cap);
+        array->values = GROW_ARRAY(Value, array->values, oldCapacity, array->cap);
+    }
+    array->values[array->count++] = newItem;
+}
+
 Obj *allocate_obj(ObjType type, size_t size)
 {
     Obj *obj = (Obj *)reallocate(NULL, 0, size);
@@ -225,6 +245,13 @@ void free_obj(Obj *obj)
         ObjectTable *table = (ObjectTable *)obj;
         free_map(&table->values);
         FREE(ObjectTable, obj);
+        break;
+    }
+
+    case OBJ_ARRAY: {
+        ObjectArray *array = (ObjectArray *)obj;
+        free(array->values);
+        FREE(ObjectArray, obj);
         break;
     }
 

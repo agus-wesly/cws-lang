@@ -22,6 +22,7 @@ typedef enum
     OBJ_INSTANCE,
     OBJ_METHOD,
     OBJ_TABLE,
+    OBJ_ARRAY,
 } ObjType;
 
 struct Obj
@@ -100,6 +101,14 @@ struct ObjectTable
     Map values;
 };
 
+struct ObjectArray
+{
+    Obj object;
+    uint16_t count;
+    uint16_t cap;
+    Value *values;
+};
+
 typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);
 typedef struct
 {
@@ -142,6 +151,7 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define AS_INSTANCE(value) ((ObjectInstance *)AS_OBJ(value))
 #define AS_METHOD(value) ((ObjectMethod *)AS_OBJ(value))
 #define AS_TABLE(value) ((ObjectTable *)AS_OBJ(value))
+#define AS_ARRAY(value) ((ObjectArray *)AS_OBJ(value))
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 #define ALLOC_OBJ(type, obj_type) ((type *)allocate_obj(obj_type, sizeof(type)))
@@ -155,6 +165,7 @@ struct Obj *allocate_obj(ObjType type, size_t size);
 #define IS_METHOD(value) IsObjType(value, OBJ_METHOD)
 #define IS_INSTANCE(value) IsObjType(value, OBJ_INSTANCE)
 #define IS_TABLE(value) IsObjType(value, OBJ_TABLE)
+#define IS_ARRAY(value) IsObjType(value, OBJ_ARRAY)
 
 #define FREE_OBJ(ptr) (reallocate(ptr, sizeof(Obj), 0))
 #define FREE(type, ptr) (reallocate(ptr, sizeof(type), 0))
@@ -175,6 +186,9 @@ ObjectClass *new_class(ObjectString *name);
 ObjectInstance *new_instance(ObjectClass *klass);
 ObjectMethod *new_method(Value receiver, ObjectClosure *closure);
 ObjectTable *new_table();
+ObjectArray *new_array();
+
+void append_array(ObjectArray *array, Value newItem);
 
 double number_value(Value value);
 

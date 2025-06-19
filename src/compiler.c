@@ -318,12 +318,12 @@ static void dot(int can_assign)
     else if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
-        emit_byte(OP_SET_FIELD);
+        emit_byte(OP_DOT_SET);
         emit_constant_byte(name_attr);
     }
     else
     {
-        emit_byte(OP_GET_FIELD);
+        emit_byte(OP_DOT_GET);
         emit_constant_byte(name_attr);
     }
 }
@@ -338,11 +338,11 @@ static void sqrbracket(int can_assign)
         expression();
         // container, key, new
         // key, new, container
-        emit_byte(OP_SET_FIELD_SQR_BRACKET);
+        emit_byte(OP_SQR_BRACKET_SET);
     }
     else
     {
-        emit_byte(OP_GET_FIELD_SQR_BRACKET);
+        emit_byte(OP_SQR_BRACKET_GET);
     }
 }
 
@@ -527,7 +527,7 @@ static void table(int can_assign)
             advance();
             error("Key must be a type string and wrapped inside quotes");
             return;
-        }  
+        }
 
         expression();
         consume(TOKEN_COLON, "Expected colon ':' after key");
@@ -543,6 +543,27 @@ static void table(int can_assign)
 
     emit_byte(OP_INIT_TABLE);
     emit_constant_byte(table_count);
+}
+
+static void array(int is_assignable)
+{
+    if (is_assignable)
+    {
+    }
+
+    uint32_t array_count = 0;
+    while (!check(TOKEN_RIGHT_SQR_BRACKET))
+    {
+        expression();
+        ++array_count;
+        
+        if (!match(TOKEN_COMMA))
+            break;
+    }
+    consume(TOKEN_RIGHT_SQR_BRACKET, "Expected closing ']' in array declaration");
+
+    emit_byte(OP_INIT_ARRAY);
+    emit_constant_byte(array_count);
 }
 
 static void unary(int can_assign)
@@ -586,7 +607,7 @@ static void del_statement()
 
         if (check(TOKEN_DOT))
         {
-            emit_byte(OP_GET_FIELD);
+            emit_byte(OP_DOT_GET);
             emit_constant_byte(name_attr);
         }
         else
@@ -741,7 +762,7 @@ ParseRule rules[] = {
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_BRACE] = {table, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LEFT_SQR_BRACKET] = {NULL, sqrbracket, PREC_CALL},
+    [TOKEN_LEFT_SQR_BRACKET] = {array, sqrbracket, PREC_CALL},
     [TOKEN_RIGHT_SQR_BRACKET] = {NULL, NULL, PREC_NONE},
 
     [TOKEN_MINUS] = {unary, binary, PREC_TERM},

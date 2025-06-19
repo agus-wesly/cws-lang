@@ -63,6 +63,16 @@ void print_table(ObjectTable *obj, bool debug, int level)
     print_map(&obj->values, level);
 }
 
+void print_array(ObjectArray *array, bool debug)
+{
+    if (true)
+    {
+        printf("<array>");
+        return;
+    }
+    // todo
+}
+
 void print_obj(Value value, bool debug, int level)
 {
 #ifdef NAN_BOXING
@@ -119,6 +129,12 @@ void print_obj(Value value, bool debug, int level)
     if (IS_TABLE(value))
     {
         print_table(AS_TABLE(value), debug, level);
+        return;
+    }
+
+    if (IS_ARRAY(value))
+    {
+        print_array(AS_ARRAY(value), debug);
         return;
     }
 

@@ -158,6 +158,15 @@ static void mark_references()
             break;
         }
 
+        case OBJ_ARRAY: {
+            ObjectArray *array = (ObjectArray *)obj;
+            for (size_t i = 0; i < array->count; ++i)
+            {
+                mark_value(array->values[i]);
+            }
+            break;
+        }
+
         default: {
             assert(0 && "Unreachable");
             break;

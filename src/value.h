@@ -28,6 +28,7 @@ typedef struct ObjectClass ObjectClass;
 typedef struct ObjectInstance ObjectInstance;
 typedef struct ObjectMethod ObjectMethod;
 typedef struct ObjectTable ObjectTable;
+typedef struct ObjectArray ObjectArray;
 
 #ifdef NAN_BOXING
 typedef uint64_t Value;
