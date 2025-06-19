@@ -733,12 +733,6 @@ static InterpretResult run()
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            if (!IS_OBJ(container_val))
-            {
-                RUNTIME_ERROR("Only instances have fields");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-
             ObjectString *key = AS_STRING(key_val);
             if (!set_field(container_val, key, new_val))
             {
