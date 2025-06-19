@@ -1035,6 +1035,8 @@ static InterpretResult run()
         }
 
         case OP_INIT_TABLE: {
+            // This can also be vanished by GC
+            // Todo : do the same thing like in array
             ObjectTable *table = new_table();
             uint32_t table_count = READ_LONG_BYTE();
 
@@ -1054,16 +1056,23 @@ static InterpretResult run()
             break;
         }
 
-        case OP_INIT_ARRAY: {
-            ObjectArray *array = new_array();
+        case OP_ARRAY: {
+            push(VALUE_OBJ(new_array()));
+            break;
+        }
+
+        case OP_ARRAY_ITEMS: {
             uint32_t array_count = READ_LONG_BYTE();
             for (size_t i = 0; i < array_count; ++i)
             {
+                int dist = array_count - i;
+                Value inst = PEEK(dist);
+
+                ObjectArray *array = AS_ARRAY(inst);
                 Value val = PEEK(0);
                 append_array(array, val);
                 pop();
             }
-            push(VALUE_OBJ(array));
             break;
         }
 

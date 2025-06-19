@@ -367,9 +367,14 @@ int disassemble_instruction(Chunk *chunk, int offset)
         printf("%d \n", operand);
         return offset;
     }
-    case OP_INIT_ARRAY: {
+    case OP_ARRAY: {
         ++offset;
-        printf("%-20s %d ", "OP_INIT_ARRAY", offset);
+        return offset;
+    }
+
+    case OP_ARRAY_ITEMS: {
+        ++offset;
+        printf("%-20s %d ", "OP_ARRAY_ITEMS", offset);
         uint32_t operand = READ4BYTE(offset);
 
         printf("%d \n", operand);

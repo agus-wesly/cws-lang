@@ -551,18 +551,20 @@ static void array(int is_assignable)
     {
     }
 
+    emit_byte(OP_ARRAY);
+
     uint32_t array_count = 0;
     while (!check(TOKEN_RIGHT_SQR_BRACKET))
     {
         expression();
         ++array_count;
-        
+
         if (!match(TOKEN_COMMA))
             break;
     }
     consume(TOKEN_RIGHT_SQR_BRACKET, "Expected closing ']' in array declaration");
 
-    emit_byte(OP_INIT_ARRAY);
+    emit_byte(OP_ARRAY_ITEMS);
     emit_constant_byte(array_count);
 }
 

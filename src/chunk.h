@@ -59,7 +59,8 @@ typedef enum
     OP_DEL,
 
     OP_INIT_TABLE,
-    OP_INIT_ARRAY,
+    OP_ARRAY,
+    OP_ARRAY_ITEMS,
 } OpCode;
 
 typedef struct

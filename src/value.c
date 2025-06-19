@@ -138,6 +138,7 @@ void print_obj(Value value, bool debug, int level)
         return;
     }
 
+
     assert(0 && "Unreachable");
 
 #else

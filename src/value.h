@@ -69,7 +69,7 @@ typedef struct
 #define IS_FALSE(value) ((Value)(value) == VALUE_FALSE)
 #define IS_BOOLEAN(value) (((Value)(value) | 1) == VALUE_TRUE)
 #define IS_NIL(value) ((Value)(value) == VALUE_NIL)
-#define IS_OBJ(value) (((Value)value & (SIGNED_BIT | QNAN)) == (SIGNED_BIT | QNAN))
+#define IS_OBJ(value) (((Value)(value) & (SIGNED_BIT | QNAN)) == (SIGNED_BIT | QNAN))
 
 #else
 #define VALUE_NUMBER(value)                                                                                            \
