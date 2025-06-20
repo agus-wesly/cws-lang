@@ -454,15 +454,24 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         runtime_error("Key %s error", key->chars);
         return false;
     }
-
     case OBJ_ARRAY: {
+        ObjectArray *array = AS_ARRAY(container_val);
+        if (IS_STRING(key_value))
+        {
+            ObjectString *key = AS_STRING(key_value);
+            if (memcmp(key->chars, "count", key->length) == 0)
+            {
+                *value = VALUE_NUMBER(array->count);
+                return true;
+            }
+        }
+
         if (!IS_NUMBER(key_value))
         {
             runtime_error("Array key must be a number");
             return false;
         }
 
-        ObjectArray *array = AS_ARRAY(container_val);
         int key_int = AS_NUMBER(key_value);
 
         if (!validate_array_key(array, &key_int))
@@ -471,7 +480,6 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         *value = array->values[key_int];
         return true;
     }
-
     default:
         return false;
     }
