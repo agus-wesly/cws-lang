@@ -555,7 +555,7 @@ static void array(int is_assignable)
 
     emit_byte(OP_ARRAY);
 
-    uint32_t array_count = 0;
+    int array_count = 0;
     while (!check(TOKEN_RIGHT_SQR_BRACKET))
     {
         expression();

@@ -71,10 +71,10 @@ void print_array(ObjectArray *array, bool debug)
         return;
     }
     printf("[");
-    for (int i = array->count - 1; i >= 0; --i)
+    for (int i = 0; i < array->count; ++i)
     {
         print_value(array->values[i], debug, 1);
-        if (i != 0)
+        if (i != array->count - 1)
             printf(",");
     }
     printf("]\n");
