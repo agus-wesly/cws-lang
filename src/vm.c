@@ -459,9 +459,14 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         if (IS_STRING(key_value))
         {
             ObjectString *key = AS_STRING(key_value);
-            if (memcmp(key->chars, "count", key->length) == 0)
+            if (memcmp(key->chars, "push", key->length) == 0)
             {
-                *value = VALUE_NUMBER(array->count);
+                assert(0 && "TODO : implement push");
+                return true;
+            }
+            if (memcmp(key->chars, "pop", key->length) == 0)
+            {
+                assert(0 && "TODO : implement pop");
                 return true;
             }
         }
