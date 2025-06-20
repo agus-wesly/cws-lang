@@ -76,6 +76,7 @@ void runtime_error(char *format, ...)
 {
     va_list args;
     va_start(args, format);
+    fputs("Runtime Error: ", stderr);
     vfprintf(stderr, format, args);
     va_end(args);
 
@@ -382,6 +383,31 @@ static void close_up_values(int last)
     }
 }
 
+static bool validate_array_key(ObjectArray *array, int *key_ptr)
+{
+    int key_int = *key_ptr;
+
+    if (key_int > UINT16_MAX || key_int >= array->count)
+    {
+        // Out of max count range
+        runtime_error("Index %d out of range", key_int);
+        return false;
+    }
+
+    if (key_int < 0)
+    {
+        key_int = key_int + array->count;
+        if (key_int < 0)
+        {
+            // Invalid key index
+            runtime_error("Index %d out of range", *key_ptr);
+            return false;
+        }
+        *key_ptr = key_int;
+    }
+    return true;
+}
+
 static bool get_field(Value container_val, Value key_value, Value *value)
 {
     switch (OBJ_TYPE(container_val))
@@ -433,28 +459,16 @@ static bool get_field(Value container_val, Value key_value, Value *value)
 
     case OBJ_ARRAY: {
         if (!IS_NUMBER(key_value))
-            // Invalid key index
+        {
+            runtime_error("Array key must be a number");
             return false;
+        }
 
         ObjectArray *array = AS_ARRAY(container_val);
         int key_int = AS_NUMBER(key_value);
-        if (key_int > UINT16_MAX || key_int >= array->count)
-        {
-            // Out of max count range
-            runtime_error("Index %d out of range", key_int);
-            return false;
-        }
 
-        if (key_int < 0)
-        {
-            key_int = key_int + array->count;
-            if (key_int < 0)
-            {
-                // Invalid key index
-                runtime_error("Index %d out of range", key_int);
-                return false;
-            }
-        }
+        if (!validate_array_key(array, &key_int))
+            return false;
 
         *value = array->values[key_int];
         return true;
@@ -465,7 +479,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
     }
 }
 
-static bool set_field(Value container_val, ObjectString *key, Value new_val)
+static bool set_field(Value container_val, Value key_value, Value new_val)
 {
     if (!IS_OBJ(container_val))
         return false;
@@ -474,12 +488,37 @@ static bool set_field(Value container_val, ObjectString *key, Value new_val)
     {
     case OBJ_INSTANCE: {
         ObjectInstance *inst = AS_INSTANCE(container_val);
-        map_set(&inst->table, key, new_val);
+        if (!IS_STRING(key_value))
+        {
+            runtime_error("Key must be a string");
+            return false;
+        }
+
+        ObjectString *key_string = AS_STRING(key_value);
+        map_set(&inst->table, key_string, new_val);
         break;
     }
     case OBJ_TABLE: {
         ObjectTable *table = AS_TABLE(container_val);
-        map_set(&table->values, key, new_val);
+
+        if (!IS_STRING(key_value))
+        {
+            runtime_error("Key must be a string");
+            return false;
+        }
+
+        ObjectString *key_string = AS_STRING(key_value);
+        map_set(&table->values, key_string, new_val);
+        break;
+    }
+    case OBJ_ARRAY: {
+        ObjectArray *array = AS_ARRAY(container_val);
+        int key_int = AS_NUMBER(key_value);
+
+        if (!validate_array_key(array, &key_int))
+            return false;
+
+        array->values[key_int] = new_val;
         break;
     }
     default:
@@ -728,13 +767,14 @@ static InterpretResult run()
             break;
         }
         case OP_DOT_SET: {
-            ObjectString *key = READ_STRING();
+            Value key = READ_LONG_CONSTANT();
             Value new_val = PEEK(0);
             Value container_val = PEEK(1);
 
             if (!set_field(container_val, key, new_val))
             {
-                RUNTIME_ERROR("Only instance or table have fields");
+                print_error_line(ip);
+                resetStack();
                 return INTERPRET_RUNTIME_ERROR;
             }
             pop();
@@ -746,12 +786,6 @@ static InterpretResult run()
         case OP_SQR_BRACKET_GET: {
             Value key_val = pop();
             Value container_val = pop();
-
-            // if (!IsObjType(key_val, OBJ_STRING))
-            // {
-            //     RUNTIME_ERROR("Expression inside key must be type of string");
-            //     return INTERPRET_RUNTIME_ERROR;
-            // }
 
             if (!IS_OBJ(container_val))
             {
@@ -774,16 +808,17 @@ static InterpretResult run()
             Value key_val = PEEK(1);
             Value container_val = PEEK(2);
 
-            if (!IsObjType(key_val, OBJ_STRING))
-            {
-                RUNTIME_ERROR("Expression inside bracket must be type of string");
-                return INTERPRET_RUNTIME_ERROR;
-            }
+            // if (!IsObjType(key_val, OBJ_STRING))
+            // {
+            //     RUNTIME_ERROR("Expression inside bracket must be type of string");
+            //     return INTERPRET_RUNTIME_ERROR;
+            // }
 
-            ObjectString *key = AS_STRING(key_val);
-            if (!set_field(container_val, key, new_val))
+            // TODO :  Key checking should be inside the function
+            if (!set_field(container_val, key_val, new_val))
             {
-                RUNTIME_ERROR("Only instance or table have fields");
+                print_error_line(ip);
+                resetStack();
                 return INTERPRET_RUNTIME_ERROR;
             }
 
