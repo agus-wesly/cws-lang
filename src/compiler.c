@@ -483,14 +483,30 @@ static void variable(int can_assign)
     }
 }
 
-static void _this()
+static void _this(int can_assign)
 {
+    if (can_assign)
+    {
+    }
+
     if (current_class == NULL)
     {
         error("'this' expression can only appear inside of class");
         return;
     };
     variable(false);
+}
+
+static void len(int can_assign)
+{
+    if (can_assign)
+    {
+    }
+
+    consume(TOKEN_LEFT_PAREN, "Expected opening parentheses '(");
+    expression();
+    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses ')");
+    emit_byte(OP_LEN);
 }
 
 static void string(int can_assign)
@@ -761,6 +777,7 @@ ParseRule rules[] = {
     [TOKEN_NUMBER] = {_number, NULL, PREC_PRIMARY},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_THIS] = {_this, NULL, PREC_NONE},
+    [TOKEN_LEN] = {len, NULL, PREC_CALL},
 
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},

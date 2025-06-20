@@ -132,8 +132,21 @@ static TokenType get_token_type()
         return match_token(1, 4, "rint", TOKEN_PRINT);
     case 'r':
         return match_token(1, 5, "eturn", TOKEN_RETURN);
-    case 'l':
-        return match_token(1, 2, "et", TOKEN_LET);
+    case 'l': {
+        switch (scanner.start[1])
+        {
+        case 'e': {
+            switch (scanner.start[2])
+            {
+            case 't':
+                return match_token(3, 0, "", TOKEN_LET);
+            case 'n':
+                return match_token(3, 0, "", TOKEN_LEN);
+            }
+        }
+        }
+        break;
+    }
     case 'w':
         return match_token(1, 4, "hile", TOKEN_WHILE);
     case 's': {

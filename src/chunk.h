@@ -49,6 +49,7 @@ typedef enum
     OP_SWITCH,
     OP_CASE_COMPARE,
 
+    OP_LEN,
     OP_CALL,
     OP_INVOKE,
     OP_CLOSURE,

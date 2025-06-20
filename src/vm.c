@@ -408,6 +408,38 @@ static bool validate_array_key(ObjectArray *array, int *key_ptr)
     return true;
 }
 
+static bool len_expression(Value expr, Value *result)
+{
+    if (!IS_OBJ(expr))
+    {
+        runtime_error("Invalid expression");
+        return false;
+    }
+
+    switch (OBJ_TYPE(expr))
+    {
+    case OBJ_STRING: {
+        ObjectString *string = AS_STRING(expr);
+        *result = VALUE_NUMBER(string->length);
+        return true;
+    }
+    case OBJ_TABLE: {
+        ObjectTable *table = AS_TABLE(expr);
+        *result = VALUE_NUMBER(table->values.size);
+        return true;
+    }
+    case OBJ_ARRAY: {
+        ObjectArray *array = AS_ARRAY(expr);
+        *result = VALUE_NUMBER(array->count);
+        return true;
+    }
+    default: {
+        runtime_error("Invalid expression");
+        return false;
+    }
+    }
+}
+
 static bool get_field(Value container_val, Value key_value, Value *value)
 {
     switch (OBJ_TYPE(container_val))
@@ -704,6 +736,19 @@ static InterpretResult run()
 
         case OP_NIL: {
             push(VALUE_NIL);
+            break;
+        }
+
+        case OP_LEN: {
+            Value val = pop();
+            Value result = {0};
+            if (!len_expression(val, &result))
+            {
+                print_error_line(ip);
+                resetStack();
+                return INTERPRET_RUNTIME_ERROR;
+            };
+            push(result);
             break;
         }
 
