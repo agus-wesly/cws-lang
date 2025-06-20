@@ -36,7 +36,6 @@ typedef struct
     Stack *stack;
 
     // Value stack[STACK_MAX];
-    // TODO : maybe this can be unsigned ?
     int stack_top;
 
     int frame_count;

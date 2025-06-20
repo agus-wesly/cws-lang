@@ -416,7 +416,6 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         ObjectInstance *inst = AS_INSTANCE(container_val);
         if (!IS_STRING(key_value))
         {
-            // Key is not a string
             runtime_error("Key must be a string");
             return false;
         }
@@ -443,7 +442,6 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         ObjectTable *table = AS_TABLE(container_val);
         if (!IS_STRING(key_value))
         {
-            // Key is not a string
             runtime_error("Key must be a string");
             return false;
         }
