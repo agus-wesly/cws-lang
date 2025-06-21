@@ -164,6 +164,7 @@ static void mark_references()
             {
                 mark_value(array->values[i]);
             }
+            mark_table(&array->methods);
             break;
         }
 

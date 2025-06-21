@@ -511,7 +511,10 @@ static bool get_field(Value container_val, Value key_value, Value *value)
 
         if (!IS_NUMBER(key_value))
         {
-            runtime_error("Array key must be a number");
+            if (IS_STRING(key_value))
+                runtime_error("'List' object has no attribute: %s", AS_C_STRING(key_value));
+            else
+                runtime_error("'List' object has no correspondend attribute");
             return false;
         }
 
@@ -1047,7 +1050,11 @@ static InterpretResult run()
             frame->ip = ip;
 
             if (!call_value(callee, args_count, ip))
+            {
+                print_error_line(ip);
+                resetStack();
                 return INTERPRET_RUNTIME_ERROR;
+            }
 
             frame = &vm.frame[vm.frame_count - 1];
             ip = frame->ip;
