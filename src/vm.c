@@ -131,6 +131,10 @@ void print_error_line(uint8_t *ip)
     for (int i = vm.frame_count - 1; i >= 0; --i)
     {
         CallFrame *frame = &vm.frame[i];
+
+        if (i != vm.frame_count - 1)
+            ip = frame->ip;
+
         ObjectFunction *function = frame->closure->function;
         uint8_t idx = ip - function->chunk.code;
         uint32_t line_number = get_line(&frame->closure->function->chunk, idx);
@@ -640,7 +644,7 @@ static InterpretResult run()
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
                                                                                                                        \
         {                                                                                                              \
-            RUNTIME_ERROR("Operand must be of type number");                                                           \
+            RUNTIME_ERROR(ip - 1, "Operand must be of type number");                                                   \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
@@ -666,14 +670,6 @@ static InterpretResult run()
             push(VALUE_NUMBER(true_expr));                                                                             \
         else                                                                                                           \
             push(VALUE_NUMBER(false_expr));                                                                            \
-    } while (0);
-
-#define RUNTIME_ERROR(...)                                                                                             \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        runtime_error(__VA_ARGS__);                                                                                    \
-        print_error_line(ip);                                                                                          \
-        resetStack();                                                                                                  \
     } while (0);
 
     for (;;)
@@ -762,9 +758,10 @@ static InterpretResult run()
         }
 
         case OP_NEGATE: {
+            uint8_t *prev_ip = ip - 1;
             if (!IS_NUMBER(PEEK(0)))
             {
-                RUNTIME_ERROR("Expected number");
+                RUNTIME_ERROR(prev_ip, "Expected number");
                 return INTERPRET_RUNTIME_ERROR;
             }
             double num = AS_NUMBER(PEEK(0)) * -1;
@@ -779,6 +776,7 @@ static InterpretResult run()
         }
 
         case OP_ADD: {
+            uint8_t *prev_ip = ip - 1;
             if (IS_NUMBER(PEEK(0)) && IS_NUMBER(PEEK(1)))
             {
                 HANDLE_BINARY(VALUE_NUMBER, +);
@@ -791,7 +789,7 @@ static InterpretResult run()
             }
             else
             {
-                RUNTIME_ERROR("Operands must be number or string");
+                RUNTIME_ERROR(prev_ip, "Operands must be number or string");
                 return INTERPRET_RUNTIME_ERROR;
             }
         }
@@ -920,11 +918,12 @@ static InterpretResult run()
         }
 
         case OP_GET_GLOBAL: {
+            uint8_t *prev_ip = ip - 1;
             ObjectString *name = READ_STRING();
             Value val;
             if (!map_get(&vm.globals, name, &val))
             {
-                RUNTIME_ERROR("Cannot access undeclared variable : %s", name->chars);
+                RUNTIME_ERROR(prev_ip, "Cannot access undeclared variable : %s", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(val);
@@ -932,13 +931,14 @@ static InterpretResult run()
         }
 
         case OP_SET_GLOBAL: {
+            uint8_t *prev_ip = ip - 1;
             ObjectString *name = READ_STRING();
             Value val = PEEK(0);
 
             if (map_set(&vm.globals, name, val))
             {
                 map_delete(&vm.globals, name);
-                RUNTIME_ERROR("Cannot set to undefined variable : '%s'", name->chars);
+                RUNTIME_ERROR(prev_ip, "Cannot set to undefined variable : '%s'", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
             break;
@@ -1051,8 +1051,6 @@ static InterpretResult run()
 
             if (!call_value(callee, args_count, ip))
             {
-                print_error_line(ip);
-                resetStack();
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -1110,26 +1108,26 @@ static InterpretResult run()
         }
 
         case OP_DEL: {
-            // Support the hashmap
+            uint8_t *prev_ip = ip - 1;
             Value key_val = pop();
             Value container_val = pop();
 
             if (!IsObjType(key_val, OBJ_STRING))
             {
-                RUNTIME_ERROR("Expression must be type of string");
+                RUNTIME_ERROR(prev_ip, "Expression must be type of string");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
             if (!IS_OBJ(container_val))
             {
-                RUNTIME_ERROR("Only instances have fields");
+                RUNTIME_ERROR(prev_ip, "Only instances have fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
             ObjectString *key = AS_STRING(key_val);
             if (!del_field(container_val, key))
             {
-                RUNTIME_ERROR("Field error : '%s'", key->chars);
+                RUNTIME_ERROR(prev_ip, "Field error : '%s'", key->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
 
@@ -1152,7 +1150,9 @@ static InterpretResult run()
             frame->ip = ip;
 
             if (!call_value(val, args_count, ip))
+            {
                 return INTERPRET_RUNTIME_ERROR;
+            }
 
             frame = &vm.frame[vm.frame_count - 1];
             ip = frame->ip;
@@ -1219,13 +1219,14 @@ static InterpretResult run()
         }
 
         case OP_ARRAY_POP: {
+            uint8_t *prev_ip = ip - 1;
             Value container_val = PEEK(0);
             assert(IS_ARRAY(container_val));
 
             ObjectArray *array = AS_ARRAY(container_val);
             if (array->count <= 0)
             {
-                RUNTIME_ERROR("Cannot pop empty array");
+                RUNTIME_ERROR(prev_ip, "Cannot pop empty array");
                 return INTERPRET_RUNTIME_ERROR;
             }
             pop_array(array);

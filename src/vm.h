@@ -83,4 +83,12 @@ ObjectString *stringify(Value value);
 
 InterpretResult interpret(const char *code);
 
+#define RUNTIME_ERROR(ip, ...)                                                                                         \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        runtime_error(__VA_ARGS__);                                                                                    \
+        print_error_line(ip);                                                                                          \
+        resetStack();                                                                                                  \
+    } while (0);
+
 #endif // !CWS_VM_H
