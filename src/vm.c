@@ -504,7 +504,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
             }
             if (memcmp(key->chars, "pop", key->length) == 0)
             {
-                assert(0 && "TODO : implement pop");
+                assert(map_get(&array->methods, key, value));
                 return true;
             }
         }
@@ -1215,6 +1215,20 @@ static InterpretResult run()
             ObjectArray *array = AS_ARRAY(container_val);
             append_array(array, val);
 
+            break;
+        }
+
+        case OP_ARRAY_POP: {
+            Value container_val = PEEK(0);
+            assert(IS_ARRAY(container_val));
+
+            ObjectArray *array = AS_ARRAY(container_val);
+            if (array->count <= 0)
+            {
+                RUNTIME_ERROR("Cannot pop empty array");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            pop_array(array);
             break;
         }
 

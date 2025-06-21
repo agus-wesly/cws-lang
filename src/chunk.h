@@ -64,6 +64,7 @@ typedef enum
     OP_ARRAY,
     OP_ARRAY_ITEMS,
     OP_ARRAY_PUSH,
+    OP_ARRAY_POP,
 } OpCode;
 
 typedef struct

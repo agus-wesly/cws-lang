@@ -191,6 +191,7 @@ ObjectTable *new_table();
 ObjectArray *new_array();
 
 void append_array(ObjectArray *array, Value newItem);
+void pop_array(ObjectArray *array);
 
 double number_value(Value value);
 

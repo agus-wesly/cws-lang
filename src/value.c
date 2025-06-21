@@ -77,7 +77,7 @@ void print_array(ObjectArray *array, bool debug)
         if (i != array->count - 1)
             printf(",");
     }
-    printf("]\n");
+    printf("]");
 }
 
 void print_obj(Value value, bool debug, int level)

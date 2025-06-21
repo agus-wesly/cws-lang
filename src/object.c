@@ -97,7 +97,6 @@ ObjectClosure *new_closure(ObjectFunction *function)
         upvalues[i] = NULL;
     }
 
-    // Why it is not marking <script> in here ?
     ObjectClosure *closure = ALLOC_OBJ(ObjectClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
@@ -147,35 +146,76 @@ ObjectTable *new_table()
     return table;
 }
 
-ObjectArray *new_array()
+/* ===========================================
+ * ARRAY METHODS
+ * TODO : make this only called once
+ * ===========================================
+ * */
+
+static ObjectMethod *arr_push_method(ObjectArray *array)
 {
-    ObjectArray *array = ALLOC_OBJ(ObjectArray, OBJ_ARRAY);
-
-    push(VALUE_OBJ(array));
-
-    array->values = NULL;
-    array->cap = 0;
-    array->count = 0;
-    init_map(&array->methods);
-
-    /*
-     * PUSH(x)
-     *
-     * */
     ObjectClosure *closure = new_closure(new_function());
+
+    push(VALUE_OBJ(closure));
     closure->function->name = copy_string("<push>", 6);
     closure->function->arity = 1;
 
     write_chunk(&closure->function->chunk, OP_ARRAY_PUSH, 0);
-    // write_chunk(&closure->function->chunk, OP_PRINT, 0);
     write_chunk(&closure->function->chunk, OP_NIL, 0);
     write_chunk(&closure->function->chunk, OP_RETURN, 0);
-
-    ObjectMethod *method = new_method(VALUE_OBJ(array), closure);
-    map_set(&array->methods, copy_string("push", 4), VALUE_OBJ(method));
-
     pop();
 
+    ObjectMethod *method = new_method(VALUE_OBJ(array), closure);
+    return method;
+}
+
+static ObjectMethod *arr_pop_method(ObjectArray *array)
+{
+    ObjectClosure *closure = new_closure(new_function());
+    closure->function->name = copy_string("<pop>", 5);
+    closure->function->arity = 0;
+
+    push(VALUE_OBJ(closure));
+    write_chunk(&closure->function->chunk, OP_ARRAY_POP, 0);
+    write_chunk(&closure->function->chunk, OP_NIL, 0);
+    write_chunk(&closure->function->chunk, OP_RETURN, 0);
+    pop();
+
+    ObjectMethod *method = new_method(VALUE_OBJ(array), closure);
+    return method;
+}
+
+/* ===========================================
+ */
+
+ObjectArray *new_array()
+{
+    ObjectArray *array = ALLOC_OBJ(ObjectArray, OBJ_ARRAY);
+    array->values = NULL;
+    array->cap = 0;
+    array->count = 0;
+
+    push(VALUE_OBJ(array));
+
+    init_map(&array->methods);
+
+    {
+        // PUSH(x)
+        ObjectMethod *method = arr_push_method(array);
+        push(VALUE_OBJ(method));
+        map_set(&array->methods, copy_string("push", 4), VALUE_OBJ(method));
+        pop();
+    }
+
+    {
+        // POP()
+        ObjectMethod *method = arr_pop_method(array);
+        push(VALUE_OBJ(method));
+        map_set(&array->methods, copy_string("pop", 3), VALUE_OBJ(method));
+        pop();
+    }
+
+    pop();
     return array;
 }
 
@@ -188,6 +228,12 @@ void append_array(ObjectArray *array, Value newItem)
         array->values = GROW_ARRAY(Value, array->values, oldCapacity, array->cap);
     }
     array->values[array->count++] = newItem;
+}
+
+void pop_array(ObjectArray *array)
+{
+    assert(array->count > 0 && "Cannot pop empty array");
+    array->count--;
 }
 
 Obj *allocate_obj(ObjType type, size_t size)
