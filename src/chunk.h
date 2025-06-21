@@ -63,6 +63,7 @@ typedef enum
     OP_TABLE_ITEMS,
     OP_ARRAY,
     OP_ARRAY_ITEMS,
+    OP_ARRAY_PUSH,
 } OpCode;
 
 typedef struct

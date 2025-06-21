@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #define NAN_BOXING
-// #define DEBUG_TRACE_EXECUTION
+#define DEBUG_TRACE_EXECUTION
 // #define DEBUG_PRINT
 
 // #define TEST_STRESS_GC

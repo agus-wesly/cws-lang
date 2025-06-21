@@ -382,6 +382,9 @@ int disassemble_instruction(Chunk *chunk, int offset)
         return offset;
     }
 
+    case OP_ARRAY_PUSH:
+        return simple_instruction("OP_ARRAY_PUSH", offset);
+
     default:
         return offset + 1;
     }

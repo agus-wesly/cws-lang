@@ -107,6 +107,8 @@ struct ObjectArray
     uint16_t count;
     uint16_t cap;
     Value *values;
+
+    Map methods;
 };
 
 typedef bool (*NativeFn)(int args_count, int stack_ptr, Value *returned);

@@ -74,6 +74,7 @@ ObjectFunction *new_function()
 
     function->name = NULL;
     function->arity = 0;
+    function->upvalue_count = 0;
     init_chunk(&function->chunk);
 
     return function;
@@ -149,9 +150,32 @@ ObjectTable *new_table()
 ObjectArray *new_array()
 {
     ObjectArray *array = ALLOC_OBJ(ObjectArray, OBJ_ARRAY);
+
+    push(VALUE_OBJ(array));
+
     array->values = NULL;
     array->cap = 0;
     array->count = 0;
+    init_map(&array->methods);
+
+    /*
+     * PUSH(x)
+     *
+     * */
+    ObjectClosure *closure = new_closure(new_function());
+    closure->function->name = copy_string("<push>", 6);
+    closure->function->arity = 1;
+
+    write_chunk(&closure->function->chunk, OP_ARRAY_PUSH, 0);
+    // write_chunk(&closure->function->chunk, OP_PRINT, 0);
+    write_chunk(&closure->function->chunk, OP_NIL, 0);
+    write_chunk(&closure->function->chunk, OP_RETURN, 0);
+
+    ObjectMethod *method = new_method(VALUE_OBJ(array), closure);
+    map_set(&array->methods, copy_string("push", 4), VALUE_OBJ(method));
+
+    pop();
+
     return array;
 }
 

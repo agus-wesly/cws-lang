@@ -442,6 +442,12 @@ static bool len_expression(Value expr, Value *result)
 
 static bool get_field(Value container_val, Value key_value, Value *value)
 {
+    if (!IS_OBJ(container_val))
+    {
+        runtime_error("Only instance or table have fields");
+        return false;
+    }
+
     switch (OBJ_TYPE(container_val))
     {
     case OBJ_INSTANCE: {
@@ -461,7 +467,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         // find in the method
         if (!map_get(&inst->klass->methods, key, value))
         {
-            runtime_error("Key %s error", key->chars);
+            runtime_error("'table' object has no attribute '%s'", key->chars);
             return false;
         };
 
@@ -483,7 +489,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         {
             return true;
         }
-        runtime_error("Key %s error", key->chars);
+        runtime_error("'table' object has no attribute '%s'", key->chars);
         return false;
     }
     case OBJ_ARRAY: {
@@ -493,7 +499,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
             ObjectString *key = AS_STRING(key_value);
             if (memcmp(key->chars, "push", key->length) == 0)
             {
-                assert(0 && "TODO : implement push");
+                assert(map_get(&array->methods, key, value));
                 return true;
             }
             if (memcmp(key->chars, "pop", key->length) == 0)
@@ -806,11 +812,6 @@ static InterpretResult run()
             break;
         case OP_DOT_GET: {
             Value container_val = pop();
-            if (!IS_OBJ(container_val))
-            {
-                RUNTIME_ERROR("Only instances have fields");
-                return INTERPRET_RUNTIME_ERROR;
-            }
 
             Value value;
             if (!get_field(container_val, READ_LONG_CONSTANT(), &value))
@@ -842,12 +843,6 @@ static InterpretResult run()
         case OP_SQR_BRACKET_GET: {
             Value key_val = pop();
             Value container_val = pop();
-
-            if (!IS_OBJ(container_val))
-            {
-                RUNTIME_ERROR("Only instance or table have fields");
-                return INTERPRET_RUNTIME_ERROR;
-            }
 
             Value value;
             if (!get_field(container_val, key_val, &value))
@@ -1136,28 +1131,14 @@ static InterpretResult run()
 
         case OP_INVOKE: {
             uint8_t args_count = READ_BYTE();
-            ObjectString *key = READ_STRING();
+            Value key = READ_LONG_CONSTANT();
             Value inst_val = PEEK(args_count);
 
-            if (!IsObjType(inst_val, OBJ_INSTANCE))
-            {
-                RUNTIME_ERROR("Only instances have fields");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-            ObjectInstance *inst = AS_INSTANCE(inst_val);
-
             Value val;
-            if (map_get(&inst->table, key, &val))
+            if (!get_field(inst_val, key, &val))
             {
-                if (!IsObjType(val, OBJ_CLOSURE))
-                {
-                    RUNTIME_ERROR("Key '%s' is not callable", key->chars);
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-            }
-            else if (!map_get(&inst->klass->methods, key, &val))
-            {
-                RUNTIME_ERROR("Key Error : '%s'", key->chars);
+                print_error_line(ip);
+                resetStack();
                 return INTERPRET_RUNTIME_ERROR;
             };
 
@@ -1217,6 +1198,16 @@ static InterpretResult run()
                 append_array(array, val);
             }
             vm.stack_top -= array_count;
+            break;
+        }
+
+        case OP_ARRAY_PUSH: {
+            Value val = PEEK(0);
+            Value container_val = PEEK(1);
+            assert(IS_ARRAY(container_val));
+            ObjectArray *array = AS_ARRAY(container_val);
+            append_array(array, val);
+
             break;
         }
 
