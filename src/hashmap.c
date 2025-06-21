@@ -44,7 +44,6 @@ Entry *find_entry(Entry *entries, ObjectString *key, int capacity)
 
 void adjust_capacity(Map *old, size_t capacity)
 {
-    // Entry *entries = ALLOC(Entry, (sizeof(Entry) * capacity));
     Entry *entries = (Entry *)calloc(capacity, sizeof(Entry));
     for (size_t i = 0; i < capacity; ++i)
     {
@@ -68,7 +67,6 @@ void adjust_capacity(Map *old, size_t capacity)
         old->size++;
     }
 
-    // FREE_ARRAY(Entry, old->entries, old->capacity);
     old->entries = entries;
     old->capacity = capacity;
 }

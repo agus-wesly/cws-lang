@@ -263,7 +263,6 @@ void free_obj(Obj *obj)
 
 #ifdef DEBUG_GC
     printf("%p free type %d\n", obj, obj->type);
-    // assert(0);
 #endif
 
     switch (obj->type)

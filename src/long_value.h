@@ -4,8 +4,6 @@
 #include "common.h"
 #include "value.h"
 
-// typedef double Value;
-
 typedef struct
 {
     uint32_t capacity;

@@ -90,7 +90,6 @@ void push(Value value)
         int old_capacity = vm.stack->capacity;
         int new_capacity = GROW_CAPACITY(old_capacity);
         vm.stack->capacity = new_capacity;
-        // vm.stack->items = GROW_ARRAY(Value, vm.stack->items, old_capacity, new_capacity);
         vm.stack->items = (Value *)realloc(vm.stack->items, new_capacity * sizeof(Value));
     }
 
@@ -393,7 +392,6 @@ static bool validate_array_key(ObjectArray *array, int *key_ptr)
 
     if (key_int > UINT16_MAX || key_int >= array->count)
     {
-        // Out of max count range
         runtime_error("Index %d out of range", key_int);
         return false;
     }
@@ -403,7 +401,6 @@ static bool validate_array_key(ObjectArray *array, int *key_ptr)
         key_int = key_int + array->count;
         if (key_int < 0)
         {
-            // Invalid key index
             runtime_error("Index %d out of range", *key_ptr);
             return false;
         }
@@ -860,13 +857,6 @@ static InterpretResult run()
             Value key_val = PEEK(1);
             Value container_val = PEEK(2);
 
-            // if (!IsObjType(key_val, OBJ_STRING))
-            // {
-            //     RUNTIME_ERROR("Expression inside bracket must be type of string");
-            //     return INTERPRET_RUNTIME_ERROR;
-            // }
-
-            // TODO :  Key checking should be inside the function
             if (!set_field(container_val, key_val, new_val))
             {
                 print_error_line(ip);
@@ -1272,8 +1262,6 @@ InterpretResult interpret(const char *source)
 
     return run();
 }
-
-// STACK
 
 void init_stack(Stack *stack)
 {

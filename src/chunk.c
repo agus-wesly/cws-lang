@@ -11,7 +11,6 @@ void init_chunk(Chunk *chunk)
 
     chunk->code = NULL;
 
-    // TODO
     Values *values = malloc(sizeof(Values));
     init_values(values);
     chunk->constants = values;

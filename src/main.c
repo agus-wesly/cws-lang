@@ -21,20 +21,12 @@ void rep()
         if (line[0] == '\n')
             break;
 
-        // Process the input
         interpret(line);
     }
 }
 
 char *read_file(const char *file_path)
 {
-    /*
-     * 1) Find and open the file
-     * 2) Read and stop while see the EOF
-     * 3) Count how many bytes already read
-     * 4) Store that inside a variable : `size`
-     * */
-
     FILE *fd = fopen(file_path, "r");
     if (fd == NULL)
     {

@@ -336,8 +336,6 @@ static void sqrbracket(int can_assign)
     if (can_assign && match(TOKEN_EQUAL))
     {
         expression();
-        // container, key, new
-        // key, new, container
         emit_byte(OP_SQR_BRACKET_SET);
     }
     else
@@ -525,8 +523,6 @@ static void _number(int can_assign)
     }
     Value value = VALUE_NUMBER(strtod(parser.previous.start, NULL));
     emit_constant(current_chunk(), value, parser.previous.line_number);
-    // uint8_t idx = AddConstant(current_chunk(), value);
-    // emit_bytes(OP_CONSTANT, idx);
 }
 
 static void table(int can_assign)
@@ -615,7 +611,7 @@ static void del_statement()
 {
     /*
      * Currently `del` just support notation
-     * In the future we can support the sqr_bracket notation
+     * TODO : Support the sqr_bracket notation
      */
     consume(TOKEN_IDENTIFIER, "Expected identifier after 'del'");
     variable(0);
@@ -919,7 +915,6 @@ static void begin_scope()
 
 static void begin_loop(int offset, int depth)
 {
-    // Push to stack
     assert(current->loop_count <= LOOP_STACK_MAX_LENGTH && "Already reach max length of loop stack");
 
     Loop *loop = &current->loop_stack[current->loop_count++];
@@ -935,14 +930,12 @@ static Loop *peek_loop()
 
 static void end_loop()
 {
-    // Pop the stack
     assert(current->loop_count > 0 && "Cannot pop loop stack if empty");
     current->loop_count--;
 }
 
 static void begin_jump(int offset, int depth)
 {
-    // Push to stack
     assert(current->jump_count <= JUMP_STACK_MAX_LENGTH && "Already reach max length of jump stack");
 
     Jump *jump = &current->jump_stack[current->jump_count++];
@@ -958,7 +951,6 @@ static Jump *peek_jump()
 
 static void end_jump()
 {
-    // Pop the stack
     assert(current->jump_count > 0 && "Cannot pop jump stack if empty");
     current->jump_count--;
 }
@@ -1059,7 +1051,6 @@ static void continue_statement()
         }
     }
 
-    // We need offset to be able to move backward
     int offset = peek_loop()->offset;
     emit_loop(offset);
 
@@ -1144,7 +1135,6 @@ static void expression_statement()
     }
     else
     {
-        // this
         emit_byte(OP_POP);
     }
 }
@@ -1255,10 +1245,6 @@ static void case_statement()
 
 static void emit_switch()
 {
-    /* We need this to match what inside the stack
-     * One for the expression in switch
-     * And one for the boolean
-     * */
     Token switch_identifier = {.start = "switch", .length = 6, .type = TOKEN_IDENTIFIER};
     declare_local(switch_identifier, 0);
     define_local();
@@ -1270,7 +1256,6 @@ static void emit_switch()
 
 static int begin_switch()
 {
-    // current->jump_count++;
     int switch_jump = emit_jump(OP_MARK_JUMP);
 
     begin_scope();
@@ -1281,7 +1266,6 @@ static int begin_switch()
 
 static void end_switch(int switch_jump)
 {
-    // current->jump_count--;
     patch_jump(switch_jump);
 
     end_jump();
@@ -1558,7 +1542,6 @@ static void class_declaration()
         consume(TOKEN_IDENTIFIER, "Expected identifier");
 
         uint32_t name_method = identifier_constant(&parser.previous);
-        // Check if this is constructor
         FunctionType func_type = TYPE_METHOD;
         if (memcmp(vm.init_string->chars, parser.previous.start, vm.init_string->length) == 0)
         {
@@ -1637,5 +1620,3 @@ void mark_compiler()
         c = c->enclosing;
     }
 }
-
-//'0b0111111111111100000000000000000000000000000000000000000000000000'

@@ -1,3 +1,6 @@
+/*
+ * This is not needed, we can remove it in the future
+ * */
 #include "std.h"
 #include <string.h>
 
@@ -205,7 +208,6 @@ void *ws_realloc(void *addr, size_t size)
 {
     if (!addr)
     {
-        // Allocate new block of memory
         return ws_malloc(size);
     }
 
@@ -238,13 +240,6 @@ void *ws_realloc(void *addr, size_t size)
         }
         else
         {
-            /*
-             * 1) Find new block with correspond size
-             * 2) Copy data from old to new
-             * 3) Free old
-             * 4) Return new
-             */
-
             void *new_block = ws_malloc(s);
             memcpy(new_block, block->data, block->size);
 
