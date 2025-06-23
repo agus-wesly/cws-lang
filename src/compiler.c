@@ -75,7 +75,7 @@ Compiler *current = NULL;
 void init_compiler(Compiler *compiler, FunctionType type)
 {
     compiler->count = 0;
-    compiler->depth = 0;
+    compiler->depth = 1;
     compiler->loop_count = 0;
     compiler->jump_count = 0;
     compiler->upvalue_count = 0;
@@ -93,7 +93,7 @@ void init_compiler(Compiler *compiler, FunctionType type)
     }
 
     Local *local = &current->locals[current->count++];
-    local->depth = 0;
+    local->depth = 1;
     local->is_assignable = 0;
     if (type == TYPE_METHOD || type == TYPE_INIT)
     {
@@ -1408,6 +1408,7 @@ static void define_variable(uint32_t identifier_idx)
     }
     else
     {
+        assert(0 && "Global variable should be unreachable");
         emit_byte(OP_GLOBAL_VAR);
         emit_constant_byte(identifier_idx);
     }
@@ -1465,6 +1466,7 @@ static void var_declaration(int is_assignable)
     }
     else
     {
+        assert(0 && "Global variable should be unreachable");
         define_variable(identifier_idx);
     }
 }
