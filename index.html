@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>CWS Online Playground</title>
+    <link rel="stylesheet" href="./style/style.css">
+    </head>
+  <body>
+    <h1>The CWS Programming Language</h1>
+    <p><strong>CWS</strong> is a dynamic scripting language developed by <a target="_blank" href="https://github.com/agus-wesly">Wesly</a> as a learning project. Inspired by Python, CWS is currently being enhanced to support Indonesian-language syntax. For more details, visit the <a target="_blank" href="https://github.com/agus-wesly/cws-lang">GitHub repository</a>. Contributions are welcome!</p>
+
+    <p>This online playground allows you to write and run <strong>CWS</strong> code directly in your browser. Learn more in the <a target="_blank" href="https://github.com/agus-wesly/cws-lang">official documentation</a>.</p>
+
+    <div id="container">
+        <button id="run-btn">Run</button>
+        <div id="playground">
+            <div id="editor_wrapper">
+                <div id="editor" /></div>
+            </div>
+            <textarea id="output" rows="8"></textarea>
+        </div>
+    </div> 
+
+    <script type='text/javascript' src="./editor/ace.js"></script>
+    <script type='text/javascript' src="./script/script.js"></script>
+    <script async type="text/javascript" src="./script/output.js"></script>
+  </body>
+</html>

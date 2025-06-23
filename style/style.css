@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+    height: 100%;
+    font-family: "Merriweather", serif;
+    font-optical-sizing: auto;
+}
+
+
+body {
+  font-family: Merriweather;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100%;
+  margin: 4rem;
+}
+
+body p {
+    font-size: 16px;
+    font-family: "Source Sans 3", sans-serif;
+    font-optical-sizing: auto;
+}
+
+body h1 {
+    font-weight: 900;
+    font-size: 28px;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    flex-grow: 1;
+}
+
+#editor_wrapper { 
+    position: relative;
+    display: block;
+    width: 60%;
+    border: 1px solid gray;
+}
+
+#editor { 
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: block;
+    font-family: 'Lucida Console', Monaco, monospace;
+    outline: none;
+}
+
+#run-btn {
+    width: fit-content;
+    flex: none;
+    padding: 2px;
+}
+
+div#playground {
+    padding: 2px;
+    display: flex;
+    background-color: #e7e9eb;
+    flex-grow: 1;
+}
+
+#output {
+  width: 40%;
+  display: block;
+  background-color: white;
+  color: black;
+  font-family: 'Lucida Console', Monaco, monospace;
+  outline: none;
+  border: 1px solid gray;
+  border-left: none;
+  padding: 4px;
+  font-size: 16px;
+}
