@@ -97,11 +97,68 @@ static TokenType get_token_type()
 {
     switch (scanner.start[0])
     {
-    case 'a':
-        return match_token(1, 2, "nd", TOKEN_AND);
-    case 'b':
-        return match_token(1, 4, "reak", TOKEN_BREAK);
-    case 'd': {
+    case 'a': {
+        if ((scanner.current - scanner.start) > 1)
+        {
+            switch (scanner.start[1])
+            {
+            case 'n': {
+                switch (scanner.start[2])
+                {
+                case 'u':
+                    return match_token(3, 0, "", TOKEN_ANU);
+                case 'd':
+                    return match_token(3, 2, "ai", TOKEN_ANDAI);
+                }
+            }
+            break;
+            case 't': {
+                return match_token(2, 2, "au", TOKEN_ATAU);
+            }
+            break;
+            }
+        }
+        break;
+    }
+    case 'b': {
+        if ((scanner.current - scanner.start) > 1)
+        {
+            if (scanner.start[1] == 'a')
+            {
+                switch (scanner.start[2])
+                {
+                case 'w':
+                    return match_token(3, 3, "aan", TOKEN_BAWAAN);
+                case 's':
+                    return match_token(3, 2, "mi", TOKEN_BASMI);
+                case 'l':
+                    return match_token(3, 2, "ik", TOKEN_BALIK);
+                }
+            }
+        }
+        break;
+    }
+    case 'd':
+        return match_token(1, 2, "an", TOKEN_DAN);
+    case 'f':
+        return match_token(1, 5, "ungsi", TOKEN_FUNGSI);
+    case 'h':
+        return match_token(1, 2, "al", TOKEN_HAL);
+    case 'j': {
+        if ((scanner.current - scanner.start) > 1)
+        {
+            switch (scanner.start[1])
+            {
+            case 'm':
+                return match_token(2, 2, "lh", TOKEN_JMLH);
+            case 'i':
+                return match_token(2, 2, "ka", TOKEN_JIKA);
+            }
+        }
+        break;
+    }
+
+    case 'k': {
         if ((scanner.current - scanner.start) > 1)
         {
             switch (scanner.start[1])
@@ -109,115 +166,62 @@ static TokenType get_token_type()
             case 'e': {
                 switch (scanner.start[2])
                 {
-                case 'f':
-                    return match_token(3, 4, "ault", TOKEN_DEFAULT);
                 case 'l':
-                    return match_token(3, 0, "\0", TOKEN_DEL);
+                    switch (scanner.start[3])
+                    {
+                    case 'a':
+                        switch (scanner.start[4])
+                        {
+                        case 'r':
+                            return match_token(5, 0, "", TOKEN_KELAR);
+                        case 's':
+                            return match_token(5, 0, "", TOKEN_KELAS);
+                        }
+                    }
                 }
+                break;
             }
+            case 'a':
+                return match_token(2, 3, "wal", TOKEN_KAWAL);
+            case 'o':
+                return match_token(2, 3, "nst", TOKEN_KONST);
             }
         }
         break;
     }
-
-    case 'e':
-        return match_token(1, 3, "lse", TOKEN_ELSE);
-    case 'i':
-        return match_token(1, 1, "f", TOKEN_IF);
+    case 'l':
+        return match_token(1, 3, "agi", TOKEN_LAGI);
     case 'n':
-        return match_token(1, 2, "il", TOKEN_NIL);
-    case 'o':
-        return match_token(1, 1, "r", TOKEN_OR);
+        return match_token(1, 4, "ihil", TOKEN_NIHIL);
     case 'p':
-        return match_token(1, 4, "rint", TOKEN_PRINT);
-    case 'r':
-        return match_token(1, 5, "eturn", TOKEN_RETURN);
-    case 'l': {
-        switch (scanner.start[1])
-        {
-        case 'e': {
-            switch (scanner.start[2])
-            {
-            case 't':
-                return match_token(3, 0, "", TOKEN_LET);
-            case 'n':
-                return match_token(3, 0, "", TOKEN_LEN);
-            }
-        }
-        }
-        break;
-    }
-    case 'w':
-        return match_token(1, 4, "hile", TOKEN_WHILE);
+        return match_token(1, 3, "ula", TOKEN_PULA);
     case 's': {
         if ((scanner.current - scanner.start) > 1)
         {
             switch (scanner.start[1])
             {
+            case 'a': {
+                switch (scanner.start[2])
+                {
+                case 'a':
+                    return match_token(3, 1, "t", TOKEN_SAAT);
+                case 'h':
+                    return match_token(3, 0, "", TOKEN_SAH);
+                }
+            }
+            break;
+            case 'e':
+                return match_token(2, 3, "sat", TOKEN_SESAT);
             case 'u':
                 return match_token(2, 3, "per", TOKEN_SUPER);
-            case 'w':
-                return match_token(2, 4, "itch", TOKEN_SWITCH);
             }
         }
         break;
     }
-    case 'c':
-        if ((scanner.current - scanner.start) > 1)
-        {
-            switch (scanner.start[1])
-            {
-            case 'l':
-                return match_token(2, 3, "ass", TOKEN_CLASS);
-            case 'o': {
-                switch (scanner.start[3])
-                {
-                case 's': {
-                    return match_token(4, 1, "t", TOKEN_CONST);
-                }
-                case 't': {
-                    return match_token(4, 4, "inue", TOKEN_CONTINUE);
-                }
-                break;
-                }
-
-                break;
-            }
-            case 'a':
-                return match_token(2, 2, "se", TOKEN_CASE);
-            }
-        }
-        break;
-
-    case 'f': {
-        if ((scanner.current - scanner.start) > 1)
-        {
-            switch (scanner.start[1])
-            {
-            case 'a':
-                return match_token(2, 3, "lse", TOKEN_FALSE);
-            case 'o':
-                return match_token(2, 1, "r", TOKEN_FOR);
-            case 'u':
-                return match_token(2, 1, "n", TOKEN_FUN);
-            }
-        }
-        break;
-    }
-
-    case 't': {
-        if ((scanner.current - scanner.start) > 1)
-        {
-            switch (scanner.start[1])
-            {
-            case 'h':
-                return match_token(2, 2, "is", TOKEN_THIS);
-            case 'r':
-                return match_token(2, 2, "ue", TOKEN_TRUE);
-            }
-        }
-        break;
-    }
+    case 't':
+        return match_token(1, 5, "ampil", TOKEN_TAMPIL);
+    case 'u':
+        return match_token(1, 4, "lang", TOKEN_ULANG);
     }
 
     return TOKEN_IDENTIFIER;

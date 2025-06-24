@@ -99,7 +99,7 @@ void init_compiler(Compiler *compiler, FunctionType type)
     {
         local->name.start = "this";
         local->name.length = 4;
-        local->name.type = TOKEN_THIS;
+        local->name.type = TOKEN_ANU;
     }
     else
     {
@@ -359,11 +359,11 @@ static void boolean(int can_assign)
     }
     switch (parser.previous.type)
     {
-    case TOKEN_TRUE: {
+    case TOKEN_SAH: {
         emit_byte(OP_TRUE);
         break;
     }
-    case TOKEN_FALSE: {
+    case TOKEN_SESAT: {
         emit_byte(OP_FALSE);
         break;
     }
@@ -754,26 +754,26 @@ ParseRule rules[] = {
     [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
 
-    [TOKEN_IF] = {NULL, NULL, PREC_NONE},
-    [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_FOR] = {NULL, NULL, PREC_NONE},
-    [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
-    [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
-    [TOKEN_LET] = {NULL, NULL, PREC_NONE},
-    [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
-    [TOKEN_BREAK] = {NULL, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, or_, PREC_OR},
-    [TOKEN_AND] = {NULL, and_, PREC_AND},
-    [TOKEN_NIL] = {nil, NULL, PREC_NONE},
-    [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
-    [TOKEN_TRUE] = {boolean, NULL, PREC_NONE},
-    [TOKEN_FALSE] = {boolean, NULL, PREC_NONE},
+    [TOKEN_JIKA] = {NULL, NULL, PREC_NONE},
+    [TOKEN_PULA] = {NULL, NULL, PREC_NONE},
+    [TOKEN_FUNGSI] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ULANG] = {NULL, NULL, PREC_NONE},
+    [TOKEN_SAAT] = {NULL, NULL, PREC_NONE},
+    [TOKEN_KELAS] = {NULL, NULL, PREC_NONE},
+    [TOKEN_BALIK] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ANDAI] = {NULL, and_, PREC_AND},
+    [TOKEN_KELAR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_ATAU] = {NULL, or_, PREC_OR},
+    [TOKEN_DAN] = {NULL, and_, PREC_AND},
+    [TOKEN_NIHIL] = {nil, NULL, PREC_NONE},
+    [TOKEN_TAMPIL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_SAH] = {boolean, NULL, PREC_NONE},
+    [TOKEN_SESAT] = {boolean, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {_number, NULL, PREC_PRIMARY},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
-    [TOKEN_THIS] = {_this, NULL, PREC_NONE},
-    [TOKEN_LEN] = {len, NULL, PREC_CALL},
+    [TOKEN_ANU] = {_this, NULL, PREC_NONE},
+    [TOKEN_JMLH] = {len, NULL, PREC_CALL},
 
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
@@ -1008,7 +1008,7 @@ static void if_statement()
     patch_jump(then_jump);
 
     emit_byte(OP_POP);
-    if (match(TOKEN_ELSE))
+    if (match(TOKEN_PULA))
     {
         statement();
     }
@@ -1172,7 +1172,7 @@ static void for_statement()
     if (match(TOKEN_SEMICOLON))
     {
     }
-    else if (match(TOKEN_LET))
+    else if (match(TOKEN_ANDAI))
     {
         var_declaration(1);
     }
@@ -1225,7 +1225,7 @@ static void default_statement()
 
 static void case_statement()
 {
-    consume(TOKEN_CASE, "Expected 'case' inside switch");
+    consume(TOKEN_HAL, "Expected 'case' inside switch");
 
     int case_jump = emit_jump(OP_JUMP_IF_TRUE);
     expression();
@@ -1235,7 +1235,7 @@ static void case_statement()
     int jump_false = emit_jump(OP_JUMP_IF_FALSE);
 
     consume(TOKEN_COLON, "Expected ':' after expression");
-    while (!check(TOKEN_CASE) && !check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
+    while (!check(TOKEN_HAL) && !check(TOKEN_RIGHT_BRACE) && !check(TOKEN_BAWAAN))
     {
         statement();
     }
@@ -1284,11 +1284,11 @@ static void switch_statement()
 
     emit_switch();
 
-    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_DEFAULT))
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_BAWAAN))
     {
         case_statement();
     }
-    if (match(TOKEN_DEFAULT))
+    if (match(TOKEN_BAWAAN))
     {
         default_statement();
     }
@@ -1322,7 +1322,7 @@ static void return_statement()
 
 static void statement()
 {
-    if (match(TOKEN_PRINT))
+    if (match(TOKEN_TAMPIL))
     {
         print_statement();
     }
@@ -1330,35 +1330,35 @@ static void statement()
     {
         block_statement();
     }
-    else if (match(TOKEN_IF))
+    else if (match(TOKEN_JIKA))
     {
         if_statement();
     }
-    else if (match(TOKEN_WHILE))
+    else if (match(TOKEN_SAAT))
     {
         while_statement();
     }
-    else if (match(TOKEN_FOR))
+    else if (match(TOKEN_ULANG))
     {
         for_statement();
     }
-    else if (match(TOKEN_SWITCH))
+    else if (match(TOKEN_KAWAL))
     {
         switch_statement();
     }
-    else if (match(TOKEN_RETURN))
+    else if (match(TOKEN_BALIK))
     {
         return return_statement();
     }
-    else if (match(TOKEN_CONTINUE))
+    else if (match(TOKEN_LAGI))
     {
         continue_statement();
     }
-    else if (match(TOKEN_BREAK))
+    else if (match(TOKEN_KELAR))
     {
         break_statement();
     }
-    else if (match(TOKEN_DEL))
+    else if (match(TOKEN_BASMI))
     {
         del_statement();
     }
@@ -1378,7 +1378,7 @@ static void synchronize()
 
         switch (parser.current.type)
         {
-        case TOKEN_PRINT:
+        case TOKEN_TAMPIL:
         case TOKEN_LEFT_BRACE:
         case TOKEN_RIGHT_BRACE:
             return;
@@ -1567,19 +1567,19 @@ static void class_declaration()
 
 static void declaration()
 {
-    if (match(TOKEN_LET))
+    if (match(TOKEN_ANDAI))
     {
         var_declaration(1);
     }
-    else if (match(TOKEN_CONST))
+    else if (match(TOKEN_KONST))
     {
         var_declaration(0);
     }
-    else if (match(TOKEN_FUN))
+    else if (match(TOKEN_FUNGSI))
     {
         function_declaration();
     }
-    else if (match(TOKEN_CLASS))
+    else if (match(TOKEN_KELAS))
     {
         class_declaration();
     }
