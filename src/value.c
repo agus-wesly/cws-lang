@@ -25,7 +25,7 @@ void print_string(ObjectString *obj)
     if (obj->length == 0)
         printf("<empty string>");
     else
-        printf("%s", obj->chars);
+        printf("\"%s\"", obj->chars);
 }
 
 void print_function(ObjectFunction *obj)
@@ -36,7 +36,7 @@ void print_function(ObjectFunction *obj)
     }
     else
     {
-        printf("fn<%s>", obj->name->chars);
+        printf("fungsi<%s>", obj->name->chars);
     }
 }
 
@@ -44,7 +44,7 @@ void print_instance(ObjectInstance *instance, bool debug, int level)
 {
     if (debug)
     {
-        printf("<instanceof ");
+        printf("<instansidari ");
         print_string(instance->klass->name);
         printf(">");
         return;
@@ -115,7 +115,7 @@ void print_obj(Value value, bool debug, int level)
 
     if (IS_CLASS(value))
     {
-        printf("<class");
+        printf("<kelas");
         print_string(AS_CLASS(value)->name);
         printf(">");
         return;
@@ -219,15 +219,15 @@ void print_value(Value value, bool debug, int level)
     }
     if (IS_NIL(value))
     {
-        printf("<nil>");
+        printf("nihil");
         return;
     }
     if (IS_BOOLEAN(value))
     {
         if (AS_BOOL(value))
-            printf("true");
+            printf("sah");
         else
-            printf("false");
+            printf("sesat");
 
         return;
     }
@@ -250,14 +250,13 @@ void print_value(Value value, bool debug, int level)
 
     case TYPE_BOOLEAN:
         if (!!value.as.boolean)
-            printf("true");
+            printf("sah");
         else
-            printf("false");
+            printf("sesat");
         break;
 
     case TYPE_NIL:
-
-        printf("<nil>");
+        printf("<nihil>");
         break;
 
     case TYPE_OBJ:

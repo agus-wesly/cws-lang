@@ -375,7 +375,7 @@ Token scan_token()
     if (is_alpha(cur))
         return identifier();
 
-    return error_token("Compile error : Unrecognized token");
+    return error_token("Kesalahan kompilasi : Token tidak dikenali");
 }
 
 void init_scanner(const char *source)

@@ -120,17 +120,17 @@ static void error_at(Token token, char *message)
 
     parser.is_panic = 1;
 
-    fprintf(stderr, "[line %d] Error : %s", token.line_number, message);
+    fprintf(stderr, "[baris %d] Error : %s", token.line_number, message);
     if (token.type == TOKEN_EOF)
     {
-        fprintf(stderr, " at the end");
+        fprintf(stderr, " di akhir kode");
     }
     else if (token.type == TOKEN_ERROR)
     {
     }
     else
     {
-        fprintf(stderr, " at '%.*s'", token.length, token.start);
+        fprintf(stderr, " di '%.*s'", token.length, token.start);
     }
     fprintf(stderr, "\n");
     parser.is_error = 1;
@@ -160,7 +160,7 @@ static void advance()
         if (parser.current.type != TOKEN_ERROR)
             break;
 
-        error_current("Unrecognized type of token");
+        error_current("Token tidak dikenali");
     }
 }
 
@@ -209,7 +209,7 @@ void patch_jump(int jump_idx)
     int jump = current_chunk()->count - jump_idx - 2;
     if (jump > UINT16_MAX)
     {
-        error("Too many jump statement");
+        error("Terlalu banyak jump statement");
     }
 
     current_chunk()->code[jump_idx] = (jump >> 8) & 0xff;
@@ -298,13 +298,13 @@ static uint8_t parse_args()
             arity += 1;
         } while (match(TOKEN_COMMA));
     }
-    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses ')'");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup ')'");
     return arity;
 }
 
 static void dot(int can_assign)
 {
-    consume(TOKEN_IDENTIFIER, "Expected identifer");
+    consume(TOKEN_IDENTIFIER, "Identifier tidak ditemukan");
 
     uint32_t name_attr = identifier_constant(&parser.previous);
 
@@ -331,7 +331,7 @@ static void dot(int can_assign)
 static void sqrbracket(int can_assign)
 {
     expression();
-    consume(TOKEN_RIGHT_SQR_BRACKET, "Expecting closing ']'");
+    consume(TOKEN_RIGHT_SQR_BRACKET, " Diharapkan tanda kurung siku tutup ']'");
 
     if (can_assign && match(TOKEN_EQUAL))
     {
@@ -393,7 +393,7 @@ int find_local(Compiler *current, Token token)
         {
             if (local->depth == -1)
             {
-                error("Can't read local variable in its own initializer.");
+                error("Tidak dapat membaca variabel lokal pada inisialisasinya sendiri");
             }
             return i;
         }
@@ -463,10 +463,9 @@ static void variable(int can_assign)
 
     if (can_assign && check(TOKEN_EQUAL))
     {
-        // TODO : handle case when trying to mutate global const var
         if (OP_SET == OP_SET_LOCAL && !is_local_assignable(identifier_idx))
         {
-            error("Cannot assign to const variable");
+            error("Tidak dapat menetapkan nilai pada variabel konstan ");
         }
         advance();
 
@@ -489,7 +488,7 @@ static void _this(int can_assign)
 
     if (current_class == NULL)
     {
-        error("'this' expression can only appear inside of class");
+        error("ekspresi 'anu' hanya dapat muncul didalam kelas");
         return;
     };
     variable(false);
@@ -501,9 +500,10 @@ static void len(int can_assign)
     {
     }
 
-    consume(TOKEN_LEFT_PAREN, "Expected opening parentheses '(");
+    //
+    consume(TOKEN_LEFT_PAREN, "Diharapkan tanda kurung buka '('");
     expression();
-    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses ')");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup ')'");
     emit_byte(OP_LEN);
 }
 
@@ -539,12 +539,12 @@ static void table(int can_assign)
         if (!check(TOKEN_STRING))
         {
             advance();
-            error("Key must be a type string and wrapped inside quotes");
+            error("Key harus bertipe data `string` dan menggunakan tanda kutip");
             return;
         }
 
         expression();
-        consume(TOKEN_COLON, "Expected colon ':' after key");
+        consume(TOKEN_COLON, "Diharapkan titik dua ':' setelah key");
         expression();
         ++table_count;
 
@@ -553,7 +553,7 @@ static void table(int can_assign)
         else
             break;
     }
-    consume(TOKEN_RIGHT_BRACE, "Expected closing parentheses '}'");
+    consume(TOKEN_RIGHT_BRACE, "Diharapkan tanda kurung kurawal tutup '}'");
 
     emit_byte(OP_TABLE_ITEMS);
     emit_constant_byte(table_count);
@@ -576,7 +576,7 @@ static void array(int is_assignable)
         if (!match(TOKEN_COMMA))
             break;
     }
-    consume(TOKEN_RIGHT_SQR_BRACKET, "Expected closing ']' in array declaration");
+    consume(TOKEN_RIGHT_SQR_BRACKET, "Diharapkan tanda kurung siku tutup ']' pada deklarasi array");
 
     emit_byte(OP_ARRAY_ITEMS);
     emit_constant_byte(array_count);
@@ -613,12 +613,12 @@ static void del_statement()
      * Currently `del` just support notation
      * TODO : Support the sqr_bracket notation
      */
-    consume(TOKEN_IDENTIFIER, "Expected identifier after 'del'");
+    consume(TOKEN_IDENTIFIER, "Diharapkan identifier setelah keyword `basmi`");
     variable(0);
-    consume(TOKEN_DOT, "Expected first identifier");
+    consume(TOKEN_DOT, "Diharapkan identifier pertama");
     do
     {
-        consume(TOKEN_IDENTIFIER, "Expected identifier");
+        consume(TOKEN_IDENTIFIER, "Diharapkan identifier");
         uint32_t name_attr = identifier_constant(&parser.previous);
 
         if (check(TOKEN_DOT))
@@ -635,7 +635,7 @@ static void del_statement()
     } while (match(TOKEN_DOT));
 
     emit_byte(OP_DEL);
-    consume(TOKEN_SEMICOLON, "Expected ';' after identifier");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma ';' setelah identifier");
 }
 
 static void grouping(int can_assign)
@@ -644,7 +644,7 @@ static void grouping(int can_assign)
     {
     }
     expression();
-    consume(TOKEN_RIGHT_PAREN, "Expected closing parentheses");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup ')'");
 }
 
 static void call(int can_assign)
@@ -659,7 +659,7 @@ static void call(int can_assign)
 static void ternary()
 {
     expression();
-    consume(TOKEN_COLON, "Expected colon inside ternary operator");
+    consume(TOKEN_COLON, "Diharapkan titik dua ':' didalam opertaor ternary");
     expression();
     emit_byte(OP_TERNARY);
 }
@@ -811,7 +811,7 @@ static void parse_precedence(Precedence precedence)
     ParseFn prefix_rule = get_rule(parser.previous.type)->prefix;
     if (prefix_rule == NULL)
     {
-        error("Syntax error");
+        error("Sintaks error");
         return;
     }
 
@@ -824,7 +824,7 @@ static void parse_precedence(Precedence precedence)
         ParseFn infix_rule = get_rule(parser.previous.type)->infix;
         if (infix_rule == NULL)
         {
-            error("Syntax error");
+            error("Sintaks error");
             return;
         }
         infix_rule(can_parse_set);
@@ -832,7 +832,7 @@ static void parse_precedence(Precedence precedence)
 
     if (can_parse_set && match(TOKEN_EQUAL))
     {
-        error("Invalid assignment target");
+        error("Target assignment tidak valid");
     }
 }
 
@@ -856,7 +856,7 @@ static void declare_local(Token identifier, int is_assignable)
 {
     if (current->count == LOCAL_MAX_LENGTH)
     {
-        error("Already reach the local variable limit");
+        error(" Melampaui batas jumlah variabel lokal");
         return;
     }
 
@@ -882,7 +882,7 @@ static void declare(bool is_assignable)
 
             if (compare_token(&parser.previous, &local->name))
             {
-                error("Redeclaration of variable");
+                error("Deklarasi ulang variabel");
                 return;
             }
         }
@@ -904,7 +904,7 @@ static void define_local()
 static void print_statement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma ';'");
     emit_byte(OP_PRINT);
 }
 
@@ -989,16 +989,16 @@ static void block_statement()
     {
         declaration();
     }
-    consume(TOKEN_RIGHT_BRACE, "Expected '}' at the end of block");
+    consume(TOKEN_RIGHT_BRACE, "Diharapkan kurung kurawal penutup '}' diakhir sebuah blok");
 
     end_scope();
 }
 
 static void if_statement()
 {
-    consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
+    consume(TOKEN_LEFT_PAREN, "Diharapkan kurung buka '(' sebelum expression");
     expression();
-    consume(TOKEN_RIGHT_PAREN, "Expected ')' before expression");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan kurung penutup ')' setelah expression");
 
     int then_jump = emit_jump(OP_JUMP_IF_FALSE);
     emit_byte(OP_POP);
@@ -1021,7 +1021,7 @@ static void emit_loop(int offset)
     int back_jump = current_chunk()->count - offset + 2;
     if (back_jump > UINT16_MAX)
     {
-        error("To many jump statement");
+        error("Terlalu banyak statement jump");
     }
 
     emit_byte((back_jump >> 8) & 0xff);
@@ -1032,7 +1032,7 @@ static void continue_statement()
 {
     if (!current->loop_count)
     {
-        error("'continue' statement is not inside loop statement");
+        error("statement 'lagi' harus berada pada statement perulangan");
         return;
     }
 
@@ -1054,18 +1054,18 @@ static void continue_statement()
     int offset = peek_loop()->offset;
     emit_loop(offset);
 
-    consume(TOKEN_SEMICOLON, "Expected ';' after continue");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma ';' setelah keyword 'lagi'");
 }
 
 static void break_statement()
 {
     if (!current->loop_count && !current->jump_count)
     {
-        error("'break' statement is not inside loop statement");
+        error("statement 'kelar' harus berada pada statement perulangan");
         return;
     }
 
-    consume(TOKEN_SEMICOLON, "Expected ';' after break");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma ';' setelah keyword 'kelar'");
 
     Jump *current_jump = peek_jump();
 
@@ -1112,9 +1112,9 @@ static void while_statement()
     int while_jump, offset;
     begin_while(&while_jump, &offset);
 
-    consume(TOKEN_LEFT_PAREN, "Expected '(' before expression");
+    consume(TOKEN_LEFT_PAREN, "Diharapkan tanda kurung buka '(' sebelum expression");
     expression();
-    consume(TOKEN_RIGHT_PAREN, "Expected ')' before expression");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup ')' setelah expression");
 
     int then_jump = emit_jump(OP_JUMP_IF_FALSE);
     emit_byte(OP_POP);
@@ -1128,7 +1128,7 @@ static void while_statement()
 static void expression_statement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma setelah value");
     if (IS_IN_REPL)
     {
         emit_byte(OP_PRINT);
@@ -1167,7 +1167,7 @@ static void for_statement()
     int then_jump = -1;
     begin_for(&for_jump);
 
-    consume(TOKEN_LEFT_PAREN, "Expected '(' after for");
+    consume(TOKEN_LEFT_PAREN, "Diharapkan tanda kurung buka setelah keyword ulang");
 
     if (match(TOKEN_SEMICOLON))
     {
@@ -1185,7 +1185,7 @@ static void for_statement()
     if (!match(TOKEN_SEMICOLON))
     {
         expression();
-        consume(TOKEN_SEMICOLON, "Expected ';' after expression");
+        consume(TOKEN_SEMICOLON, "Diharapkan titik koma ';' setelah expression");
 
         then_jump = emit_jump(OP_JUMP_IF_FALSE);
         emit_byte(OP_POP);
@@ -1205,7 +1205,7 @@ static void for_statement()
         patch_jump(condition_jump);
     }
 
-    consume(TOKEN_RIGHT_PAREN, "Expected ')' after for");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup setelah keyword 'ulang'");
 
     begin_loop(offset, current->depth);
     statement();
@@ -1216,7 +1216,7 @@ static void for_statement()
 
 static void default_statement()
 {
-    consume(TOKEN_COLON, "Expected ':' after default");
+    consume(TOKEN_COLON, "Diharapkan titik dua setelah keyword 'bawaan'");
     while (!check(TOKEN_RIGHT_BRACE))
     {
         statement();
@@ -1225,7 +1225,7 @@ static void default_statement()
 
 static void case_statement()
 {
-    consume(TOKEN_HAL, "Expected 'case' inside switch");
+    consume(TOKEN_HAL, "Diharapkan keyword 'hal'");
 
     int case_jump = emit_jump(OP_JUMP_IF_TRUE);
     expression();
@@ -1234,7 +1234,7 @@ static void case_statement()
 
     int jump_false = emit_jump(OP_JUMP_IF_FALSE);
 
-    consume(TOKEN_COLON, "Expected ':' after expression");
+    consume(TOKEN_COLON, "Diharapkan titik dua setelah expression");
     while (!check(TOKEN_HAL) && !check(TOKEN_RIGHT_BRACE) && !check(TOKEN_BAWAAN))
     {
         statement();
@@ -1275,12 +1275,12 @@ static void end_switch(int switch_jump)
 static void switch_statement()
 {
     int switch_jump = begin_switch();
-    consume(TOKEN_LEFT_PAREN, "Expected '(' after switch");
+    consume(TOKEN_LEFT_PAREN, "Diharapkan tanda kurung buka '('");
 
     expression();
 
-    consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression in switch");
-    consume(TOKEN_LEFT_BRACE, "Expected '{' before switch body");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup ')'");
+    consume(TOKEN_LEFT_BRACE, "Diharapkan kurung kurawal buka '{' sebelum body");
 
     emit_switch();
 
@@ -1293,7 +1293,7 @@ static void switch_statement()
         default_statement();
     }
 
-    consume(TOKEN_RIGHT_BRACE, "Expected '}' after switch body");
+    consume(TOKEN_RIGHT_BRACE, "Diharapkan tanda kurung kurawal tutup '}' setelah body");
     end_switch(switch_jump);
 }
 
@@ -1317,7 +1317,7 @@ static void return_statement()
 
     emit_byte(OP_RETURN);
 
-    consume(TOKEN_SEMICOLON, "Expected ';' after statement");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma diakhir statement");
 }
 
 static void statement()
@@ -1416,7 +1416,7 @@ static void define_variable(uint32_t identifier_idx)
 
 static int parse_variable(int is_assignable)
 {
-    consume(TOKEN_IDENTIFIER, "Expected variable name");
+    consume(TOKEN_IDENTIFIER, "Diharapkan nama variabel");
 
     if (current->depth > 0)
     {
@@ -1430,7 +1430,7 @@ static int parse_variable(int is_assignable)
 
             if (compare_token(&parser.previous, &local->name))
             {
-                error("Redeclaration of variable");
+                error("Deklarasi ulang variabel");
                 return 0;
             }
         }
@@ -1458,7 +1458,7 @@ static void var_declaration(int is_assignable)
         emit_byte(OP_NIL);
     }
 
-    consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration");
+    consume(TOKEN_SEMICOLON, "Diharapkan titik koma setelah deklarasi variabel");
 
     if (current->depth > 0)
     {
@@ -1480,7 +1480,7 @@ static void function(FunctionType type)
 
     begin_scope();
 
-    consume(TOKEN_LEFT_PAREN, "Expected '(' after function name");
+    consume(TOKEN_LEFT_PAREN, "Diharapkan tanda kurung buka '(' setelah nama fungsi");
 
     if (!check(TOKEN_RIGHT_PAREN))
     {
@@ -1492,8 +1492,8 @@ static void function(FunctionType type)
         } while (match(TOKEN_COMMA));
     }
 
-    consume(TOKEN_RIGHT_PAREN, "Expected ')' after function parameter");
-    consume(TOKEN_LEFT_BRACE, "Expected '{' before function body");
+    consume(TOKEN_RIGHT_PAREN, "Diharapkan tanda kurung tutup ')' setelah paramater fungsi");
+    consume(TOKEN_LEFT_BRACE, "Diharapakan tanda kurung buka '{' sebelum isi fungsi");
 
     block_statement();
 
@@ -1521,7 +1521,7 @@ static void function_declaration()
 
 static void class_declaration()
 {
-    consume(TOKEN_IDENTIFIER, "Expected variable name.");
+    consume(TOKEN_IDENTIFIER, "Diharapkan nama kelas");
     int klass_name = identifier_constant(&parser.previous);
     declare(false);
 
@@ -1536,12 +1536,12 @@ static void class_declaration()
     c.enclosing = current_class;
     current_class = &c;
 
-    consume(TOKEN_LEFT_BRACE, "Expected '{' after class name");
+    consume(TOKEN_LEFT_BRACE, "Diharapkan kurung kurawal buka '{' setelah nama kelas");
     begin_scope();
 
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
-        consume(TOKEN_IDENTIFIER, "Expected identifier");
+        consume(TOKEN_IDENTIFIER, "Diharapkan identifier");
 
         uint32_t name_method = identifier_constant(&parser.previous);
         FunctionType func_type = TYPE_METHOD;
@@ -1557,7 +1557,7 @@ static void class_declaration()
         emit_constant_byte(name_method);
     }
 
-    consume(TOKEN_RIGHT_BRACE, "Expected '}' after class declaration");
+    consume(TOKEN_RIGHT_BRACE, "Diharapkan kurung kurawal penutup '}' setelah deklarasi kelas");
     emit_byte(OP_POP);
 
     current->depth--;

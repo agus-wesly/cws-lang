@@ -76,7 +76,7 @@ void runtime_error(char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    fputs("Runtime Error: ", stderr);
+    fputs("Kesalahan Runtime : ", stderr);
     vfprintf(stderr, format, args);
     va_end(args);
 
@@ -137,7 +137,7 @@ void print_error_line(uint8_t *ip)
         ObjectFunction *function = frame->closure->function;
         uint8_t idx = ip - function->chunk.code;
         uint32_t line_number = get_line(&frame->closure->function->chunk, idx);
-        fprintf(stderr, "[Line %d] in ", line_number);
+        fprintf(stderr, "[Baris %d] di ", line_number);
         if (function->name == NULL)
         {
             fprintf(stderr, "script\n");
@@ -154,7 +154,7 @@ void print_error_line(uint8_t *ip)
     {                                                                                                                  \
         if (!IS_STRING(PEEK(0)) || !IS_STRING(PEEK(1)))                                                                \
         {                                                                                                              \
-            runtimeError("Operand must be of type string");                                                            \
+            runtime_error("Operand harus bertipe data string");                                                            \
             resetStack() return INTERPRET_RUNTIME_ERROR;                                                               \
         }                                                                                                              \
         ObjectString *b = AS_STRING(pop());                                                                            \
@@ -262,7 +262,7 @@ static bool call(ObjectClosure *callee, int args_count, uint8_t *ip)
 {
     if (callee->function->arity != args_count)
     {
-        runtime_error("Expected %d arguments but got %d", callee->function->arity, args_count);
+        runtime_error("Diharapkan %d arguments namun mendapat %d", callee->function->arity, args_count);
         print_error_line(ip);
 
         return false;
@@ -270,7 +270,7 @@ static bool call(ObjectClosure *callee, int args_count, uint8_t *ip)
 
     if (vm.frame_count >= FRAME_MAX)
     {
-        runtime_error("Maximum call frame has been exceeded");
+        runtime_error("Jumlah melewati jumlah call frame maksimum");
         print_error_line(ip);
         return false;
     }
@@ -320,7 +320,7 @@ static bool call_value(Value callee, int args_count, uint8_t *ip)
             }
             else if (args_count != 0)
             {
-                runtime_error("Expected 0 params but got %d", args_count);
+                runtime_error("Diharapkan 0 parameter namun mendapat %d", args_count);
                 print_error_line(ip);
                 resetStack();
                 return false;
@@ -340,7 +340,7 @@ static bool call_value(Value callee, int args_count, uint8_t *ip)
         }
     }
 
-    runtime_error("Attempted to call to non-function value");
+    runtime_error("Mencoba untuk mengeksekusi value non-fungsi");
     return false;
 }
 
@@ -392,7 +392,7 @@ static bool validate_array_key(ObjectArray *array, int *key_ptr)
 
     if (key_int > UINT16_MAX || key_int >= array->count)
     {
-        runtime_error("Index %d out of range", key_int);
+        runtime_error("Indeks %d diluar jangkauan", key_int);
         return false;
     }
 
@@ -401,7 +401,7 @@ static bool validate_array_key(ObjectArray *array, int *key_ptr)
         key_int = key_int + array->count;
         if (key_int < 0)
         {
-            runtime_error("Index %d out of range", *key_ptr);
+            runtime_error("Indeks %d diluar jangkauan", *key_ptr);
             return false;
         }
         *key_ptr = key_int;
@@ -413,7 +413,7 @@ static bool len_expression(Value expr, Value *result)
 {
     if (!IS_OBJ(expr))
     {
-        runtime_error("Invalid expression");
+        runtime_error("Expression tidak valid");
         return false;
     }
 
@@ -435,7 +435,7 @@ static bool len_expression(Value expr, Value *result)
         return true;
     }
     default: {
-        runtime_error("Invalid expression");
+        runtime_error("Expression tidak valid");
         return false;
     }
     }
@@ -445,7 +445,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
 {
     if (!IS_OBJ(container_val))
     {
-        runtime_error("Only instance or table have fields");
+        runtime_error("Hanya instance atau table yang memiliki fields");
         return false;
     }
 
@@ -455,7 +455,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         ObjectInstance *inst = AS_INSTANCE(container_val);
         if (!IS_STRING(key_value))
         {
-            runtime_error("Key must be a string");
+            runtime_error("Key harus bertipe string");
             return false;
         }
 
@@ -468,7 +468,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         // find in the method
         if (!map_get(&inst->klass->methods, key, value))
         {
-            runtime_error("'table' object has no attribute '%s'", key->chars);
+            runtime_error("objek tidak memiliki attribute '%s'", key->chars);
             return false;
         };
 
@@ -481,7 +481,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         ObjectTable *table = AS_TABLE(container_val);
         if (!IS_STRING(key_value))
         {
-            runtime_error("Key must be a string");
+            runtime_error("Key harus bertipe string");
             return false;
         }
 
@@ -490,7 +490,7 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         {
             return true;
         }
-        runtime_error("'table' object has no attribute '%s'", key->chars);
+        runtime_error("Objek 'table' tidak memiliki attribute '%s'", key->chars);
         return false;
     }
     case OBJ_ARRAY: {
@@ -513,9 +513,9 @@ static bool get_field(Value container_val, Value key_value, Value *value)
         if (!IS_NUMBER(key_value))
         {
             if (IS_STRING(key_value))
-                runtime_error("'List' object has no attribute: %s", AS_C_STRING(key_value));
+                runtime_error("Objek 'List' tidak memiliki attribute: %s", AS_C_STRING(key_value));
             else
-                runtime_error("'List' object has no correspondend attribute");
+                runtime_error("Objek 'List' tidak memiliki attribute yang sesuai");
             return false;
         }
 
@@ -543,7 +543,7 @@ static bool set_field(Value container_val, Value key_value, Value new_val)
         ObjectInstance *inst = AS_INSTANCE(container_val);
         if (!IS_STRING(key_value))
         {
-            runtime_error("Key must be a string");
+            runtime_error("Key harus bertipe string");
             return false;
         }
 
@@ -556,7 +556,7 @@ static bool set_field(Value container_val, Value key_value, Value new_val)
 
         if (!IS_STRING(key_value))
         {
-            runtime_error("Key must be a string");
+            runtime_error("Key harus bertipe string");
             return false;
         }
 
@@ -641,7 +641,7 @@ static InterpretResult run()
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
                                                                                                                        \
         {                                                                                                              \
-            RUNTIME_ERROR(ip - 1, "Operand must be of type number");                                                   \
+            RUNTIME_ERROR(ip - 1, "Operand harus bertipe number");                                                   \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
@@ -758,7 +758,7 @@ static InterpretResult run()
             uint8_t *prev_ip = ip - 1;
             if (!IS_NUMBER(PEEK(0)))
             {
-                RUNTIME_ERROR(prev_ip, "Expected number");
+                RUNTIME_ERROR(prev_ip, "Diharapkan number");
                 return INTERPRET_RUNTIME_ERROR;
             }
             double num = AS_NUMBER(PEEK(0)) * -1;
@@ -786,7 +786,7 @@ static InterpretResult run()
             }
             else
             {
-                RUNTIME_ERROR(prev_ip, "Operands must be number or string");
+                RUNTIME_ERROR(prev_ip, "Operands harus bertipe number atau string");
                 return INTERPRET_RUNTIME_ERROR;
             }
         }
@@ -913,7 +913,7 @@ static InterpretResult run()
             Value val;
             if (!map_get(&vm.globals, name, &val))
             {
-                RUNTIME_ERROR(prev_ip, "Cannot access undeclared variable : %s", name->chars);
+                RUNTIME_ERROR(prev_ip, "Tidak dapat mengakses variabel yang tidak terdeklarasi: %s", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(val);
@@ -928,7 +928,7 @@ static InterpretResult run()
             if (map_set(&vm.globals, name, val))
             {
                 map_delete(&vm.globals, name);
-                RUNTIME_ERROR(prev_ip, "Cannot set to undefined variable : '%s'", name->chars);
+                RUNTIME_ERROR(prev_ip, "Tidak dapat menetapkan nilai ke variabel yang tidak terdeklarasi : '%s'", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
             break;
@@ -1104,20 +1104,20 @@ static InterpretResult run()
 
             if (!IsObjType(key_val, OBJ_STRING))
             {
-                RUNTIME_ERROR(prev_ip, "Expression must be type of string");
+                RUNTIME_ERROR(prev_ip, "Expression harus bertipe string");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
             if (!IS_OBJ(container_val))
             {
-                RUNTIME_ERROR(prev_ip, "Only instances have fields");
+                RUNTIME_ERROR(prev_ip, "Hanya instances yang memiliki fields");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
             ObjectString *key = AS_STRING(key_val);
             if (!del_field(container_val, key))
             {
-                RUNTIME_ERROR(prev_ip, "Field error : '%s'", key->chars);
+                RUNTIME_ERROR(prev_ip, "Kesalahan field : '%s'", key->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
 
@@ -1216,7 +1216,7 @@ static InterpretResult run()
             ObjectArray *array = AS_ARRAY(container_val);
             if (array->count <= 0)
             {
-                RUNTIME_ERROR(prev_ip, "Cannot pop empty array");
+                RUNTIME_ERROR(prev_ip, "Tidak dapat melakukan pop pada array yang kosong");
                 return INTERPRET_RUNTIME_ERROR;
             }
             pop_array(array);
