@@ -46,21 +46,30 @@ button.addEventListener("click", () => {
 
 
 /*
- * print("Hello, World!");
+ * 
+tampil("Halo, Dunia!");
 
 // Variable
-let x = 69;
+andai x = 69;
 x=x+1;
-print(x);
+tampil(x);
+
+// Boolean
+andai true = sah;
+andai false = sesat;
+
+jika(true == sah) tampil("True adalah sah");
+jika(false == sesat) tampil("False adalah sesat");
 
 // Object
-let obj = {"foo": "bar"};
-print(obj);
+andai obj = {"foo": "bar"};
+tampil(obj);
 
 // Array
-let arr = [1,false,nil,obj,"Wesly"];
-for(let i=0; i<len(arr); i=i+1) {
-    print(arr[i]);
+andai arr = [1,sesat,nihil,obj,"Wesly"];
+
+ulang(andai i=0; i<jmlh(arr); i=i+1) {
+    tampil(arr[i]);
 }
  *
  *
