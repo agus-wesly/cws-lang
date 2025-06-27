@@ -271,7 +271,7 @@ static void trim()
     for (;;)
     {
         char c = peek();
-        if (isspace(c))
+        if (isspace(c) || (c > '\x00' && c < '\x08') || (c < 0))
         {
             advance();
         }
@@ -279,17 +279,6 @@ static void trim()
         {
             return;
         }
-        // switch (c)
-        // {
-        // case ' ':
-        // case '\t':
-        // case '\n':
-        //     advance();
-        //     break;
-
-        // default:
-        //     return;
-        // }
         if (c == '\n')
         {
             scanner.line_number++;
@@ -382,6 +371,7 @@ Token scan_token()
     if (is_alpha(cur))
         return identifier();
 
+    printf("Unrecognized : %d\n", cur);
     return error_token("Kesalahan kompilasi : Token tidak dikenali");
 }
 

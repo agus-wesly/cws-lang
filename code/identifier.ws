@@ -1,10 +1,5 @@
-class ABC; // 28
-if true and false // 27;
-for let x // 32;
+konst x = [10,12,-1];
+konst y = [10,12,-1];
 
-fun abc(); // 31
-for // 32;
-
-let wesly = false; // 30
-this; // 39
-true; // 40
+tampil("x" +                         10);
+tampil ("s    "); 

@@ -39,7 +39,8 @@ button.addEventListener("click", () => {
     if (!sourceCode) return;
 
     if (outputElement) outputElement.value = ''; // clear browser cache
-    Module.ccall("RUN_SOURCE", null, ['string'], [sourceCode]);
+    console.log(sourceCode.trim());
+    Module.ccall("RUN_SOURCE", null, ['string'], [sourceCode.trim()]);
 
 
 })
