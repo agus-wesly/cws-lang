@@ -97,8 +97,8 @@ void init_compiler(Compiler *compiler, FunctionType type)
     local->is_assignable = 0;
     if (type == TYPE_METHOD || type == TYPE_INIT)
     {
-        local->name.start = "this";
-        local->name.length = 4;
+        local->name.start = "anu";
+        local->name.length = 3;
         local->name.type = TOKEN_ANU;
     }
     else
