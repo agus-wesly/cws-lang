@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define NAN_BOXING
 // #define DEBUG_TRACE_EXECUTION

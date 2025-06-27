@@ -271,18 +271,25 @@ static void trim()
     for (;;)
     {
         char c = peek();
-        switch (c)
+        if (isspace(c))
         {
-        case ' ':
-        case '\t':
-        case '\n':
             advance();
-            break;
-
-        default:
+        }
+        else
+        {
             return;
         }
+        // switch (c)
+        // {
+        // case ' ':
+        // case '\t':
+        // case '\n':
+        //     advance();
+        //     break;
 
+        // default:
+        //     return;
+        // }
         if (c == '\n')
         {
             scanner.line_number++;
