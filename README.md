@@ -9,6 +9,15 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
 > [!NOTE]
 > This language is based on what I learned from [this book](https://craftinginterpreters.com)
 
+## Table of Contents
+- [Guide](#guide)
+  - [The Basics](#the-basics)
+    - [Constant and Variables](#constants-and-variables)
+    - [Printing](#printing-constants-and-variables)
+    - [Comments](#comments)
+    - [Semicolons](#semicolons)
+    - [Boolean](#boolean)
+    - [Nihil](#nihil)
 
 ## Building the interpreter
 
@@ -86,7 +95,7 @@ jika(sushiItuEnak) {
 ```
 
 
-## Nihil
+### Nihil
 You set an optional variable to a valueless state by assigning it the special value `nihil`:
 ```
 andai responseServer = nihil;
