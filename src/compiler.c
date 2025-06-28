@@ -677,7 +677,7 @@ static void call(int can_assign)
     emit_bytes(OP_CALL, arity);
 }
 
-static void ternary()
+static void ternary(int can_assign)
 {
     expression();
     consume(TOKEN_COLON, "Diharapkan titik dua ':' didalam opertaor ternary");
