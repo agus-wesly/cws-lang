@@ -679,6 +679,9 @@ static void call(int can_assign)
 
 static void ternary(int can_assign)
 {
+    if (can_assign)
+    {
+    }
     expression();
     consume(TOKEN_COLON, "Diharapkan titik dua ':' didalam opertaor ternary");
     expression();
@@ -733,6 +736,10 @@ static void binary(int can_assign)
         emit_byte(OP_EQUAL_EQUAL);
         break;
     };
+    case TOKEN_BANG_EQUAL: {
+        emit_bytes(OP_EQUAL_EQUAL, OP_BANG);
+        break;
+    }
     default: {
         break;
     };
@@ -770,6 +777,7 @@ static void or_(int can_assign)
 ParseRule rules[] = {
     [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
     [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
+    [TOKEN_BANG_EQUAL] = {NULL, binary, PREC_EQUALITY},
     [TOKEN_GREATER] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
