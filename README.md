@@ -6,7 +6,7 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
 > THIS LANGUAGE IS A WORK IN PROGRESS! THE PROJECT IS STILL UNDER DEVELOPMENT, THE LANGUAGE SYNTAX IS NOT STABLE AND BUG IS TO BE EXPECTED.
 
 
-> [!INFO]
+> [!NOTE]
 > This language is based on what I learned from [this book](https://craftinginterpreters.com)
 
 
