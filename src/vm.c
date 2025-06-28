@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #include "vm.h"
 #include "chunk.h"
 #include "hashmap.h"
@@ -176,7 +175,7 @@ void print_error_line(uint8_t *ip)
     {                                                                                                                  \
         if (!IS_STRING(PEEK(0)) || !IS_STRING(PEEK(1)))                                                                \
         {                                                                                                              \
-            runtime_error("Operand harus bertipe data string");                                                            \
+            runtime_error("Operand harus bertipe data string");                                                        \
             resetStack() return INTERPRET_RUNTIME_ERROR;                                                               \
         }                                                                                                              \
         ObjectString *b = AS_STRING(pop());                                                                            \
@@ -663,7 +662,7 @@ static InterpretResult run()
         if (!IS_NUMBER(PEEK(0)) || !IS_NUMBER(PEEK(1)))                                                                \
                                                                                                                        \
         {                                                                                                              \
-            RUNTIME_ERROR(ip - 1, "Operand harus bertipe number");                                                   \
+            RUNTIME_ERROR(ip - 1, "Operand harus bertipe number");                                                     \
             return INTERPRET_RUNTIME_ERROR;                                                                            \
         }                                                                                                              \
         double b = AS_NUMBER(pop());                                                                                   \
@@ -682,6 +681,7 @@ static InterpretResult run()
 #define HANDLE_TERNARY()                                                                                               \
     do                                                                                                                 \
     {                                                                                                                  \
+        /* TODO : this only supports number, change to support other */                                                \
         double false_expr = AS_NUMBER(pop());                                                                          \
         double true_expr = AS_NUMBER(pop());                                                                           \
         double condition = AS_NUMBER(pop());                                                                           \
@@ -950,7 +950,8 @@ static InterpretResult run()
             if (map_set(&vm.globals, name, val))
             {
                 map_delete(&vm.globals, name);
-                RUNTIME_ERROR(prev_ip, "Tidak dapat menetapkan nilai ke variabel yang tidak terdeklarasi : '%s'", name->chars);
+                RUNTIME_ERROR(prev_ip, "Tidak dapat menetapkan nilai ke variabel yang tidak terdeklarasi : '%s'",
+                              name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             };
             break;
