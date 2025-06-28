@@ -1,8 +1,14 @@
 # CWS Programming Language
 
-CWS is a toy scripting programming language created for learning purposes. CWS is inspired by python, javascript and has an Indonesian like syntax with the interpreter is written in C. The project is still under development, the language syntax is not stable and bug is to be expected.
+CWS is a toy scripting programming language created for learning purposes. CWS is inspired by python, javascript and has an Indonesian like syntax with the interpreter is written in C. 
 
-This language is based on what i learned from : https://craftinginterpreters.com
+> [!WARNING]
+> THIS LANGUAGE IS A WORK IN PROGRESS! THE PROJECT IS STILL UNDER DEVELOPMENT, THE LANGUAGE SYNTAX IS NOT STABLE AND BUG IS TO BE EXPECTED.
+
+
+> [!INFO]
+> This language is based on what I learned from [this book](https://craftinginterpreters.com)
+
 
 ## Building the interpreter
 
