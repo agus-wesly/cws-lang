@@ -301,3 +301,260 @@ andai kumpulanBinatang = "Koala, Siput, Pinguin, Unta";
 tampil ("kumpulanBinatang has " + jmlh(kumpulanBinatang) + " characters");
 // Prints "kumpulanBinatang has 40 characters"
 ```
+
+## Collection Types
+### Array
+An array stores values in an ordered list. Array in CWS can store different type of value.The same value can appear in an array multiple times at different positions.
+
+#### Create Array
+```
+andai kumpulanData1 = []; // Empty initialization
+andai kumpulanData2 = [10, 69, "Hello", sah]; // Non-empty initialization
+```
+
+### Access and Modify Array
+Use the `jmlh()` built-in functiont to get number of items in array.
+```
+andai kumpulanData2 = [10, 69, "Hello", sah]; // Non-empty initialization
+tampil("kumpulanData2 berisi " + jmlh(kumpulanData2) +" items.");
+tampil("");
+```
+
+You can add a new item to the end of an array by calling the array’s `push()` method:
+```
+andai kumpulanData2 = [10, 69, "Hello", sah]; // Non-empty initialization
+kumpulanData2.push("Data baru");
+tampil(kumpulanData2);
+```
+
+Retrieve a value from the array by using subscript syntax, passing the index of the value you want to retrieve within square brackets immediately after the name of the array:
+```
+andai daftarBelanja = ["Telur", "Susu"];
+andai itemPertama = daftarBelanja[0];
+// firstItem is equal to "Telur"
+```
+
+You can also remove the last item in the array by calling array’s `pop()` method:
+```
+andai daftarBelanja = ["Telur", "Susu"];
+daftarBelanja.pop();
+```
+### Iterating the array
+You can iterate over the entire set of values in an array with the for loop with(`ulang` keyword):
+```
+andai daftarBelanja = ["Telur", "Susu", "Garam"];
+ulang(misal i=0; i<jmlh(daftarBelanja); i=i+1){
+    tampil(daftarBelanja[i]);
+}
+```
+### Table
+A table stores associations between keys of the type string and values in a collection with no defined ordering. Each value is associated with a unique key, which acts as an identifier for that value within the table. 
+### Creating a table
+```
+andai hewanKebunBinatang = {
+    "singa": 8,
+    "zebra": 16,
+    "rusa": 19,
+    "jerapah": 5,
+};
+```
+
+### Accessing and modifying table
+As with an array, you find out the number of items in a table by using `jmlh()` function:
+```
+andai hewanKebunBinatang = {
+    "singa": 8,
+    "zebra": 16,
+    "rusa": 19,
+    "jerapah": 5,
+};
+jmlh(hewanKebunBinatang);
+```
+Get and Set the value in Table
+```
+andai hewanKebunBinatang = {
+    "singa": 8,
+    "zebra": 16,
+    "rusa": 19,
+    "jerapah": 5,
+};
+
+tampil("Jumlah singa ada " + hewanKebunBinatang.singa); // get value
+hewanKebunBinatang["singa"] = 10; // set value
+tampil("Jumlah singa sekarang ada " + hewanKebunBinatang.singa);
+```
+
+## Control Flow
+### For Loops
+For loops is done using `ulang` keyword
+```
+ulang(andai i=0; i<10; i=i+1) {
+    tampil(i);
+}
+```
+
+### While Loops
+A while loop performs a set of statements until a condition becomes false. Use the `saat` keyword to perform it.
+```
+andai mengulang = sah;
+andai jumlahUlang = 0;
+saat(mengulang == sah) {
+    jika (jumlahUlang < 5){
+        tampil("Sedang mengulang ke -");
+        jumlahUlang=jumlahUlang+1;
+    } pula {
+        mengulang = sesat;
+    }
+}
+```
+
+### Conditional Statements
+It’s often useful to execute different pieces of code based on certain conditions. You might want to run an extra piece of code when an error occurs, or to display a message when a value becomes too high or too low. To do this, you make parts of your code conditional.
+### If
+In its simplest form, the if statement has a single if condition. It executes a set of statements only if that condition is true. Use the `jika` keyword to implement it.
+```
+andai temperatureDalamFahrenheit = 30
+jika (temperatureDalamFahrenheit <= 32) {
+    tampil("Diluar sangat dingin. Disarankan memakai syal");
+}
+// Print "Diluar sangat dingin. Disarankan memakai syal"
+```
+The if statement can provide an alternative set of statements, known as an else clause, for situations when the if condition is false. These statements are indicated by the `pula` keyword.
+```
+andai temperatureDalamFahrenheit = 40;
+jika (temperatureDalamFahrenheit <= 32) {
+    tampil("Diluar sangat dingin. Disarankan memakai syal");
+} pula {
+    tampil("Tidak terlalu dingin. Sebaiknya gunakan kaos");
+}
+```
+You can chain multiple if statements together to consider additional clauses.
+```
+andai temperatureDalamFahrenheit = 90;
+jika (temperatureDalamFahrenheit <= 32) {
+    tampil("Diluar sangat dingin. Disarankan memakai syal");
+} pula jika(temperatureDalamFahrenheit >=86)  {
+    tampil("Diluar sangat panas. Disarankan menggunakan sunscreen");
+} pula {
+    tampil("Tidak terlalu dingin. Sebaiknya gunakan kaos");
+}
+```
+
+### Switch
+A switch statement considers a value and compares it against several possible matching patterns. It then executes an appropriate block of code, based on the first pattern that matches successfully. Implement it using the `kawal` keyword.
+This example uses a switch statement to consider a single lowercase character called someCharacter:
+
+```
+andai suatuKarakter = "z";
+kawal (suatuKarakter) {
+hal "a":
+    tampil("Huruf pertama dalam alfabet");
+    kelar;
+hal "z":
+    tampil("Huruf terakhir dalam alfabet");
+    kelar;
+bawaan:
+    tampil("Karakter lainnya");
+    kelar;
+}
+```
+Like in C, switch statement in CWS does fallthrough. Use the `kelar` keyword to finish the switch statement after a case is executed.
+
+### Control Flow Statement
+Control transfer statements change the order in which your code is executed, by transferring control from one piece of code to another. CWS has three control transfer statements:
+1. `continue` / `lagi`
+1. `break` / `kelar`
+1. `return` / `balik`
+The continue, break, and fallthrough statements are described below. The return statement is described in [Functions section](https://github.com/agus-wesly/cws-lang)
+
+### Continue
+The continue statement tells a loop to stop what it’s doing and start again at the beginning of the next iteration through the loop. To implement it use the `lagi` keyword.
+```
+ulang(andai i=0; i<10; i=i+1) {
+    jika(i==5){
+        lagi;
+    } pula {
+        tampil(i);
+    }
+}
+```
+
+### Break
+The break statement ends execution of an entire control flow statement immediately. Implement it using the `kelar` keyword. You can also use it inside the switch statement to prevent the fallthrough.
+```
+// For loop
+ulang(andai i=0; i<10; i=i+1) {
+    jika(i==5){
+        kelar;
+    } pula {
+        tampil(i);
+    }
+}
+
+// Switch stmt
+andai suatuKarakter = "z";
+kawal (suatuKarakter) {
+hal "a":
+    tampil("Huruf pertama dalam alfabet");
+    kelar;
+hal "z":
+    tampil("Huruf terakhir dalam alfabet");
+    kelar;
+bawaan:
+    tampil("Karakter lainnya");
+    kelar;
+}
+```
+
+### Function
+#### Defining and Calling Functions
+Define a function by using the `fungsi` keyword.
+```
+fungsi sapa(orang) {
+    andai sapaan = "Hallo, " + person + "!";
+    balik sapaan;
+}
+
+tampil(greet("Anna"));
+// Prints "Hallo, Anna!"
+tampil(greet("Brian"));
+// Prints "Hallo, Brian!"
+```
+
+### Function without parameters
+Functions aren’t required to define input parameters. Here’s a function with no input parameters, which always returns the same String message whenever it’s called:
+```
+fungsi haloDunia() {
+    return "hallo, dunia";
+}
+tampil(haloDunia());
+// Prints "hallo, dunia"
+```
+
+### Functions with multiple parameters
+Functions can have multiple input parameters, which are written within the function’s parentheses, separated by commas.
+
+```
+fungsi sum(x,y,z) {
+    balik x + y + z;
+}
+```
+
+
+### Functions with return values
+Function can have return value. The return value is returned using the `balik` keyword
+```
+fungsi sum(x,y,z) {
+    balik x + y + z;
+}
+```
+
+### Functions without return values
+Functions aren’t required to define a return type. If it does't have one, it will return `nihil` by default
+```
+fungsi sapa(person) {
+    print("Hello " + person);
+}
+misal x = sapa("Dave");
+tampil(x); // Nihil
+```
