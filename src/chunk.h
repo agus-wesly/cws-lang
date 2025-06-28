@@ -4,7 +4,6 @@
 #include "common.h"
 #include "line.h"
 #include "long_value.h"
-#include "std.h"
 
 typedef enum
 {

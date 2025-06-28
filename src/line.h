@@ -2,7 +2,6 @@
 #define CWS_LINE_H
 
 #include "common.h"
-#include "std.h"
 
 typedef struct
 {
