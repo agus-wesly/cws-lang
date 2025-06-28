@@ -35,12 +35,12 @@ andai percobaan = 0; // Variables
 ### Printing Constants and Variables
 ```
 andai salam = "Hallo, Dunia !";
-tampil(salam)
+tampil(salam);
 ```
 Include name with constant or variable
 ```
 andai nama = "Wesly";
-tampil("Halo, nama saya " + salam);
+tampil("Halo, nama saya " + nama);
 ```
 
 ### Comments
@@ -153,7 +153,7 @@ Comparison operators are often used in conditional statements, such as the `jika
 ```
 andai nama = "world";
 jika (nama == "world") {
-    tampil("hello, world")
+    tampil("hello, world");
 }  pula {
     tampil("maaf, " + nama + " saya tidak mengenali anda");
 }
@@ -230,13 +230,18 @@ jika (kunciPintuTersedia atau passwordDiketahui) {
 } pula {
     tampil("AKSES DILARANG");
 }
-// Prints "Selamat Datang!"
+// Print "Selamat Datang!"
 
 ```
 
 ### Combining Logical Operators
 You can combine multiple logical operators to create longer compound expressions:
 ```
+andai kodePintuTerinput = sah;
+andai hasilScanRetina = sesat;
+andai kunciPintuTersedia = sesat;
+andai passwordDiketahui = sah;
+
 jika (kodePintuTerinput dan hasilScanRetina atau kunciPintuTersedia atau passwordDiketahui) {
     tampil("Selamat Datang!");
 } pula {
