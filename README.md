@@ -165,7 +165,7 @@ jika (nama == "world") {
 }
 // Prints "hello, world", because name is indeed equal to "world".
 ```
-For more about the `jika` statement, see [Control Flow](https://github.com/agus-wesly/cws-lang)
+For more about the `jika` statement, see [Control Flow](https://github.com/agus-wesly/cws-lang?tab=readme-ov-file#control-flow)
 
 Non Primitive data is compared based on their reference.
 ```
@@ -317,7 +317,6 @@ Use the `jmlh()` built-in functiont to get number of items in array.
 ```
 andai kumpulanData2 = [10, 69, "Hello", sah]; // Non-empty initialization
 tampil("kumpulanData2 berisi " + jmlh(kumpulanData2) +" items.");
-tampil("");
 ```
 
 You can add a new item to the end of an array by calling the array’s `push()` method:
@@ -330,8 +329,7 @@ tampil(kumpulanData2);
 Retrieve a value from the array by using subscript syntax, passing the index of the value you want to retrieve within square brackets immediately after the name of the array:
 ```
 andai daftarBelanja = ["Telur", "Susu"];
-andai itemPertama = daftarBelanja[0];
-// firstItem is equal to "Telur"
+andai itemPertama = daftarBelanja[0]; // Prints "Telur"
 ```
 
 You can also remove the last item in the array by calling array’s `pop()` method:
@@ -343,7 +341,7 @@ daftarBelanja.pop();
 You can iterate over the entire set of values in an array with the for loop with(`ulang` keyword):
 ```
 andai daftarBelanja = ["Telur", "Susu", "Garam"];
-ulang(misal i=0; i<jmlh(daftarBelanja); i=i+1){
+ulang(andai i=0; i<jmlh(daftarBelanja); i=i+1){
     tampil(daftarBelanja[i]);
 }
 ```
@@ -400,7 +398,7 @@ andai mengulang = sah;
 andai jumlahUlang = 0;
 saat(mengulang == sah) {
     jika (jumlahUlang < 5){
-        tampil("Sedang mengulang ke -");
+        tampil("Sedang mengulang ke - " + jumlahUlang);
         jumlahUlang=jumlahUlang+1;
     } pula {
         mengulang = sesat;
@@ -413,7 +411,7 @@ It’s often useful to execute different pieces of code based on certain conditi
 ### If
 In its simplest form, the if statement has a single if condition. It executes a set of statements only if that condition is true. Use the `jika` keyword to implement it.
 ```
-andai temperatureDalamFahrenheit = 30
+andai temperatureDalamFahrenheit = 30;
 jika (temperatureDalamFahrenheit <= 32) {
     tampil("Diluar sangat dingin. Disarankan memakai syal");
 }
@@ -465,14 +463,14 @@ Control transfer statements change the order in which your code is executed, by 
 1. `continue` / `lagi`
 1. `break` / `kelar`
 1. `return` / `balik`
-The continue, break, and fallthrough statements are described below. The return statement is described in [Functions section](https://github.com/agus-wesly/cws-lang)
+The continue, break, and fallthrough statements are described below. The return statement is described in [Functions section](https://github.com/agus-wesly/cws-lang?tab=readme-ov-file#function)
 
 ### Continue
 The continue statement tells a loop to stop what it’s doing and start again at the beginning of the next iteration through the loop. To implement it use the `lagi` keyword.
 ```
 ulang(andai i=0; i<10; i=i+1) {
     jika(i==5){
-        lagi;
+        lagi; // 5 will not printed
     } pula {
         tampil(i);
     }
@@ -511,13 +509,13 @@ bawaan:
 Define a function by using the `fungsi` keyword.
 ```
 fungsi sapa(orang) {
-    andai sapaan = "Hallo, " + person + "!";
+    andai sapaan = "Hallo, " + orang + "!";
     balik sapaan;
 }
 
-tampil(greet("Anna"));
+tampil(sapa("Anna"));
 // Prints "Hallo, Anna!"
-tampil(greet("Brian"));
+tampil(sapa("Brian"));
 // Prints "Hallo, Brian!"
 ```
 
@@ -525,7 +523,7 @@ tampil(greet("Brian"));
 Functions aren’t required to define input parameters. Here’s a function with no input parameters, which always returns the same String message whenever it’s called:
 ```
 fungsi haloDunia() {
-    return "hallo, dunia";
+    balik "hallo, dunia";
 }
 tampil(haloDunia());
 // Prints "hallo, dunia"
@@ -553,8 +551,8 @@ fungsi sum(x,y,z) {
 Functions aren’t required to define a return type. If it does't have one, it will return `nihil` by default
 ```
 fungsi sapa(person) {
-    print("Hello " + person);
+    tampil("Hello " + person);
 }
-misal x = sapa("Dave");
+andai x = sapa("Dave");
 tampil(x); // Nihil
 ```
