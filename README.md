@@ -17,7 +17,7 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
     - [Semicolons](#semicolons)
     - [Boolean](#boolean)
     - [Nihil](#nihil)
-  - [Basic Operator]()
+  - [Basic Operator](#basic-operator)
     - [Assignment Operator](#assignment-operator)
     - [Arithmetic Operator](#arithmetic-operator)
     - [Unary Minus Operator](#unary-minus-operator)
@@ -211,7 +211,7 @@ jika (nama == "world") {
 }
 // Prints "hello, world", because name is indeed equal to "world".
 ```
-For more about the `jika` statement, see [Control Flow](https://github.com/agus-wesly/cws-lang?tab=readme-ov-file#control-flow)
+For more about the `jika` statement, see [Control Flow](#control-flow)
 
 Non Primitive data is compared based on their reference.
 ```
@@ -509,7 +509,7 @@ Control transfer statements change the order in which your code is executed, by 
 1. `continue` / `lagi`
 1. `break` / `kelar`
 1. `return` / `balik`
-The continue, break, and fallthrough statements are described below. The return statement is described in [Functions section](https://github.com/agus-wesly/cws-lang?tab=readme-ov-file#function)
+The continue, break, and fallthrough statements are described below. The return statement is described in [Functions section](#function)
 
 ### Continue
 The continue statement tells a loop to stop what it’s doing and start again at the beginning of the next iteration through the loop. To implement it use the `lagi` keyword.
