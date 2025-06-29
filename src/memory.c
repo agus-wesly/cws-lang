@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 #include "memory.h"
 #include "object.h"
 #include "vm.h"
@@ -251,6 +250,7 @@ void collect_garbage()
     size_t before = vm.current_bytes;
 #endif
 
+#ifdef ENABLE_GC
     mark_roots();
     mark_references();
     mark_obj((Obj *)vm.init_string);
@@ -259,6 +259,7 @@ void collect_garbage()
     sweep();
 
     vm.next_gc = vm.current_bytes * GC_GROW_FACTOR;
+#endif
 
 #ifdef DEBUG_GC
     printf("--gc end\n");

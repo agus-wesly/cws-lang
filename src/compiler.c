@@ -96,7 +96,7 @@ Compiler *current = NULL;
 void init_compiler(Compiler *compiler, FunctionType type)
 {
     compiler->count = 0;
-    compiler->depth = 1;
+    compiler->depth = 0;
     compiler->loop_count = 0;
     compiler->jump_count = 0;
     compiler->upvalue_count = 0;
@@ -1437,7 +1437,7 @@ static void define_variable(uint32_t identifier_idx)
     }
     else
     {
-        assert(0 && "Global variable should be unreachable");
+        // assert(0 && "Global variable should be unreachable");
         emit_byte(OP_GLOBAL_VAR);
         emit_constant_byte(identifier_idx);
     }
@@ -1495,7 +1495,7 @@ static void var_declaration(int is_assignable)
     }
     else
     {
-        assert(0 && "Global variable should be unreachable");
+        // assert(0 && "Global variable should be unreachable");
         define_variable(identifier_idx);
     }
 }
@@ -1526,7 +1526,6 @@ static void function(FunctionType type)
 
     block_statement();
 
-    // Here
     ObjectFunction *function = end_compiler();
 
     push(VALUE_OBJ(function));
@@ -1633,11 +1632,14 @@ ObjectFunction *compile(const char *source)
     Compiler compiler;
     init_compiler(&compiler, TYPE_SCRIPT);
 
+    begin_scope();
+
     advance();
     while (!match(TOKEN_EOF))
     {
         declaration();
     }
+    end_scope();
 
     return end_compiler();
 }
