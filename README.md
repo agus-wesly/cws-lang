@@ -10,7 +10,6 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
 > This language is based on what I learned from [this book](https://craftinginterpreters.com)
 
 ## Table of Contents
-- [Guide](#guide)
   - [The Basics](#the-basics)
     - [Constant and Variables](#constants-and-variables)
     - [Printing](#printing-constants-and-variables)
@@ -18,6 +17,44 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
     - [Semicolons](#semicolons)
     - [Boolean](#boolean)
     - [Nihil](#nihil)
+  - [Basic Operator]()
+         - [Assignment Operator](#assignment-operator)
+         - [Arithmetic Operator](#arithmetic-operator)
+         - [Unary Minus Operator](#unary-minus-operator)
+         - [Comparison Operator](#comparison-operator)
+         - [Ternary Operator](#ternary-operator)
+         - [Logical Operator](#logical-operator)
+         - [Logical NOT Operator](#logical-not-operator)
+         - [Logical AND Operator](#logical-and-operator)
+         - [Combining Logical Operator](#combining-logical-operator)
+         - [Explicit Parentheses](#explicit-parentheses)
+    - [Strings](#strings)
+        - [String Literals](#string-literals)
+        - [Counting Character](#counting-character)
+    - [Collection Types](#collection-types)
+        - [Array](#array)
+        - [Create Array](#create-array)
+        - [Access and Modify Array](#access-and-modify-array)
+        - [Iterating the Array](#iterating-the-array)
+        - [Table](#table)
+        - [Creating a Table](#creating-a-table)
+        - [Accessing and Modifying Table](#accessing-and-modifying-table)
+    - [Control Flow](#control-flow)
+        - [For Loops](#for-loops)
+        - [While Loops](#while-loops)
+        - [Conditional Statements](#conditional-statements)
+        - [If](#if)
+        - [Switch](#switch)
+        - [Control Flow Statement](#control-flow-statement)
+            - [Continue](#continue)
+            - [Break](#break)
+        - [Function](#function)
+        - [Defining and Calling Functions](#defining-and-calling-functions)
+        - [Function without Parameters](#function-without-parameters)
+        - [Function with Multiple Parameters](#function-with-multiple-parameters)
+        - [Function with Return Values](#function-with-return-values)
+        - [Function without Return Values](#function-without-return-values)
+
 
 ## Building the interpreter
 
@@ -197,7 +234,7 @@ tampil (keterangan);
 Logical operators modify or combine the Boolean logic values `sah` and `sesat`. CWS supports the three standard logical operators found in C-based languages:
 1. Logical NOT (!a)
 1. Logical AND (a `dan` b)
-1. Logical OR (a || b)
+1. Logical OR (a `or` b)
 
 ### Logical NOT Operator
 The logical NOT operator (!a) inverts a Boolean value so that `sah` becomes `sesat`, and `sesat` becomes `sah`.
@@ -322,7 +359,7 @@ andai kumpulanData2 = [10, 69, "Hello", sah]; // Non-empty initialization
 ```
 
 ### Access and Modify Array
-Use the `jmlh()` built-in functiont to get number of items in array.
+Use the `jmlh()` built-in function to get number of items in array.
 ```
 andai kumpulanData2 = [10, 69, "Hello", sah]; // Non-empty initialization
 tampil("kumpulanData2 berisi " + jmlh(kumpulanData2) +" items.");
