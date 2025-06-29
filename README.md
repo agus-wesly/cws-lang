@@ -26,7 +26,7 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
     - [Logical Operator](#logical-operator)
     - [Logical NOT Operator](#logical-not-operator)
     - [Logical AND Operator](#logical-and-operator)
-    - [Combining Logical Operator](#combining-logical-operator)
+    - [Combining Logical Operator](#combining-logical-operators)
     - [Explicit Parentheses](#explicit-parentheses)
     - [Strings](#strings)
         - [String Literals](#string-literals)
@@ -51,9 +51,9 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
         - [Function](#function)
         - [Defining and Calling Functions](#defining-and-calling-functions)
         - [Function without Parameters](#function-without-parameters)
-        - [Function with Multiple Parameters](#function-with-multiple-parameters)
-        - [Function with Return Values](#function-with-return-values)
-        - [Function without Return Values](#function-without-return-values)
+        - [Function with Multiple Parameters](#functions-with-multiple-parameters)
+        - [Function with Return Values](#functions-with-return-values)
+        - [Function without Return Values](#functions-without-return-values)
 
 
 ## Building the interpreter
