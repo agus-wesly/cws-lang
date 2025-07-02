@@ -15,7 +15,9 @@ ObjectString *find_string(Map *m, const char *key, int length)
         if (entry->key == NULL)
         {
             if (IS_NIL(entry->value))
+            {
                 return NULL;
+            }
         }
         else if (entry->key->length == length && entry->key->hash == hash &&
                  memcmp(entry->key->chars, key, length) == 0)
@@ -32,12 +34,14 @@ ObjectString *take_string(char *chars, int length)
     ObjectString *allocated = find_string(&vm.strings, chars, length);
     if (allocated != NULL)
     {
+        printf("allocated : %s\n", allocated->chars);
         FREE_ARRAY(char, chars, length + 1);
         return allocated;
     }
 
     ObjectString *string = allocate_string(chars, length);
     FREE_ARRAY(char, chars, length + 1);
+
     return string;
 }
 
@@ -97,11 +101,14 @@ ObjectClosure *new_closure(ObjectFunction *function)
         upvalues[i] = NULL;
     }
 
+    push(VALUE_OBJ(upvalues));
+
     ObjectClosure *closure = ALLOC_OBJ(ObjectClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalue_count = function->upvalue_count;
 
+    pop();
     pop();
 
     return closure;
@@ -163,25 +170,26 @@ static ObjectMethod *arr_push_method(ObjectArray *array)
     write_chunk(&closure->function->chunk, OP_ARRAY_PUSH, 0);
     write_chunk(&closure->function->chunk, OP_NIL, 0);
     write_chunk(&closure->function->chunk, OP_RETURN, 0);
-    pop();
 
     ObjectMethod *method = new_method(VALUE_OBJ(array), closure);
+    pop();
     return method;
 }
 
 static ObjectMethod *arr_pop_method(ObjectArray *array)
 {
     ObjectClosure *closure = new_closure(new_function());
+    push(VALUE_OBJ(closure));
+
     closure->function->name = copy_string("<pop>", 5);
     closure->function->arity = 0;
 
-    push(VALUE_OBJ(closure));
     write_chunk(&closure->function->chunk, OP_ARRAY_POP, 0);
     write_chunk(&closure->function->chunk, OP_NIL, 0);
     write_chunk(&closure->function->chunk, OP_RETURN, 0);
-    pop();
 
     ObjectMethod *method = new_method(VALUE_OBJ(array), closure);
+    pop();
     return method;
 }
 

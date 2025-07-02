@@ -143,7 +143,6 @@ bool map_delete(Map *h, ObjectString *key)
 
     entry->key = NULL;
     entry->value = VALUE_BOOL(0);
-    h->size--;
 
     return true;
 }

@@ -35,7 +35,7 @@ void mark_obj(Obj *obj)
 
 #ifdef DEBUG_GC
     printf("%p mark \n", obj);
-    print_obj(VALUE_OBJ(obj));
+    print_obj(VALUE_OBJ(obj), true, 1);
     printf("\n");
 #endif
 
@@ -117,7 +117,7 @@ static void mark_references()
 
 #ifdef DEBUG_GC
         printf("%p blacken :  %d ", obj, obj->is_marked);
-        print_value(VALUE_OBJ(obj));
+        print_value(VALUE_OBJ(obj), true, 1);
         printf("\n");
 #endif
 

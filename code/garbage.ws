@@ -1,7 +1,3 @@
-print("Hello, World");
-let x = 10;
-
-for(let i=0; i<10; i=i+1) {
-    let abc = "abc" + i;
-    print(abc);
-}
+andai x = [1,2,3];
+andai y = x;
+tampil (x == y);
