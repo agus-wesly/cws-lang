@@ -307,8 +307,8 @@ void free_obj(Obj *obj)
 
     case OBJ_INSTANCE: {
         ObjectInstance *instance = (ObjectInstance *)obj;
-        FREE(ObjectInstance, obj);
         free_map(&instance->table);
+        FREE(ObjectInstance, obj);
         break;
     }
 
