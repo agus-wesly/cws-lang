@@ -34,7 +34,6 @@ ObjectString *take_string(char *chars, int length)
     ObjectString *allocated = find_string(&vm.strings, chars, length);
     if (allocated != NULL)
     {
-        printf("allocated : %s\n", allocated->chars);
         FREE_ARRAY(char, chars, length + 1);
         return allocated;
     }
