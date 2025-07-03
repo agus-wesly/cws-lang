@@ -56,11 +56,16 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
         - [Function without Return Values](#functions-without-return-values)
 
 
-## Building the interpreter
 
-```
-make
-```
+## Installing
+
+Download and install cws interpreter here.
+
+| OS           | Arch    | Link   
+|--------------|---------|-------
+| windows      |         | []() |
+| linux (gnu)  | x86_64  | [cws-x86_64-unknown-linux-gnu.tar.xz](https://raw.githubusercontent.com/agus-wesly/cws-lang/refs/heads/main/cws.tar.gz) |
+
 
 ## Compiling
 
@@ -70,7 +75,7 @@ Create a `.ws` file and use the interpreter to execute it
 ./cws hello.ws
 ```
 
-You can also try the online playground here at : https://agus-wesly.github.io/cws-lang
+*You can also try the online playground at : https://agus-wesly.github.io/cws-lang*
 
 # Guide
 

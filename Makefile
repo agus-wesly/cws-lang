@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -std=gnu17 -ggdb -pg
+CFLAGS=-Wall -O2 -Wextra -std=gnu17
 
 ifeq ($(TARGET),wasm)
 	CC=emcc
