@@ -67,6 +67,12 @@ body h1 {
     padding: 2px;
 }
 
+#share-btn {
+    width: fit-content;
+    flex: none;
+    padding: 2px;
+}
+
 div#playground {
     padding: 2px;
     display: flex;

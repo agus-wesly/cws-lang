@@ -1,16 +1,11 @@
 let editorElement = document.getElementById("editor");
 let outputElement = document.getElementById('output');
-let button = document.getElementById("run-btn");
+let runButton = document.getElementById("run-btn");
+let shareButton = document.getElementById("share-btn");
 
-let editor = ace.edit("editor");
-editor.setTheme("ace/theme/github_light_default");
-editor.session.setMode("ace/mode/swift");
-editor.getSession().setUseWorker(false);
-// Font size
-document.getElementById('editor').style.fontSize = '15px';
 
 let __DEBUG__ = true;
-
+let editor = ace.edit("editor");
 var Module = {
     print(...args) {
         if (__DEBUG__) {
@@ -34,44 +29,42 @@ var Module = {
 };
 
 
-button.addEventListener("click", () => {
+runButton.addEventListener("click", () => {
     const sourceCode = editor.getValue();
     if (!sourceCode) return;
 
     if (outputElement) outputElement.value = ''; // clear browser cache
-    console.log(sourceCode.trim());
     Module.ccall("RUN_SOURCE", null, ['string'], [sourceCode.trim()]);
+})
 
+shareButton.addEventListener("click", () => {
+    const src = editor.getValue();
+    if (!src) return;
 
+    const urlParam = new URLSearchParams({ src });
+    const sharedUrl = `${window.location.toString()}?${urlParam.toString()}`;
+
+    navigator.clipboard.writeText(sharedUrl).then(() => {
+        alert("Successfully copying URL to clipboard")
+    });
 })
 
 
-/*
- * 
-tampil("Halo, Dunia!");
+function main() {
+    editor.setTheme("ace/theme/github_light_default");
+    editor.session.setMode("ace/mode/swift");
+    editor.getSession().setUseWorker(false);
+    document.getElementById('editor').style.fontSize = '15px'; // Font size
 
-// Variable
-andai x = 69;
-x=x+1;
-tampil(x);
+    function getDefaultValue() {
+        return new URL(window.location.toString()).searchParams.get("src") ?? `andai salam = "Hallo, Dunia !";
+tampil(salam);`
+    }
 
-// Boolean
-andai true = sah;
-andai false = sesat;
-
-jika(true == sah) tampil("True adalah sah");
-jika(false == sesat) tampil("False adalah sesat");
-
-// Object
-andai obj = {"foo": "bar"};
-tampil(obj);
-
-// Array
-andai arr = [1,sesat,nihil,obj,"Wesly"];
-
-ulang(andai i=0; i<jmlh(arr); i=i+1) {
-    tampil(arr[i]);
+    const defaultValue = getDefaultValue();
+    editor.setValue(defaultValue, 1);
+    editor.focus();
 }
- *
- *
- * */
+
+
+main();
