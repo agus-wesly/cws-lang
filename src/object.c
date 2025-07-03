@@ -94,20 +94,18 @@ ObjectNative *new_native(NativeFn function)
 ObjectClosure *new_closure(ObjectFunction *function)
 {
     push(VALUE_OBJ(function));
+
     ObjectUpValue **upvalues = ALLOC(ObjectUpValue *, function->upvalue_count * sizeof(ObjectUpValue *));
     for (int i = 0; i < function->upvalue_count; ++i)
     {
         upvalues[i] = NULL;
     }
 
-    push(VALUE_OBJ(upvalues));
-
     ObjectClosure *closure = ALLOC_OBJ(ObjectClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalue_count = function->upvalue_count;
 
-    pop();
     pop();
 
     return closure;

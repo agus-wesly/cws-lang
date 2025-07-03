@@ -1077,12 +1077,15 @@ static InterpretResult run()
             ObjectFunction *function = AS_FUNCTION(READ_LONG_CONSTANT());
             ObjectClosure *closure = new_closure(function);
 
+            push(VALUE_OBJ(closure));
+
             for (int i = 0; i < function->upvalue_count; ++i)
             {
                 bool is_local = READ_BYTE();
                 int index = READ_LONG_BYTE();
                 if (is_local)
                 {
+                    // Here get_from_uplist vanishing the upvalues[1]
                     closure->upvalues[i] = get_from_uplist(frame->slots + index);
                 }
                 else
@@ -1091,7 +1094,6 @@ static InterpretResult run()
                 }
             }
 
-            push(VALUE_OBJ(closure));
             break;
         }
 

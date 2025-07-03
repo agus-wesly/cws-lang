@@ -11,8 +11,7 @@
 #define NAN_BOXING
 
 #ifndef __EMSCRIPTEN__
-
-#define DEBUG_TRACE_EXECUTION
+// #define DEBUG_TRACE_EXECUTION
 // #define TEST_STRESS_GC
 // #define DEBUG_GC
 // #define DEBUG_PRINT
