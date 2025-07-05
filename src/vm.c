@@ -627,7 +627,7 @@ static InterpretResult run()
     uint8_t *ip = frame->ip;
 
 #define READ_BYTE() (*ip++)
-#define READ_SHORT() ((ip += 2), ((uint16_t)(ip[-2] | ip[-1])))
+#define READ_SHORT() ((ip += 2), ((uint16_t)((uint16_t)(ip[-2] << 8) | ip[-1])))
 #define READ_CONSTANT() (frame->closure->function->chunk.constants->values[READ_BYTE()])
 #define STRING() (AS_STRING(READ_CONSTANT()))
 #define READ_LONG_BYTE()                                                                                               \
