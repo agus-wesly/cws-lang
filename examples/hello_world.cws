@@ -1,0 +1,4 @@
+tampil ("Hello, World");
+
+andai nama = "Dunia";
+tampil("Hallo, " + nama);

@@ -1,0 +1,19 @@
+andai jumlah_baris = 10;
+
+ulang(andai i=0; i<jumlah_baris; i=i+1) {
+    andai output = " ";
+
+    ulang(andai l=jumlah_baris-i-1; l>0; l=l-1){
+        output=output+" ";
+    }
+
+    ulang(andai k=0; k <= i; k=k+1) {
+        output=output+"*"+ " ";
+    }
+
+    ulang(andai z=jumlah_baris-i-1; z > 0; z=z-1){
+        output=output+" ";
+    }
+
+    tampil(output);
+}

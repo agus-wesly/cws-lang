@@ -1,0 +1,34 @@
+// P.S from : Wesly
+// Saat ini operator modulus '%' belum disupport
+
+fungsi fizzbuzz(x) {
+    jika(x <= 0) balik;
+
+    andai tiga = 3;
+    andai lima = 5;
+
+    andai i = 1;
+    saat(i <= x) {
+        tiga=tiga-1;
+        lima=lima-1;
+
+        andai output = "";
+
+        jika(tiga == 0) {
+            output=output+"Fizz";
+            tiga = 3;
+        }
+        jika(lima == 0) {
+            output=output+"Buzz";
+            lima = 5;
+        }
+        jika(output == "") {
+            tampil(i);
+        } pula {
+            tampil(output);
+        }
+        i=i+1;
+    }
+}
+
+fizzbuzz(20);

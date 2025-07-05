@@ -1,0 +1,12 @@
+andai suatuKarakter = "z";
+kawal (suatuKarakter) {
+hal "a":
+    tampil("Huruf pertama dalam alfabet");
+    kelar;
+hal "z":
+    tampil("Huruf terakhir dalam alfabet");
+    kelar;
+bawaan:
+    tampil("Karakter lainnya");
+    kelar;
+}

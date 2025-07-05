@@ -1,0 +1,11 @@
+fungsi fib(x) {
+    jika(x<=1) {
+        balik x;
+    }
+
+    balik fib(x-1) + fib(x-2);
+}
+
+ulang(andai i=0; i<20; i=i+1) {
+    tampil ("Fibonacci ke " + i + " = " + fib(i));
+}
