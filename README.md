@@ -1,4 +1,7 @@
 # CWS Programming Language
+<p align="center" style="padding:8px;">
+  <img src="https://github.com/user-attachments/assets/89080c64-1234-4d1c-aabf-1bf468a566dd" width="300" height="200" alt="Centered Image">
+</p>
 
 CWS is a toy scripting programming language created for learning purposes. CWS is inspired by python, javascript and has an Indonesian like syntax with the interpreter is written in C. 
 
@@ -61,11 +64,13 @@ CWS is a toy scripting programming language created for learning purposes. CWS i
 
 Download and install cws interpreter here.
 
-| OS           | Arch    | Link   
-|--------------|---------|-------
-| windows      |         | []() |
-| linux (gnu)  | x86_64  | [cws-x86_64-unknown-linux-gnu.tar.xz](https://raw.githubusercontent.com/agus-wesly/cws-lang/refs/heads/main/cws.tar.gz) |
+| OS           | Link                                                                                           |
+|--------------|------------------------------------------------------------------------------------------------|
+| Windows      | [cws.exe](https://raw.githubusercontent.com/agus-wesly/cws-lang/refs/heads/main/cws.exe)      |
+| Linux (GNU)  | [cws.tar.xz](https://raw.githubusercontent.com/agus-wesly/cws-lang/refs/heads/main/cws.tar.gz) |
 
+> [!WARNING]
+> The Windows `cws.exe` file is unstable. It may process unexpected behavior. You can just use the linux version or maybe try the [online playground](https://agus-wesly.github.io/cws-lang)
 
 ## Compiling
 
