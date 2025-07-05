@@ -393,7 +393,7 @@ Token scan_token()
     if (is_alpha(cur))
         return identifier();
 
-    printf("Unrecognized : %d\n", cur);
+    printf("Unrecognized : %c\n", cur);
     return error_token("Kesalahan kompilasi : Token tidak dikenali");
 }
 

@@ -83,17 +83,17 @@ int main(int argc, char **args)
 {
     init_vm();
 
-    if (argc == 1)
-    {
-        rep();
-    }
-    else if (argc == 2)
+    // if (argc == 1)
+    // {
+    //     rep();
+    // }
+    if (argc == 2)
     {
         run_file(args[1]);
     }
     else
     {
-        printf("Usage : jlox [file_path]\n");
+        printf("Usage : cws ./my-program.cws\n");
         return 64;
     }
 
